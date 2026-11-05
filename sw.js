@@ -1,7 +1,7 @@
 /* Service worker: lưu toàn bộ app vào máy để chạy offline.
    Khi có mạng, app vẫn mở ngay từ bản đã lưu và tải bản mới ở nền; lần mở sau sẽ dùng bản mới.
    Thêm file mới vào app thì nhớ thêm vào ASSETS và tăng VERSION. */
-const VERSION = 'v2';
+const VERSION = 'v3';
 const CACHE = 'vo-on-toan-' + VERSION;
 const ASSETS = [
   './', './index.html', './manifest.webmanifest', './fonts/fonts.css',
