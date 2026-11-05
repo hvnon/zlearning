@@ -221,6 +221,37 @@ textarea{min-height:90px;font-family:ui-monospace,Menlo,monospace;font-size:12px
 @keyframes bosshit{0%{transform:none}30%{transform:translateX(-14px) rotate(-12deg);filter:brightness(1.8)}60%{transform:translateX(10px)}100%{transform:none}}
 @keyframes bossattack{0%{transform:none}40%{transform:scale(1.4) translateY(12px)}100%{transform:none}}
 @keyframes flash{from{opacity:1}to{opacity:0}}
+/* ---- quests, ghosts, family tree, balloons, race ---- */
+.quest{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--line)}
+.quest:last-child{border-bottom:0}
+.quest .qi{font-size:24px;line-height:1;width:30px;text-align:center}
+.quest .qb{flex:1;min-width:0}
+.quest .qp{height:8px;border-radius:999px;background:var(--ink-soft);overflow:hidden;margin-top:4px}
+.quest .qp i{display:block;height:100%;background:var(--ink);border-radius:999px}
+.quest.done .qb{color:var(--muted);text-decoration:line-through}
+.quest.done .qp i{background:var(--green)}
+.ghostbox{display:flex;align-items:center;gap:12px}
+.ghostbox .gem{font-size:48px;line-height:1;animation:bob 1.8s ease-in-out infinite}
+.ghostbox .gem.hide{filter:grayscale(1);opacity:.45;animation:none}
+.ghost-map{position:absolute;right:8px;top:-6px;font-size:26px;animation:bob 1.8s ease-in-out infinite;pointer-events:none}
+.tree{display:flex;align-items:center;gap:14px}
+.tree .tem{font-size:56px;line-height:1}
+.tree .who{display:flex;gap:8px;flex-wrap:wrap}
+.balloons{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:6px 0}
+.balloon{position:relative;border:0;background:none;padding:0;min-height:112px;display:flex;flex-direction:column;align-items:center;cursor:pointer;animation:bob 2.2s ease-in-out infinite}
+.balloon span{display:grid;place-items:center;width:92px;height:106px;border-radius:50% 50% 50% 50%/45% 45% 55% 55%;color:#fff;font-family:var(--f-display);font-weight:800;font-size:26px;box-shadow:inset -10px -12px 0 rgba(0,0,0,.12);font-variant-numeric:tabular-nums}
+.balloon:after{content:"";width:2px;height:22px;background:var(--muted);opacity:.6}
+.balloon.c0 span{background:#ff6b6b}.balloon.c1 span{background:#3aa0ff}.balloon.c2 span{background:#2ec27e}.balloon.c3 span{background:#f5a300}
+.balloon:disabled{cursor:default}
+.balloon.pop{animation:popout .45s ease forwards}
+.balloon.bad span{background:#9a9a9a}.balloon.bad{animation:shake .4s ease}
+.balloon.fly{animation:flyaway .8s ease forwards}
+.racebar{position:relative;height:16px;border-radius:999px;background:var(--amber-soft);overflow:hidden;margin-bottom:4px}
+.racebar i{display:block;height:100%;background:linear-gradient(90deg,#f5a300,#ff7a1a);transition:width .1s linear}
+.racebar span{position:absolute;right:8px;top:-2px;font-size:13px;font-weight:700;color:var(--text)}
+.racebar.low i{background:var(--red)}
+@keyframes popout{0%{transform:scale(1)}50%{transform:scale(1.35);opacity:1}100%{transform:scale(0);opacity:0}}
+@keyframes flyaway{to{transform:translateY(-240px);opacity:0}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
@@ -420,7 +451,60 @@ function ensureGame(p){
   if(!p.path){p.path={};for(const s of skillsOf(p))if(p.skills[s.id]?.s)p.path[s.id]={stars:1}} // bé đã học từ bản cũ: tính là đã qua trạm
   if(p.xp==null)p.xp=0;
   if(p.pet===undefined)p.pet=null;if(p.coins==null)p.coins=0;if(!p.items)p.items=[];if(!p.redeemed)p.redeemed=[];
+  if(!p.ghosts)p.ghosts=[];if(p.ghostsCaught==null)p.ghostsCaught=0;if(p.charms==null)p.charms=0;
+  ensureQuests(p);
 }
+
+/* ================= nhiệm vụ ngày & bùa giữ chuỗi ================= */
+const QUEST_POOL=[
+ {id:'answer10',txt:'Làm đúng 10 câu',goal:10,em:'✏️'},
+ {id:'combo5',txt:'Đạt combo 🔥 x5',goal:1,em:'🔥'},
+ {id:'station',txt:'Qua 1 trạm hoặc hạ trùm',goal:1,em:'🏁'},
+ {id:'review',txt:'Ôn bài cũ 1 lượt',goal:1,em:'🔁'},
+ {id:'nohint',txt:'Đúng 5 câu không xem gợi ý',goal:5,em:'🧠'},
+ {id:'speed',txt:'Đúng nhanh 3 câu',goal:3,em:'⚡'},
+ {id:'ghost',txt:'Bắt 1 con ma số',goal:1,em:'👻'}];
+function ensureQuests(p){const t=today();if(p.quests&&p.quests.day===t)return;
+  let pool=QUEST_POOL.filter(q=>q.id!=='ghost'||p.ghosts.some(g=>g.ready<=t));
+  if(!skillsOf(p).some(s=>p.skills[s.id]?.s))pool=pool.filter(q=>q.id!=='review');
+  const list=shuffle(pool).slice(0,3).map(q=>({...q,prog:0,done:false}));
+  p.quests={day:t,list,claimed:false}}
+function questProg(p,id,n){const q=p.quests?.list.find(x=>x.id===id);if(!q||q.done)return;q.prog=Math.min(q.goal,q.prog+n);if(q.prog>=q.goal)q.done=true}
+const questsAllDone=p=>p.quests&&p.quests.list.every(q=>q.done);
+
+/* ================= ma số ================= */
+function addGhost(p,q){p.ghosts.push({id:Date.now()+Math.random(),skill:q.skill.id,q:plain(q.q),ans:q.ans,day:today(),ready:today()+rnd(2,3)});while(p.ghosts.length>12)p.ghosts.shift()}
+const readyGhosts=p=>p.ghosts.filter(g=>g.ready<=today());
+function buildGhostSession(p){const ready=shuffle(readyGhosts(p)).slice(0,6);if(!ready.length)return null;
+  const qs=ready.map(g=>{const sk=skillById(g.skill);return{skill:sk,...genQ(sk),ghost:g.id}});
+  const chosen=[...new Set(ready.map(g=>skillById(g.skill)))];
+  applyFmt(qs,'balloon');return makeSess(p,chosen,qs,'ghost',{nodeName:'Săn ma số',fmt:'balloon',caught:0})}
+
+/* ================= cây gia đình ================= */
+const TREE_STAGES=[[0,'🌱','Hạt mầm'],[3,'🌿','Mầm non'],[7,'🌳','Cây nhỏ'],[15,'🌳🍎','Cây có quả'],[30,'🌸🌳🍎','Cây rực rỡ']];
+function familyOf(){const f=state.family||(state.family={days:{},grown:0});return f}
+function treeStage(f){let st=TREE_STAGES[0];for(const x of TREE_STAGES)if(f.grown>=x[0])st=x;return st}
+function treeNext(f){return TREE_STAGES.find(x=>x[0]>f.grown)}
+
+/* ================= dạng chơi: bóng bay, đua thời gian ================= */
+function distractors(ans){const n=Number(ans);if(!Number.isFinite(n))return[];const c=new Set();const add=x=>{x=Math.round(x);if(x!==n&&x>=0&&!c.has(x))c.add(x)};
+  const mag=Math.max(1,Math.pow(10,Math.max(0,Math.floor(Math.log10(Math.abs(n)||1))-1)));
+  const s=String(Math.abs(n));if(s.length>=2){const a=s.split('');const i=rnd(0,s.length-2);[a[i],a[i+1]]=[a[i+1],a[i]];add(Number(a.join('')))}
+  [n+1,n-1,n+10,n-10,n+mag,n-mag,n+2,n-2,n*2,Math.floor(n/2),n+3,n+100,n-100].forEach(add);
+  let out=shuffle([...c]).slice(0,3);let k=4;while(out.length<3){add(n+k);out=shuffle([...c]).slice(0,3);k++}return out.map(String)}
+function applyFmt(qs,fmt){qs.forEach(q=>{if(fmt==='balloon'&&!q.choices&&!q.exact){q.choices=shuffle([q.ans,...distractors(q.ans)]);q.balloon=true}})}
+const pickFmt=()=>pick(['pad','balloon','race','balloon','race']);
+const raceDur=q=>Math.max(8,Math.round(q.skill.slow*1.3));
+function stopTimer(){if(sess&&sess.timer){clearInterval(sess.timer);sess.timer=null}}
+function raceTick(){if(!sess||sess.phase!=='ask'||sess.fmt!=='race'){stopTimer();return}
+  const left=Math.max(0,sess.deadline-Date.now()),dur=raceDur(curQ())*1000;
+  const f=document.getElementById('raceFill'),sp=document.getElementById('raceSec');
+  if(f){f.style.width=(left/dur*100)+'%';f.parentElement.classList.toggle('low',left<dur*0.3)}if(sp)sp.textContent='⏱ '+Math.ceil(left/1000);
+  if(left<=0){stopTimer();raceTimeout()}}
+function raceTimeout(){if(!sess||sess.phase!=='ask')return;const q=curQ();const p=prof(sess.pid);
+  logEv({t:'answer',pid:sess.pid,sid:sess.sid,skill:q.skill.id,q:plain(q.q),ans:q.ans,input:'(hết giờ)',ok:false,secs:raceDur(q),hint:sess.hintUsed,g:2,retry:!!q.retry,timeout:true});
+  if(!q.retry){const id=q.skill.id;sess.results[id]=Math.min(sess.results[id]??4,2)}
+  sess.combo=0;sess.timedOut=true;sess.phase='wrong';sess.anim='wrong';SFX.wrong();renderSession()}
 const passed=(p,key)=>(p.path[key]?.stars||0)>0;
 function nodeStates(p){const ns=pathNodes(p);return ns.map((n,i)=>({...n,i,stars:p.path[n.key]?.stars||0,st:passed(p,n.key)?'done':(i===0||passed(p,ns[i-1].key))?'open':'locked'}))}
 function currentNode(p){const ns=nodeStates(p);return ns.find(n=>n.st==='open')||null}
@@ -480,13 +564,15 @@ function buildSession(p,onlySkill){
   if(!chosen.length)return null;
   const per=onlySkill?5:2;const qs=[];
   chosen.forEach(s=>{for(let i=0;i<per;i++)qs.push({skill:s,...genQ(s)})});
-  return makeSess(p,chosen,qs,onlySkill?'practice':'daily');
+  const fmt=onlySkill?'pad':pickFmt();applyFmt(qs,fmt);
+  return makeSess(p,chosen,qs,onlySkill?'practice':'daily',{fmt});
 }
 function buildNodeSession(p,node){
   const sk=node.boss?node.skills.map(skillById):[skillById(node.skill)];const n=node.boss?8:5;const qs=[];
   const bag=node.boss?shuffle([...sk,...sk,...sk]).slice(0,n):Array(n).fill(sk[0]);
   bag.forEach(s=>qs.push({skill:s,...genQ(s)}));
-  const s=makeSess(p,sk,qs,'path',{node:node.key,boss:node.boss,nodeName:node.name});
+  const fmt=(node.boss||!(p.path[node.key]?.stars>0))?'pad':pickFmt();applyFmt(qs,fmt);
+  const s=makeSess(p,sk,qs,'path',{node:node.key,boss:node.boss,nodeName:node.name,fmt});
   if(node.boss){const b=PATH[p.grade][node.wi].boss;Object.assign(s,{phase:'intro',hp:n,hpMax:n,hearts:3,bossEm:b.em,bossName:b.name})}
   return s;
 }
@@ -518,6 +604,9 @@ function renderHome(){
       <span class="chips"><span class="chip">Cấp ${lvlOf(p.xp).L} · ${rankOf(lvlOf(p.xp).L)}</span><span class="chip amber">⭐ ${totalStars(p)}</span><span class="chip amber">🔥 ${p.streak} ngày</span>${d?`<span class="chip red">${d} kỹ năng cần ôn</span>`:''}</span>
       <span class="stickers" aria-label="Sticker">${p.stickers.slice(-8).join('')||'<span class="note">Chưa có sticker nào</span>'}</span>
     </button>`}).join('')}</div>
+    ${(()=>{const f=familyOf(),st=treeStage(f),nx=treeNext(f),t=today(),td=f.days[t]||{pids:[]};return `<div class="panel tree"><span class="tem">${st[1]}</span><div style="flex:1;min-width:0"><div class="row" style="justify-content:space-between;gap:6px"><b>Cây gia đình · ${st[2]}</b><span class="note">${nx?`${f.grown}/${nx[0]} ngày cùng học`:'Lớn hết cỡ!'}</span></div>
+      <div class="who" style="margin-top:6px">${state.profiles.map(x=>`<span class="chip ${td.pids.includes(x.id)?'green':''}">${td.pids.includes(x.id)?'✓':'○'} ${esc(x.name)}</span>`).join('')}</div>
+      <div class="note" style="margin-top:4px">${td.done?'Hôm nay cả hai đã học, cây lớn thêm rồi! 🎉':'Hôm nào cả hai cùng học thì cây lớn thêm và mỗi bé được 15 xu.'}</div></div></div>`})()}
     <p class="note">Mỗi ngày học khoảng 10 phút. App tự nhớ bé hay sai kỹ năng nào để cho ôn lại sớm hơn, kỹ năng nào đã vững thì giãn ra vài ngày, vài tuần mới hỏi lại.</p>
   </div>`;
   app.querySelectorAll('.kid').forEach(b=>b.onclick=()=>go({name:'kid',pid:b.dataset.pid}));
@@ -578,6 +667,11 @@ function renderKid(){
         ${learned?`<button class="btn" id="reviewBtn" type="button"><span class="ic">🔁</span><span>Ôn bài cũ<small>${d?`${d} kỹ năng đến hạn`:'Củng cố kỹ năng đã học'}</small></span></button>`:''}
       </div>
     </div>
+    <div class="panel stack" style="gap:6px"><div class="row" style="justify-content:space-between"><h2>Nhiệm vụ hôm nay</h2><span class="chip amber" title="Bùa giữ chuỗi">🛡️ x${p.charms}</span></div>
+      ${p.quests.list.map(q=>`<div class="quest ${q.done?'done':''}"><span class="qi">${q.done?'✅':q.em}</span><div class="qb"><div>${esc(q.txt)}</div><div class="qp"><i style="width:${Math.round(q.prog/q.goal*100)}%"></i></div></div><span class="note">${q.prog}/${q.goal}</span></div>`).join('')}
+      <div class="note">${questsAllDone(p)?'Xong hết! Đã nhận rương và 1 bùa giữ chuỗi 🛡️':'Xong cả 3 thì được rương và 1 bùa giữ chuỗi 🛡️ (lỡ nghỉ một ngày vẫn giữ được chuỗi 🔥).'}</div>
+    </div>
+    ${(()=>{const rg=readyGhosts(p),hid=p.ghosts.length-rg.length,toChest=10-(p.ghostsCaught%10);return `<div class="panel ghostbox"><span class="gem ${rg.length?'':'hide'}">👻</span><div style="flex:1;min-width:0"><b>Ma số</b><div class="note">${rg.length?`${rg.length} con ma đã hiện ra! Bắt bằng cách làm đúng câu tương tự.`:hid?`${hid} con ma đang trốn, vài ngày nữa sẽ hiện ra.`:'Chưa có ma nào. Làm sai một câu là nó biến thành ma đó!'} Đã bắt ${p.ghostsCaught}, còn ${toChest} con nữa là được rương.</div></div>${rg.length?`<button class="btn primary small" id="ghostBtn" type="button">Săn ma (${rg.length})</button>`:''}</div>`})()}
     <div class="map" aria-label="Bản đồ đường học">${mapHTML}<div style="font-size:44px;margin-top:10px">🏆</div></div>
     <div class="panel stack shop"><div class="row" style="justify-content:space-between"><h2>Đổi thưởng</h2><span class="coin">🪙 ${p.coins} xu</span></div>
       ${state.rewards.length?state.rewards.map(r=>`<div class="it"><span style="font-size:32px;line-height:1">${r.em||'🎁'}</span><div style="flex:1;min-width:0"><b>${esc(r.title)}</b><div class="note">🪙 ${r.cost} xu</div></div><button class="btn small ${p.coins>=r.cost?'primary':''}" type="button" data-redeem="${r.id}" ${p.coins>=r.cost?'':'disabled'}>${view.confirmRedeem===r.id?'Chắc chắn đổi!':'Đổi'}</button></div>`).join(''):'<p class="note" style="margin:0">Bố mẹ chưa đặt phần thưởng nào. Vào Trang phụ huynh để thêm, ví dụ "30 phút hoạt hình = 300 xu".</p>'}
@@ -586,6 +680,7 @@ function renderKid(){
     <div class="panel stack"><h2>Bộ sưu tập sticker</h2><div class="stickers">${p.stickers.join('')||'<span class="note">Qua mỗi trạm là được một sticker.</span>'}</div></div>
   </div>`;
   document.getElementById('wardrobeBtn').onclick=()=>{view.wardrobe=!view.wardrobe;renderKid()};
+  const gb=document.getElementById('ghostBtn');if(gb)gb.onclick=()=>{SFX.tap();const s2=buildGhostSession(p);if(s2){sess=s2;go({name:'session',pid:p.id})}};
   app.querySelectorAll('[data-wear]').forEach(b=>b.onclick=()=>{const [slot,id]=b.dataset.wear.split(':');pet.wear=pet.wear||{};pet.wear[slot]=(id&&pet.wear[slot]!==id)?id:null;save();SFX.tap();renderKid()});
   app.querySelectorAll('[data-redeem]').forEach(b=>b.onclick=()=>{const id=b.dataset.redeem;const r=state.rewards.find(x=>x.id===id);if(!r||p.coins<r.cost)return;
     if(view.confirmRedeem!==id){view.confirmRedeem=id;SFX.tap();renderKid();return}
@@ -616,16 +711,18 @@ function renderSession(){
   const answered=sess.phase!=='ask';const anim=sess.anim;sess.anim=null;
   app.innerHTML=`<div class="stack">
     <div class="row" style="justify-content:space-between"><span class="note">${sess.boss?'👑 ':''}${esc(sess.nodeName||p.name)} · Câu ${sess.i+1}/${sess.qs.length}</span>
-      <span class="row" style="gap:8px">${sess.combo>=2?`<span class="chip amber ${anim==='right'?'combo':''}">🔥 x${sess.combo}</span>`:''}<span class="chip">⭐ ${sess.xp} XP</span><button class="btn small ghost" id="quit" type="button">Dừng</button></span></div>
+      <span class="row" style="gap:8px">${sess.mode==='ghost'?'<span class="chip">👻 Săn ma</span>':sess.fmt==='balloon'?'<span class="chip">🎈 Bắn bóng</span>':sess.fmt==='race'?'<span class="chip amber">⏱ Đua</span>':''}${sess.combo>=2?`<span class="chip amber ${anim==='right'?'combo':''}">🔥 x${sess.combo}</span>`:''}<span class="chip">⭐ ${sess.xp} XP</span><button class="btn small ghost" id="quit" type="button">Dừng</button></span></div>
     ${sess.boss?`<div class="bossbar"><span class="bem">${sess.bossEm}</span><div style="flex:1;min-width:0"><div class="row" style="justify-content:space-between;gap:6px"><b>${esc(sess.bossName)}</b><span class="note">${sess.hp}/${sess.hpMax}</span></div><div class="hpbar"><i style="width:${Math.round(sess.hp/sess.hpMax*100)}%"></i></div></div><span class="hearts">${[1,2,3].map(h=>`<span class="${h<=sess.hearts?'':'lost'}">❤️</span>`).join('')}</span></div>`:`<div class="progress"><i style="width:${pct}%"></i></div>`}
     <div class="qcard ${anim==='enter'?'enter':anim==='right'?'pop':anim==='wrong'?'shake':''}">
+      ${sess.fmt==='race'&&sess.phase==='ask'?`<div class="racebar"><i id="raceFill" style="width:${Math.round(Math.max(0,sess.deadline-Date.now())/(raceDur(q)*1000)*100)}%"></i><span id="raceSec">⏱ ${Math.ceil(Math.max(0,sess.deadline-Date.now())/1000)}</span></div>`:''}
       ${sess.phase==='right'?'<div class="mark">Đ</div>':''}${sess.phase==='wrong'?'<div class="mark x">S</div>':''}
       <span class="qskill">${esc(q.skill.name)}${q.skill.tag?' · '+q.skill.tag:''}${q.retry?' · Làm lại':''}</span>
       <div class="qtext ${q.long?'long':''}">${q.q}</div>
       ${sess.hintUsed&&sess.phase==='ask'?`<div class="hint"><b>Gợi ý:</b> ${q.hint}</div>`:''}
-      ${isChoice?`<div class="choices">${q.choices.map(c=>`<button type="button" data-c="${esc(c)}" ${answered?'disabled':''}>${esc(c)}</button>`).join('')}</div>`
+      ${q.balloon?`<div class="balloons">${q.choices.map((c,i)=>`<button type="button" class="balloon c${i%4} ${answered&&c===sess.lastInput?(sess.phase==='right'?'pop':'bad'):answered&&sess.phase==='right'?'fly':''}" style="animation-delay:${answered?0:i*.4}s" data-c="${esc(c)}" ${answered?'disabled':''}><span>${esc(c)}</span></button>`).join('')}</div>`
+        :isChoice?`<div class="choices">${q.choices.map(c=>`<button type="button" data-c="${esc(c)}" ${answered?'disabled':''}>${esc(c)}</button>`).join('')}</div>`
         :`<div class="answer" aria-live="polite">${sess.input?esc(sess.input):'<span class="ph">Bấm số để trả lời</span>'}</div>`}
-      ${sess.phase==='wrong'?`<div class="feedback bad"><div>Chưa đúng rồi. Đáp án là <b>${esc(q.ans)}</b></div><div class="note">${q.ex}</div></div>`:''}
+      ${sess.phase==='wrong'?`<div class="feedback bad"><div>${sess.timedOut?'Hết giờ rồi!':sess.mode==='ghost'?'Ma trốn mất rồi!':'Chưa đúng rồi.'} Đáp án là <b>${esc(q.ans)}</b></div><div class="note">${q.ex}</div></div>`:''}
       ${!isChoice&&sess.phase==='ask'?padHTML(q.skill.frac):''}
       <div class="row" style="justify-content:space-between">
         ${sess.phase==='ask'?`<button class="btn small" id="hintBtn" type="button" ${sess.hintUsed?'disabled':''}>Xem gợi ý</button>`:'<span></span>'}
@@ -633,10 +730,11 @@ function renderSession(){
       </div>
     </div>
   </div>`;
-  document.getElementById('quit').onclick=()=>{logEv({t:'quit',pid:sess.pid,sid:sess.sid,at:sess.i,of:sess.qs.length});sess=null;go({name:'kid',pid:p.id})};
+  document.getElementById('quit').onclick=()=>{stopTimer();logEv({t:'quit',pid:sess.pid,sid:sess.sid,at:sess.i,of:sess.qs.length});sess=null;go({name:'kid',pid:p.id})};
   const hb=document.getElementById('hintBtn');if(hb)hb.onclick=()=>{sess.hintUsed=true;renderSession()};
   const nb=document.getElementById('nextBtn');if(nb){nb.onclick=next;nb.focus()}
-  app.querySelectorAll('.choices button').forEach(b=>b.onclick=()=>submit(b.dataset.c));
+  app.querySelectorAll('.choices button,.balloons button').forEach(b=>b.onclick=()=>submit(b.dataset.c));
+  if(sess.fmt==='race'&&sess.phase==='ask'&&!sess.timer){if(!sess.deadline||sess.deadlineFor!==sess.i){sess.deadline=Date.now()+raceDur(q)*1000;sess.deadlineFor=sess.i}sess.timer=setInterval(raceTick,100)}
   app.querySelectorAll('.pad button').forEach(b=>b.onclick=()=>key(b.dataset.k));
   const be=app.querySelector('.bossbar .bem');
   if(be&&anim==='right')be.classList.add('hit');
@@ -661,18 +759,22 @@ function check(q,input){
   return norm(input)===norm(q.ans);
 }
 function submit(input){
-  const q=curQ();const ok=check(q,input);const secs=(Date.now()-sess.start)/1000;
+  stopTimer();const q=curQ();const ok=check(q,input);const secs=(Date.now()-sess.start)/1000;const p=prof(sess.pid);sess.lastInput=String(input);
   let g; if(!ok)g=1; else if(sess.hintUsed)g=2; else if(secs>q.skill.slow)g=3; else g=4;
   logEv({t:'answer',pid:sess.pid,sid:sess.sid,skill:q.skill.id,q:plain(q.q),ans:q.ans,input:String(input),ok,secs:Math.round(secs*10)/10,hint:sess.hintUsed,g,retry:!!q.retry});
   if(!q.retry){const id=q.skill.id;sess.results[id]=Math.min(sess.results[id]??4,g);if(ok)sess.correct++;if(sess.hintUsed)sess.hints++}
-  if(ok){sess.combo++;sess.bestCombo=Math.max(sess.bestCombo,sess.combo);const gain=(q.retry?3:sess.hintUsed?5:10)+(sess.combo>=3?5:0);sess.xp+=gain;sess.lastGain=gain;
+  if(ok){sess.combo++;sess.bestCombo=Math.max(sess.bestCombo,sess.combo);const fast=sess.fmt==='race'&&secs<raceDur(q)/2;const gain=(q.retry?3:sess.hintUsed?5:10)+(sess.combo>=3?5:0)+(fast?5:0);sess.xp+=gain;sess.lastGain=fast?gain+' ⚡':gain;
     if(sess.boss){sess.hp--;SFX.hit()}
+    if(!q.retry){questProg(p,'answer10',1);if(!sess.hintUsed)questProg(p,'nohint',1);if(g===4)questProg(p,'speed',1);if(sess.combo>=5)questProg(p,'combo5',1)}
+    if(sess.mode==='ghost'&&q.ghost){p.ghosts=p.ghosts.filter(x=>x.id!==q.ghost);p.ghostsCaught++;sess.caught++;questProg(p,'ghost',1);sess.lastGain='Bắt được 👻'}
     sess.phase='right';sess.anim='right';(sess.combo>=3?SFX.combo:SFX.right)();renderSession();setTimeout(next,900)}
   else{sess.combo=0;sess.phase='wrong';sess.anim='wrong';
-    if(sess.boss){sess.hearts--;SFX.hurt()}else{SFX.wrong();if(!q.retry)sess.retry.push(q.skill)}
+    if(sess.boss){sess.hearts--;SFX.hurt()}else{SFX.wrong();if(!q.retry&&sess.mode!=='ghost')sess.retry.push(q.skill)}
+    if(sess.mode==='ghost'&&q.ghost){const gh=p.ghosts.find(x=>x.id===q.ghost);if(gh)gh.ready=today()+1}
+    else if(!q.retry)addGhost(p,q);
     renderSession()}
 }
-function next(){if(!sess)return;
+function next(){if(!sess)return;stopTimer();sess.timedOut=false;
   if(sess.boss&&sess.hearts<=0){finish();return}
   sess.i++;
   if(sess.i>=sess.qs.length&&sess.retry.length){ // one fresh retry per missed skill, does not change the schedule
@@ -682,7 +784,11 @@ function next(){if(!sess)return;
 function finish(){
   const p=prof(sess.pid);const now=Date.now();const changes=[];
   for(const [id,g] of Object.entries(sess.results)){const before=p.skills[id];const c=fsrsReview(before,g,now);p.skills[id]=c;changes.push({id,g,ivl:c.ivl})}
-  const t=today();if(p.lastDay!==t){p.streak=(p.lastDay===t-1)?p.streak+1:1;p.lastDay=t}
+  stopTimer();
+  const t=today();let charmUsed=false,firstToday=false;
+  if(p.lastDay!==t){firstToday=true;const gap=p.lastDay==null?null:t-p.lastDay;
+    if(gap===1)p.streak++;else if(gap===2&&p.charms>0&&p.streak>0){p.charms--;p.streak++;charmUsed=true}else p.streak=1;
+    p.lastDay=t}
   // game: sao, mở khóa, XP, cấp độ
   let stars=null,prevStars=0,unlocked=null,firstPass=false;
   if(sess.node){const before=nodeStates(p);prevStars=p.path[sess.node]?.stars||0;stars=sess.boss?(sess.hearts<=0?0:(sess.hearts===3&&sess.hints===0?3:sess.hearts>=2?2:1)):starsFor(sess.correct,sess.total,sess.hints);
@@ -697,11 +803,23 @@ function finish(){
   let loot=null;
   if(sess.node&&stars>0)loot=openChest(p,sess.boss?'boss':(stars>prevStars?'station':'replay'));
   else if(sess.mode==='daily'&&sess.correct>0)loot=openChest(p,'replay');
+  // ma số: cứ 10 con là một rương
+  if(sess.mode==='ghost'&&sess.caught>0&&Math.floor(p.ghostsCaught/10)>Math.floor((p.ghostsCaught-sess.caught)/10))loot=openChest(p,'station');
+  // nhiệm vụ ngày
+  if(sess.node&&stars>0)questProg(p,'station',1);if(sess.mode==='daily')questProg(p,'review',1);
+  let questLoot=null,charmGained=false;
+  if(questsAllDone(p)&&!p.quests.claimed){p.quests.claimed=true;questLoot=openChest(p,'station');if(p.charms<2){p.charms++;charmGained=true}}
+  // cây gia đình
+  const fam=familyOf();const td=fam.days[t]||(fam.days[t]={pids:[],done:false});let familyGrew=false;
+  if(!td.pids.includes(p.id))td.pids.push(p.id);
+  if(!td.done&&state.profiles.every(x=>td.pids.includes(x.id))){td.done=true;fam.grown++;familyGrew=true;state.profiles.forEach(x=>{x.coins+=15})}
+  for(const k of Object.keys(fam.days))if(Number(k)<t-60)delete fam.days[k];
   const coinsGained=p.coins-coinsBefore;
+  const chests=[];if(loot)chests.push({title:loot.kind==='boss'?'Rương của trùm!':sess.mode==='ghost'?'Rương săn ma!':'Rương thưởng!',loot});if(questLoot)chests.push({title:'Rương nhiệm vụ!',loot:questLoot});
   let st=null;if(stars==null||stars>0){st=STICKERS[(p.sessions)%STICKERS.length];p.stickers.push(st)}p.sessions++;
   save();
-  logEv({t:'finish',pid:p.id,sid:sess.sid,mode:sess.mode,node:sess.node,stars,xp:gained,bestCombo:sess.bestCombo,correct:sess.correct,total:sess.total,secs:Math.round((now-sess.sid)/1000),sticker:st,changes,fed,evolved,coins:coinsGained,loot:loot&&{coins:loot.coins,items:loot.items.map(i=>i.id)}});
-  view={name:'done',fed,foodBefore,evolved,loot,coinsGained,hpLeft:sess.hp,pid:p.id,changes,correct:sess.correct,total:sess.total,sticker:st,stars,prevStars,unlocked,gained,lvBefore,lvAfter,boss:sess.boss,nodeName:sess.nodeName,nodeKey:sess.node,bestCombo:sess.bestCombo};sess=null;render();window.scrollTo(0,0);
+  logEv({t:'finish',pid:p.id,sid:sess.sid,mode:sess.mode,node:sess.node,stars,xp:gained,bestCombo:sess.bestCombo,correct:sess.correct,total:sess.total,secs:Math.round((now-sess.sid)/1000),sticker:st,changes,fed,evolved,coins:coinsGained,loot:loot&&{coins:loot.coins,items:loot.items.map(i=>i.id)},questLoot:!!questLoot,charmUsed,familyGrew,caught:sess.caught,fmt:sess.fmt});
+  view={name:'done',fed,foodBefore,evolved,loot,chests,charmUsed,charmGained,familyGrew,caught:sess.caught,ghostTotal:sess.total,mode:sess.mode,questsDone:questsAllDone(p),quests:p.quests.list.map(q=>({...q})),coinsGained,hpLeft:sess.hp,pid:p.id,changes,correct:sess.correct,total:sess.total,sticker:st,stars,prevStars,unlocked,gained,lvBefore,lvAfter,boss:sess.boss,nodeName:sess.nodeName,nodeKey:sess.node,bestCombo:sess.bestCombo};sess=null;render();window.scrollTo(0,0);
 }
 const G_LABEL={1:['Cần ôn lại','red'],2:['Phải xem gợi ý','amber'],3:['Đúng, hơi chậm',''],4:['Đúng và nhanh','green']};
 function renderDone(){
@@ -712,7 +830,7 @@ function renderDone(){
     <div class="panel stack" style="text-align:center;align-items:center">
       ${v.stars!=null?`<div class="bigstars">${[1,2,3].map((x,i)=>`<span class="${x<=v.stars?'':'off'}" style="animation-delay:${.25+i*.3}s">⭐</span>`).join('')}</div>`:''}
       ${v.sticker?`<div class="sticker-big">${v.sticker}</div>`:'<div style="font-size:64px;line-height:1">💪</div>'}
-      <h1>${fail?(v.boss?'Trùm mạnh quá!':'Gần được rồi!'):v.boss?'Hạ được trùm rồi!':'Giỏi quá, '+esc(p.name)+'!'}</h1>
+      <h1>${v.mode==='ghost'?`Bắt được ${v.caught}/${v.ghostTotal} con ma!`:fail?(v.boss?'Trùm mạnh quá!':'Gần được rồi!'):v.boss?'Hạ được trùm rồi!':'Giỏi quá, '+esc(p.name)+'!'}</h1>
       <p class="muted" style="margin:0">${v.nodeName?esc(v.nodeName)+' · ':''}Đúng ${v.correct}/${v.total} câu${v.bestCombo>=3?` · Combo 🔥 x${v.bestCombo}`:''}</p>
       ${fail?`<p style="margin:0">${v.boss?`Trùm còn ${v.hpLeft} máu thôi. Thử lại nhé, lần này chắc chắn hạ được!`:`Cần đúng ít nhất ${Math.ceil(v.total*0.6)}/${v.total} câu để qua trạm. Thử lại nhé, bé làm được mà!`}</p>`:''}
       ${v.unlocked?`<div class="chip green" style="font-size:15px;padding:6px 14px">🔓 Mở khóa: ${esc(v.unlocked)}</div>`:''}
@@ -721,7 +839,13 @@ function renderDone(){
     <div class="panel"><div class="lvl"><div class="badge">${v.lvAfter.L}</div><div class="meta"><div class="row" style="justify-content:space-between;gap:6px"><b>+${v.gained} XP</b><span class="note">${v.lvAfter.cur}/${v.lvAfter.need} XP</span></div><div class="xpbar"><i id="xpFill" style="width:${pctFrom}%"></i></div></div></div></div>
     ${v.evolved?`<div class="evolve">✨ ${esc(p.pet.name)} tiến hóa thành ${esc(v.evolved)}!</div>`:''}
     ${p.pet?`<div class="panel"><div class="petcard">${petHTML(p)}<div class="stack" style="flex:1;min-width:0;gap:6px"><div class="row" style="justify-content:space-between;gap:6px"><b>${esc(p.pet.name)} ăn +${v.fed} hạt</b><span class="coin">+${v.coinsGained} 🪙</span></div><div class="foodbar"><i id="foodFill" style="width:${v.evolved?0:foodPct(v.foodBefore)}%"></i></div><div class="note">${FOOD_STAGES[stageOf(p.pet.food)+1]?`${p.pet.food}/${FOOD_STAGES[stageOf(p.pet.food)+1]} hạt để tiến hóa`:'Đã tiến hóa tối đa!'}</div></div></div></div>`:''}
-    ${v.loot?`<div class="panel chest stack" id="chestPanel" style="align-items:center"><h2>${v.loot.kind==='boss'?'Rương của trùm!':'Rương thưởng!'}</h2><button class="box" id="chestBox" type="button" aria-label="Mở rương">🎁</button><p class="note" style="margin:0">Bấm vào rương để mở</p></div>`:''}
+    ${v.charmUsed?'<div class="chip amber" style="align-self:center;font-size:15px;padding:6px 14px">🛡️ Bùa đã giữ chuỗi 🔥 cho bé!</div>':''}
+    ${v.familyGrew?'<div class="evolve" style="background:linear-gradient(90deg,#2ec27e,#1d8a55)">🌳 Hôm nay cả hai cùng học, cây gia đình lớn thêm! +15 xu mỗi bé</div>':''}
+    ${v.chests.map((c,i)=>`<div class="panel chest stack" id="chestPanel${i}" style="align-items:center"><h2>${c.title}</h2><button class="box" id="chestBox${i}" type="button" aria-label="Mở rương">🎁</button><p class="note" style="margin:0">Bấm vào rương để mở</p></div>`).join('')}
+    <div class="panel stack" style="gap:6px"><div class="row" style="justify-content:space-between"><h2>Nhiệm vụ hôm nay</h2>${v.questsDone?'<span class="chip green">Xong hết!</span>':''}</div>
+      ${v.quests.map(q=>`<div class="quest ${q.done?'done':''}"><span class="qi">${q.done?'✅':q.em}</span><div class="qb"><div>${esc(q.txt)}</div><div class="qp"><i style="width:${Math.round(q.prog/q.goal*100)}%"></i></div></div><span class="note">${q.prog}/${q.goal}</span></div>`).join('')}
+      ${v.charmGained?'<div class="note">Được thêm 1 bùa giữ chuỗi 🛡️</div>':''}
+    </div>
     <div class="panel stack"><h2>Lần ôn tới</h2>
       ${view.changes.map(c=>{const s=skillsOf(p).find(x=>x.id===c.id);const [l,cls]=G_LABEL[c.g];return `<div class="row" style="justify-content:space-between"><span style="min-width:0;flex:1 1 200px">${esc(s.name)}</span><span class="chips"><span class="chip ${cls}">${l}</span><span class="chip">${c.ivl===1?'Ngày mai':c.ivl+' ngày nữa'}</span></span></div>`}).join('')}
     </div>
@@ -732,10 +856,10 @@ function renderDone(){
   if(lvUp)setTimeout(()=>{SFX.level();confetti(80,innerWidth/2,innerHeight/2)},1300);
   requestAnimationFrame(()=>requestAnimationFrame(()=>{const f=document.getElementById('foodFill');if(f)f.style.width=foodPct(p.pet.food)+'%'}));
   if(v.evolved)setTimeout(()=>{SFX.evolve();confetti(120,innerWidth/2,innerHeight/2)},1800);
-  const cb=document.getElementById('chestBox');if(cb){const open=()=>{if(cb.dataset.open)return;cb.dataset.open=1;cb.classList.add('shake');SFX.tap();
+  v.chests.forEach((c,i)=>{const cb=document.getElementById('chestBox'+i);if(!cb)return;const open=()=>{if(cb.dataset.open)return;cb.dataset.open=1;cb.classList.add('shake');SFX.tap();
     setTimeout(()=>{const r=cb.getBoundingClientRect();SFX.chest();confetti(80,r.left+r.width/2,r.top+r.height/2);
-      document.getElementById('chestPanel').innerHTML=`<h2>${v.loot.kind==='boss'?'Rương của trùm!':'Rương thưởng!'}</h2><div class="loot"><div class="it" style="animation-delay:.1s"><b>🪙</b><span>+${v.loot.coins} xu</span></div>${v.loot.items.map((it,i)=>`<div class="it ${RCLS[it.r]}" style="animation-delay:${.4+i*.35}s"><b>${it.em}</b><span>${esc(it.name)}</span><small>${it.dup?'Đã có, đổi thành 15 xu':RNAME[it.r]}</small></div>`).join('')}</div>${v.loot.items.some(i=>!i.dup)?'<p class="note" style="margin:0">Vào Tủ đồ ở trang của bé để mặc cho thú cưng.</p>':''}`},900)};
-    cb.onclick=open}
+      document.getElementById('chestPanel'+i).innerHTML=`<h2>${c.title}</h2><div class="loot"><div class="it" style="animation-delay:.1s"><b>🪙</b><span>+${c.loot.coins} xu</span></div>${c.loot.items.map((it,j)=>`<div class="it ${RCLS[it.r]}" style="animation-delay:${.4+j*.35}s"><b>${it.em}</b><span>${esc(it.name)}</span><small>${it.dup?'Đã có, đổi thành 15 xu':RNAME[it.r]}</small></div>`).join('')}</div>${c.loot.items.some(x=>!x.dup)?'<p class="note" style="margin:0">Vào Tủ đồ ở trang của bé để mặc cho thú cưng.</p>':''}`},900)};
+    cb.onclick=open})
   const rn=document.getElementById('retryNode');if(rn)rn.onclick=()=>{const n=nodeStates(p).find(x=>x.key===v.nodeKey);sess=buildNodeSession(p,n);go({name:'session',pid:p.id})};
   document.getElementById('again').onclick=()=>go({name:'kid',pid:p.id});
   document.getElementById('home').onclick=()=>go({name:'home'});
@@ -817,7 +941,7 @@ function renderParent(){
   app.querySelectorAll('[data-rwdone]').forEach(b=>b.onclick=()=>{const [pid,i]=b.dataset.rwdone.split(':');const x=prof(pid).redeemed[+i];if(x){x.done=true;x.doneTs=Date.now();save();logEv({t:'reward_done',pid,reward:x.title});renderParent()}});
   fillLog(p);fillInstall();
   document.getElementById('importBtn').onclick=()=>{try{const s=JSON.parse(box.value);if(!s.profiles)throw 0;state=s;save();msg.textContent='Đã nhập dữ liệu.';setTimeout(()=>renderParent(),600)}catch(e){msg.textContent='Dữ liệu không đúng định dạng. Hãy dán nguyên đoạn đã sao chép.'}};
-  document.getElementById('resetBtn').onclick=()=>{const rc=document.getElementById('resetConfirm');rc.innerHTML=`<button class="btn small" id="yesReset" type="button" style="border-color:var(--red);color:var(--red)">Chắc chắn xóa</button>`;document.getElementById('yesReset').onclick=()=>{Object.assign(p,{skills:{},streak:0,lastDay:null,stickers:[],sessions:0,path:{},xp:0,pet:null,coins:0,items:[],redeemed:[]});save();DB.delPid(p.id).then(renderParent)}};
+  document.getElementById('resetBtn').onclick=()=>{const rc=document.getElementById('resetConfirm');rc.innerHTML=`<button class="btn small" id="yesReset" type="button" style="border-color:var(--red);color:var(--red)">Chắc chắn xóa</button>`;document.getElementById('yesReset').onclick=()=>{Object.assign(p,{skills:{},streak:0,lastDay:null,stickers:[],sessions:0,path:{},xp:0,pet:null,coins:0,items:[],redeemed:[],ghosts:[],ghostsCaught:0,charms:0,quests:null});save();DB.delPid(p.id).then(renderParent)}};
 }
 
 async function fillLog(p){
