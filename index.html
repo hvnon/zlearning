@@ -173,6 +173,54 @@ textarea{min-height:90px;font-family:ui-monospace,Menlo,monospace;font-size:12px
 @keyframes floatUp{from{opacity:1;transform:translateY(0) scale(.8)}to{opacity:0;transform:translateY(-60px) scale(1.2)}}
 @keyframes starIn{from{opacity:0;transform:scale(.2) rotate(-30deg)}to{opacity:1;transform:none}}
 @keyframes bounceIn{0%{transform:scale(.2)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
+/* ---- pet, boss, chest, shop ---- */
+.petcard{display:flex;gap:14px;align-items:center}
+.pet{position:relative;width:96px;height:96px;flex:none;display:grid;place-items:center;font-size:64px;line-height:1}
+.pet .body{display:block;animation:breathe 2.6s ease-in-out infinite}
+.pet .hat{position:absolute;top:-12px;left:50%;transform:translateX(-50%);font-size:30px;line-height:1}
+.pet .acc{position:absolute;right:-8px;bottom:2px;font-size:28px;line-height:1}
+.pet.sad .body{filter:grayscale(.75) brightness(.9);animation:none}
+.pet.big{width:150px;height:150px;font-size:104px}
+.pet.big .hat{font-size:46px;top:-18px}.pet.big .acc{font-size:42px}
+.kid .pet{width:72px;height:72px;font-size:50px;margin-left:auto}.kid .pet .hat{font-size:24px;top:-10px}.kid .pet .acc{font-size:22px}
+.foodbar{height:12px;border-radius:999px;background:var(--ink-soft);overflow:hidden}
+.foodbar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#5fd39a,#1d8a55);transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+.pbubble{background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:8px 12px;font-size:15px;animation:bob 2.4s ease-in-out infinite}
+.coin{font-weight:700;color:var(--amber);white-space:nowrap}
+.choose{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px}
+.choose button{background:var(--card);border:3px solid var(--line);border-radius:18px;padding:16px 8px;font-size:52px;line-height:1;display:flex;flex-direction:column;align-items:center;gap:8px}
+.choose button span{font-size:15px;font-weight:700;font-family:var(--f-body)}
+.choose button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink-soft)}
+.wardrobe{display:flex;gap:8px;flex-wrap:wrap}
+.wardrobe button{font-size:26px;line-height:1;padding:8px;border-radius:12px;border:2px solid var(--line);background:var(--card);min-width:48px}
+.wardrobe button[aria-pressed="true"]{border-color:var(--ink);background:var(--ink-soft);box-shadow:0 0 0 2px var(--ink)}
+.wardrobe .rare{border-color:#3aa0ff}.wardrobe .epic{border-color:#c84bff}
+.bossbar{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:10px 14px;display:flex;align-items:center;gap:12px}
+.bossbar .bem{font-size:48px;line-height:1;display:inline-block}
+.bossbar .bem.hit{animation:bosshit .5s ease}
+.bossbar .bem.attack{animation:bossattack .5s ease}
+.hpbar{height:14px;border-radius:999px;background:var(--red-soft);overflow:hidden;border:2px solid var(--red)}
+.hpbar i{display:block;height:100%;background:var(--red);transition:width .5s}
+.hearts{font-size:20px;letter-spacing:1px;white-space:nowrap}.hearts .lost{opacity:.25;filter:grayscale(1)}
+.flash{position:fixed;inset:0;background:rgba(210,56,47,.35);pointer-events:none;z-index:98;animation:flash .45s ease forwards}
+.bossintro{text-align:center;align-items:center}
+.bossintro .bem{font-size:110px;line-height:1;animation:bounceIn .8s cubic-bezier(.2,1.6,.4,1)}
+.chest{text-align:center}
+.chest .box{font-size:90px;line-height:1;cursor:pointer;display:inline-block;animation:bob 1.4s ease-in-out infinite;border:0;background:none;padding:0}
+.chest .box.shake{animation:shake .45s ease 2}
+.loot{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.loot .it{background:var(--paper);border:2px solid var(--line);border-radius:16px;padding:10px 14px;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:96px;opacity:0;animation:starIn .5s cubic-bezier(.2,1.6,.4,1) forwards}
+.loot .it b{font-size:40px;line-height:1}
+.loot .it.rare{border-color:#3aa0ff;box-shadow:0 0 0 3px rgba(58,160,255,.25)}
+.loot .it.epic{border-color:#c84bff;box-shadow:0 0 16px rgba(200,75,255,.6)}
+.loot .it small{font-size:12px;color:var(--muted)}
+.evolve{background:linear-gradient(90deg,#3aa0ff,#c84bff);color:#fff;border-radius:16px;padding:12px 16px;font-family:var(--f-display);font-weight:800;font-size:22px;text-align:center;animation:pop .6s ease}
+.shop .it{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--line)}
+.shop .it:last-child{border-bottom:0}
+@keyframes breathe{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-4px) scale(1.04)}}
+@keyframes bosshit{0%{transform:none}30%{transform:translateX(-14px) rotate(-12deg);filter:brightness(1.8)}60%{transform:translateX(10px)}100%{transform:none}}
+@keyframes bossattack{0%{transform:none}40%{transform:scale(1.4) translateY(12px)}100%{transform:none}}
+@keyframes flash{from{opacity:1}to{opacity:0}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
@@ -354,23 +402,24 @@ function newCount(p){return skillsOf(p).filter(s=>!p.skills[s.id]?.s).length}
    Lịch ôn FSRS vẫn chạy riêng theo từng kỹ năng: nút "Ôn bài cũ" lấy các kỹ năng đã học đến hạn. */
 const PATH={
  g2:[
-  {name:'Làng Số',em:'🏡',skills:['g2_cautao','g2_sosanh','g2_cong','g2_tru']},
-  {name:'Rừng Phép Tính',em:'🌳',skills:['g2_timso','g2_1000','g2_loivan','g2_dayso']},
-  {name:'Đảo Nhân Chia',em:'🏝️',skills:['g2_nhan','g2_chia','g2_nhanloi','g2_canbang']},
-  {name:'Thành Phố Đo Lường',em:'🏙️',skills:['g2_donvi','g2_dongho','g2_tien']},
+  {name:'Làng Số',em:'🏡',boss:{name:'Quái Quên',em:'👾'},skills:['g2_cautao','g2_sosanh','g2_cong','g2_tru']},
+  {name:'Rừng Phép Tính',em:'🌳',boss:{name:'Nhện Rối',em:'🕷️'},skills:['g2_timso','g2_1000','g2_loivan','g2_dayso']},
+  {name:'Đảo Nhân Chia',em:'🏝️',boss:{name:'Cá Mập Chia',em:'🦈'},skills:['g2_nhan','g2_chia','g2_nhanloi','g2_canbang']},
+  {name:'Thành Phố Đo Lường',em:'🏙️',boss:{name:'Rô-bốt Đo',em:'🤖'},skills:['g2_donvi','g2_dongho','g2_tien']},
  ],
  g4:[
-  {name:'Vương Quốc Số Lớn',em:'🏰',skills:['g4_giatri','g4_lamtron','g4_congtru']},
-  {name:'Núi Nhân Chia',em:'⛰️',skills:['g4_nhan','g4_chia1','g4_chia2','g4_tbc']},
-  {name:'Biển Phân Số',em:'🌊',skills:['g4_rutgon','g4_congps','g4_nhanps']},
-  {name:'Xưởng Đo Lường',em:'⚙️',skills:['g4_donvi','g4_thoigian','g4_goc']},
-  {name:'Tháp Tư Duy',em:'🗼',skills:['g4_dayso','g4_tonghieu','g4_tuoi','g4_canbang']},
+  {name:'Vương Quốc Số Lớn',em:'🏰',boss:{name:'Rồng Số',em:'🐉'},skills:['g4_giatri','g4_lamtron','g4_congtru']},
+  {name:'Núi Nhân Chia',em:'⛰️',boss:{name:'Khổng Lồ Đá',em:'🗿'},skills:['g4_nhan','g4_chia1','g4_chia2','g4_tbc']},
+  {name:'Biển Phân Số',em:'🌊',boss:{name:'Bạch Tuộc Phân Số',em:'🐙'},skills:['g4_rutgon','g4_congps','g4_nhanps']},
+  {name:'Xưởng Đo Lường',em:'⚙️',boss:{name:'Máy Nghiền',em:'🦾'},skills:['g4_donvi','g4_thoigian','g4_goc']},
+  {name:'Tháp Tư Duy',em:'🗼',boss:{name:'Phù Thủy Tư Duy',em:'🧙'},skills:['g4_dayso','g4_tonghieu','g4_tuoi','g4_canbang']},
  ]};
 const skillById=id=>[...SKILLS.g2,...SKILLS.g4].find(s=>s.id===id);
-function pathNodes(p){const out=[];PATH[p.grade].forEach((w,wi)=>{w.skills.forEach(id=>out.push({key:id,skill:id,wi,boss:false,name:skillById(id).name}));out.push({key:`boss_${p.grade}_${wi}`,wi,boss:true,skills:w.skills,name:`Trùm ${w.name}`})});return out}
+function pathNodes(p){const out=[];PATH[p.grade].forEach((w,wi)=>{w.skills.forEach(id=>out.push({key:id,skill:id,wi,boss:false,name:skillById(id).name}));out.push({key:`boss_${p.grade}_${wi}`,wi,boss:true,skills:w.skills,name:w.boss.name})});return out}
 function ensureGame(p){
   if(!p.path){p.path={};for(const s of skillsOf(p))if(p.skills[s.id]?.s)p.path[s.id]={stars:1}} // bé đã học từ bản cũ: tính là đã qua trạm
   if(p.xp==null)p.xp=0;
+  if(p.pet===undefined)p.pet=null;if(p.coins==null)p.coins=0;if(!p.items)p.items=[];if(!p.redeemed)p.redeemed=[];
 }
 const passed=(p,key)=>(p.path[key]?.stars||0)>0;
 function nodeStates(p){const ns=pathNodes(p);return ns.map((n,i)=>({...n,i,stars:p.path[n.key]?.stars||0,st:passed(p,n.key)?'done':(i===0||passed(p,ns[i-1].key))?'open':'locked'}))}
@@ -380,13 +429,38 @@ const lvlNeed=L=>50*L*(L-1);
 function lvlOf(xp){let L=1;while(xp>=lvlNeed(L+1))L++;return{L,cur:xp-lvlNeed(L),need:lvlNeed(L+1)-lvlNeed(L)}}
 const RANKS=['Hạt mầm','Chồi non','Cây nhỏ','Cây lớn','Hiệp sĩ số','Kỵ sĩ số','Phù thủy số','Nhà vô địch','Huyền thoại'];
 const rankOf=L=>RANKS[Math.min(L-1,RANKS.length-1)];
+
+/* ================= thú cưng ================= */
+const PETS={
+ rong:{name:'Rồng',stages:['🥚','🐣','🐲','🐉'],sn:['Trứng rồng','Rồng con','Rồng nhỏ','Rồng lớn']},
+ meo:{name:'Mèo',stages:['🐱','😺','🐈','🐯'],sn:['Mèo con','Mèo vui','Mèo lớn','Hổ oai']},
+ tho:{name:'Thỏ',stages:['🥚','🐰','🐇','🦄'],sn:['Trứng thỏ','Thỏ con','Thỏ nhanh','Kỳ lân']},
+ robot:{name:'Rô-bốt',stages:['⚙️','🤖','🦾','🛸'],sn:['Bánh răng','Rô-bốt con','Rô-bốt mạnh','Phi thuyền']}};
+const FOOD_STAGES=[0,30,100,250];
+const stageOf=food=>{let st=0;FOOD_STAGES.forEach((f,i)=>{if(food>=f)st=i});return st};
+function foodPct(food){const st=stageOf(food);if(st>=FOOD_STAGES.length-1)return 100;const lo=FOOD_STAGES[st],hi=FOOD_STAGES[st+1];return Math.round((food-lo)/(hi-lo)*100)}
+function petMood(p){if(p.lastDay==null)return 'new';const d=today()-p.lastDay;return d<=1?'happy':d===2?'miss':'sad'}
+const PET_LINES={new:['Chào bạn! Mình đói rồi, làm toán cho mình ăn nhé!'],happy:['Hôm nay học tiếp không? Mình đói rồi!','Làm đúng là mình được ăn đó!','Bạn giỏi lắm, mình lớn nhanh ghê!','Hôm nay mình muốn thử đánh trùm!'],miss:['Hôm qua mình chờ bạn mãi...','Mình nhớ bạn quá, học chút đi!'],sad:['Mình đói mấy ngày rồi... 🥺','Bạn quên mình rồi sao?']};
+function petHTML(p,big){const pet=p.pet;if(!pet)return'';const k=PETS[pet.kind],st=stageOf(pet.food),mood=petMood(p);
+  return `<div class="pet ${big?'big':''} ${mood==='sad'?'sad':''}" aria-label="${esc(pet.name)}">${pet.wear?.hat?`<span class="hat">${pet.wear.hat}</span>`:''}<span class="body">${k.stages[st]}</span>${pet.wear?.acc?`<span class="acc">${pet.wear.acc}</span>`:''}</div>`}
+
+/* ================= đồ cho thú cưng & rương ================= */
+const ITEMS=[['🧢','hat',0,'Mũ lưỡi trai'],['🎀','hat',0,'Nơ hồng'],['👒','hat',0,'Mũ cói'],['⛑️','hat',0,'Mũ bảo hộ'],['🎓','hat',1,'Mũ tốt nghiệp'],['🎩','hat',1,'Mũ ảo thuật'],['🪖','hat',1,'Mũ lính'],['👑','hat',2,'Vương miện'],
+ ['🎈','acc',0,'Bóng bay'],['🍭','acc',0,'Kẹo mút'],['⚽','acc',0,'Quả bóng'],['🧸','acc',0,'Gấu bông'],['🌟','acc',1,'Ngôi sao'],['🎸','acc',1,'Đàn ghi-ta'],['🕶️','acc',1,'Kính đen'],['🪄','acc',1,'Đũa phép'],['💎','acc',2,'Kim cương'],['🏆','acc',2,'Cúp vàng']].map(([em,slot,r,name])=>({id:em,em,slot,r,name}));
+const RNAME=['Thường','Hiếm','Cực hiếm'],RCLS=['','rare','epic'];
+function rollItem(){const r=Math.random();const want=r<0.05?2:r<0.3?1:0;return pick(ITEMS.filter(i=>i.r===want))}
+function openChest(p,kind){ // kind: 'station' (trạm mới hoặc thêm sao) | 'replay' | 'boss'
+  const loot={kind,coins:kind==='boss'?rnd(40,60):rnd(10,25),items:[]};
+  const n=kind==='boss'?2:kind==='station'?1:(Math.random()<0.5?1:0);
+  for(let i=0;i<n;i++){const it=rollItem();if(p.items.includes(it.id)){loot.coins+=15;loot.items.push({...it,dup:true})}else{p.items.push(it.id);loot.items.push({...it})}}
+  p.coins+=loot.coins;return loot}
 function starsFor(correct,total,hints){const a=total?correct/total:0;if(a<0.6)return 0;if(a===1&&hints===0)return 3;return a>=0.8?2:1}
 
 /* ================= âm thanh & hiệu ứng ================= */
 let actx=null;
 function tone(freqs,dur=0.12,type='triangle',gap=0.09){if(state.sound===false)return;try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const t0=actx.currentTime;
   freqs.forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain();o.type=type;o.frequency.value=f;const t=t0+i*gap;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.18,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.connect(g).connect(actx.destination);o.start(t);o.stop(t+dur+0.02)})}catch(e){}}
-const SFX={right:()=>tone([660,880]),combo:()=>tone([660,880,1100]),wrong:()=>tone([220,180],0.18,'sine',0.12),win:()=>tone([523,659,784,1047],0.18,'triangle',0.12),level:()=>tone([523,659,784,1047,1319],0.2,'square',0.1),tap:()=>tone([440],0.05,'sine')};
+const SFX={hit:()=>tone([300,200],0.1,'square',0.06),hurt:()=>tone([160,110],0.25,'sawtooth',0.12),chest:()=>tone([523,784,1047,1319],0.15,'triangle',0.08),evolve:()=>tone([392,523,659,784,1047,1319],0.25,'triangle',0.1),right:()=>tone([660,880]),combo:()=>tone([660,880,1100]),wrong:()=>tone([220,180],0.18,'sine',0.12),win:()=>tone([523,659,784,1047],0.18,'triangle',0.12),level:()=>tone([523,659,784,1047,1319],0.2,'square',0.1),tap:()=>tone([440],0.05,'sine')};
 const noMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
 function confetti(n=40,x=innerWidth/2,y=innerHeight/3){if(noMotion())return;const cols=['#f5a300','#4a2f91','#1d8a55','#d2382f','#3aa0ff','#ff6fb5'];
   for(let i=0;i<n;i++){const d=document.createElement('i');const sz=6+Math.random()*7;d.style.cssText=`position:fixed;left:${x}px;top:${y}px;width:${sz}px;height:${sz*0.6}px;background:${pick(cols)};border-radius:2px;pointer-events:none;z-index:99`;document.body.appendChild(d);
@@ -412,7 +486,9 @@ function buildNodeSession(p,node){
   const sk=node.boss?node.skills.map(skillById):[skillById(node.skill)];const n=node.boss?8:5;const qs=[];
   const bag=node.boss?shuffle([...sk,...sk,...sk]).slice(0,n):Array(n).fill(sk[0]);
   bag.forEach(s=>qs.push({skill:s,...genQ(s)}));
-  return makeSess(p,sk,qs,'path',{node:node.key,boss:node.boss,nodeName:node.name});
+  const s=makeSess(p,sk,qs,'path',{node:node.key,boss:node.boss,nodeName:node.name});
+  if(node.boss){const b=PATH[p.grade][node.wi].boss;Object.assign(s,{phase:'intro',hp:n,hpMax:n,hearts:3,bossEm:b.em,bossName:b.name})}
+  return s;
 }
 function makeSess(p,chosen,qs,mode,extra={}){
   // interleave so the same skill is not back to back when possible
@@ -431,14 +507,14 @@ function go(v){view=v;render();window.scrollTo(0,0)}
 const soundBtn=document.getElementById('soundBtn');
 function paintSound(){soundBtn.textContent=state.sound===false?'🔇':'🔊'}
 soundBtn.onclick=()=>{state.sound=state.sound===false;save();paintSound();SFX.tap()};
-function render(){paintSound();state.profiles.forEach(ensureGame);({home:renderHome,kid:renderKid,session:renderSession,done:renderDone,parent:renderParent})[view.name]()}
+function render(){paintSound();state.rewards||=[];state.profiles.forEach(ensureGame);({home:renderHome,kid:renderKid,session:renderSession,done:renderDone,parent:renderParent})[view.name]()}
 
 function renderHome(){
   app.innerHTML=`<div class="stack">
     <h1>Hôm nay ai học?</h1>
     <div class="kids">${state.profiles.map(p=>{const d=dueCount(p),n=newCount(p);return`<button class="kid" data-pid="${p.id}" type="button">
       <span class="grade">${p.grade==='g2'?'Lớp 2':'Lớp 4'}</span>
-      <span class="name">${esc(p.name)}</span>
+      <span class="row" style="justify-content:space-between"><span class="name">${esc(p.name)}</span>${petHTML(p)}</span>
       <span class="chips"><span class="chip">Cấp ${lvlOf(p.xp).L} · ${rankOf(lvlOf(p.xp).L)}</span><span class="chip amber">⭐ ${totalStars(p)}</span><span class="chip amber">🔥 ${p.streak} ngày</span>${d?`<span class="chip red">${d} kỹ năng cần ôn</span>`:''}</span>
       <span class="stickers" aria-label="Sticker">${p.stickers.slice(-8).join('')||'<span class="note">Chưa có sticker nào</span>'}</span>
     </button>`}).join('')}</div>
@@ -447,14 +523,33 @@ function renderHome(){
   app.querySelectorAll('.kid').forEach(b=>b.onclick=()=>go({name:'kid',pid:b.dataset.pid}));
 }
 
+function renderChoosePet(p){
+  const kind=view.kind||'rong';
+  app.innerHTML=`<div class="stack">
+    <div><span class="qskill">${esc(p.name)}</span><h1>Chọn bạn đồng hành</h1><p class="note" style="margin:6px 0 0">Bạn ấy sẽ lớn lên nhờ mỗi câu bé làm đúng. Chọn một bạn nhé!</p></div>
+    <div class="choose">${Object.entries(PETS).map(([k,v])=>`<button type="button" data-kind="${k}" aria-pressed="${k===kind}">${v.stages[1]}<span>${v.name}</span></button>`).join('')}</div>
+    <div class="panel stack" style="align-items:center">
+      ${petHTML({pet:{kind,food:0,wear:{}},lastDay:null},true)}
+      <div class="note">Lúc đầu là ${PETS[kind].sn[0]}, lớn dần thành ${PETS[kind].sn[3]}</div>
+      <label for="petName" style="font-weight:600">Đặt tên cho bạn ấy</label>
+      <input type="text" id="petName" maxlength="16" value="${esc(view.pname??(PETS[kind].name+' con'))}" style="max-width:260px;text-align:center;font-size:18px">
+      <button class="btn primary" id="adopt" type="button" style="font-size:20px;padding:14px 28px">🏡 Nhận nuôi!</button>
+    </div>
+  </div>`;
+  app.querySelectorAll('.choose button').forEach(b=>b.onclick=()=>{SFX.tap();view.kind=b.dataset.kind;view.pname=document.getElementById('petName').value;if(!view.pname.trim()||/ con$/.test(view.pname))view.pname=null;renderChoosePet(p)});
+  document.getElementById('adopt').onclick=()=>{const name=document.getElementById('petName').value.trim()||PETS[kind].name;p.pet={kind,name,food:0,wear:{},since:Date.now()};save();logEv({t:'adopt',pid:p.id,kind,name});SFX.win();confetti(80);delete view.kind;delete view.pname;renderKid()};
+}
+
 function renderKid(){
-  const p=prof(view.pid),d=dueCount(p);const lv=lvlOf(p.xp);const ns=nodeStates(p);const cur=ns.find(n=>n.st==='open');
+  const p=prof(view.pid);if(!p.pet){renderChoosePet(p);return}
+  const d=dueCount(p);const pet=p.pet,pst=stageOf(pet.food),mood=petMood(p),line=pick(PET_LINES[mood]),nextFood=FOOD_STAGES[pst+1];
+  const pending=p.redeemed.filter(x=>!x.done);const lv=lvlOf(p.xp);const ns=nodeStates(p);const cur=ns.find(n=>n.st==='open');
   const learned=skillsOf(p).some(s=>p.skills[s.id]?.s);
   const K=[0,.75,1,.75,0,-.75,-1,-.75];let mapHTML='';let k=0;
   PATH[p.grade].forEach((w,wi)=>{const wn=ns.filter(n=>n.wi===wi);const got=wn.filter(n=>n.st==='done').length;const open=wn.some(n=>n.st!=='locked');
     mapHTML+=`<div class="world ${open?'':'locked'}"><span class="em">${w.em}</span><div style="flex:1"><span class="qskill">Chặng ${wi+1}</span><h3>${w.name}</h3></div><span class="chip ${got===wn.length?'green':''}">${got}/${wn.length}</span></div>`;
     wn.forEach((n,j)=>{const kk=K[k%K.length],kn=K[(k+1)%K.length];k++;
-      const inner=n.st==='locked'?'🔒':n.boss?'👑':n.st==='done'?'✓':(n.i+1);
+      const inner=n.st==='locked'?'🔒':n.boss?PATH[p.grade][n.wi].boss.em:n.st==='done'?'✓':(n.i+1);
       mapHTML+=`<div class="nwrap ${n.st}" style="--k:${kk}" ${n===cur?'id="curNode"':''}>${n===cur?`<span class="bubble">${n.stars?'Chơi lại':'Bắt đầu!'}</span>`:''}
         <button class="node ${n.st} ${n.boss?'boss':''}" type="button" data-node="${n.i}" ${n.st==='locked'?'disabled aria-disabled="true"':''} aria-label="${esc(n.name)}">${inner}</button>
         <span class="nstars">${n.st==='done'?[1,2,3].map(x=>`<span class="${x<=n.stars?'':'off'}">⭐</span>`).join(''):''}</span>
@@ -465,6 +560,16 @@ function renderKid(){
   app.innerHTML=`<div class="stack">
     <div><span class="qskill">${p.grade==='g2'?'Lớp 2':'Lớp 4'}</span><h1>Chào ${esc(p.name)}!</h1></div>
     <div class="panel stack">
+      <div class="petcard">${petHTML(p,true)}<div class="stack" style="flex:1;min-width:0;gap:8px">
+        <div class="pbubble">${esc(line)}</div>
+        <div class="row" style="justify-content:space-between;gap:6px"><b>${esc(pet.name)} · ${PETS[pet.kind].sn[pst]}</b><span class="coin">🪙 ${p.coins}</span></div>
+        <div class="foodbar"><i style="width:${foodPct(pet.food)}%"></i></div>
+        <div class="note">${nextFood?`${pet.food}/${nextFood} hạt để tiến hóa`:'Đã tiến hóa tối đa!'} · mỗi câu đúng là 1 hạt</div>
+      </div></div>
+      <div class="row"><button class="btn small" id="wardrobeBtn" type="button" aria-expanded="${!!view.wardrobe}">👕 Tủ đồ (${p.items.length})</button></div>
+      ${view.wardrobe?`<div class="stack" style="gap:8px">${[['hat','Mũ'],['acc','Đồ chơi']].map(([slot,lab])=>{const own=ITEMS.filter(i=>i.slot===slot&&p.items.includes(i.id));return `<div><div class="note" style="margin-bottom:4px">${lab}</div><div class="wardrobe"><button type="button" data-wear="${slot}:" aria-pressed="${!pet.wear?.[slot]}" aria-label="Không dùng">🚫</button>${own.map(i=>`<button type="button" class="${RCLS[i.r]}" data-wear="${slot}:${i.id}" aria-pressed="${pet.wear?.[slot]===i.id}" aria-label="${esc(i.name)}">${i.em}</button>`).join('')}${own.length?'':'<span class="note" style="align-self:center">Mở rương để có đồ</span>'}</div></div>`}).join('')}</div>`:''}
+    </div>
+    <div class="panel stack">
       <div class="lvl"><div class="badge">${lv.L}</div><div class="meta"><div class="row" style="justify-content:space-between;gap:6px"><b>${rankOf(lv.L)}</b><span class="note">${lv.cur}/${lv.need} XP</span></div><div class="xpbar"><i style="width:${Math.round(lv.cur/lv.need*100)}%"></i></div></div></div>
       <div class="row" style="justify-content:space-around"><span class="stat">🔥 ${p.streak}</span><span class="stat">⭐ ${totalStars(p)}</span><span class="stat">🏁 ${ns.filter(n=>n.st==='done').length}/${ns.length}</span></div>
       <div class="cta">
@@ -474,8 +579,17 @@ function renderKid(){
       </div>
     </div>
     <div class="map" aria-label="Bản đồ đường học">${mapHTML}<div style="font-size:44px;margin-top:10px">🏆</div></div>
+    <div class="panel stack shop"><div class="row" style="justify-content:space-between"><h2>Đổi thưởng</h2><span class="coin">🪙 ${p.coins} xu</span></div>
+      ${state.rewards.length?state.rewards.map(r=>`<div class="it"><span style="font-size:32px;line-height:1">${r.em||'🎁'}</span><div style="flex:1;min-width:0"><b>${esc(r.title)}</b><div class="note">🪙 ${r.cost} xu</div></div><button class="btn small ${p.coins>=r.cost?'primary':''}" type="button" data-redeem="${r.id}" ${p.coins>=r.cost?'':'disabled'}>${view.confirmRedeem===r.id?'Chắc chắn đổi!':'Đổi'}</button></div>`).join(''):'<p class="note" style="margin:0">Bố mẹ chưa đặt phần thưởng nào. Vào Trang phụ huynh để thêm, ví dụ "30 phút hoạt hình = 300 xu".</p>'}
+      ${pending.length?`<div class="chip amber" style="align-self:flex-start">🎟️ Đang chờ bố mẹ: ${pending.map(x=>esc(x.title)).join(', ')}</div>`:''}
+    </div>
     <div class="panel stack"><h2>Bộ sưu tập sticker</h2><div class="stickers">${p.stickers.join('')||'<span class="note">Qua mỗi trạm là được một sticker.</span>'}</div></div>
   </div>`;
+  document.getElementById('wardrobeBtn').onclick=()=>{view.wardrobe=!view.wardrobe;renderKid()};
+  app.querySelectorAll('[data-wear]').forEach(b=>b.onclick=()=>{const [slot,id]=b.dataset.wear.split(':');pet.wear=pet.wear||{};pet.wear[slot]=(id&&pet.wear[slot]!==id)?id:null;save();SFX.tap();renderKid()});
+  app.querySelectorAll('[data-redeem]').forEach(b=>b.onclick=()=>{const id=b.dataset.redeem;const r=state.rewards.find(x=>x.id===id);if(!r||p.coins<r.cost)return;
+    if(view.confirmRedeem!==id){view.confirmRedeem=id;SFX.tap();renderKid();return}
+    p.coins-=r.cost;p.redeemed.push({id:r.id,title:r.title,em:r.em,cost:r.cost,ts:Date.now(),done:false});view.confirmRedeem=null;save();logEv({t:'redeem',pid:p.id,reward:r.title,cost:r.cost});SFX.chest();confetti(70);renderKid()});
   const startNode=n=>{SFX.tap();sess=buildNodeSession(p,n);go({name:'session',pid:p.id})};
   const gn=document.getElementById('goNode');if(gn)gn.onclick=()=>startNode(cur);
   const rb=document.getElementById('reviewBtn');if(rb)rb.onclick=()=>{SFX.tap();const s2=buildSession(p);if(s2){sess=s2;go({name:'session',pid:p.id})}};
@@ -484,15 +598,26 @@ function renderKid(){
 }
 
 function curQ(){return sess.qs[sess.i]}
+function renderBossIntro(p){
+  app.innerHTML=`<div class="stack"><div class="panel stack bossintro">
+    <span class="qskill">Trùm chặng</span><div class="bem">${sess.bossEm}</div><h1>${esc(sess.bossName)} xuất hiện!</h1>
+    <p style="margin:0">Mỗi câu đúng là một đòn đánh. Trả lời sai thì bị trùm đánh lại, mất một tim. Hết 3 tim là thua!</p>
+    <div class="row" style="justify-content:center;gap:20px"><span class="stat">${sess.bossEm} ${sess.hpMax} máu</span><span class="stat">❤️❤️❤️ ${esc(p.pet?.name||p.name)}</span></div>
+    <button class="btn primary" id="fight" type="button" style="font-size:22px;padding:14px 30px">⚔️ Chiến!</button>
+    <button class="btn small ghost" id="quit" type="button">Để sau</button>
+  </div></div>`;
+  document.getElementById('fight').onclick=()=>{SFX.combo();sess.phase='ask';sess.anim='enter';sess.start=Date.now();renderSession()};
+  document.getElementById('quit').onclick=()=>{sess=null;go({name:'kid',pid:p.id})};
+}
 function renderSession(){
-  const q=curQ();const p=prof(sess.pid);
+  const q=curQ();const p=prof(sess.pid);if(sess.phase==='intro'){renderBossIntro(p);return}
   const pct=Math.round(sess.i/sess.qs.length*100);
   const isChoice=!!q.choices;
   const answered=sess.phase!=='ask';const anim=sess.anim;sess.anim=null;
   app.innerHTML=`<div class="stack">
     <div class="row" style="justify-content:space-between"><span class="note">${sess.boss?'👑 ':''}${esc(sess.nodeName||p.name)} · Câu ${sess.i+1}/${sess.qs.length}</span>
       <span class="row" style="gap:8px">${sess.combo>=2?`<span class="chip amber ${anim==='right'?'combo':''}">🔥 x${sess.combo}</span>`:''}<span class="chip">⭐ ${sess.xp} XP</span><button class="btn small ghost" id="quit" type="button">Dừng</button></span></div>
-    <div class="progress"><i style="width:${pct}%"></i></div>
+    ${sess.boss?`<div class="bossbar"><span class="bem">${sess.bossEm}</span><div style="flex:1;min-width:0"><div class="row" style="justify-content:space-between;gap:6px"><b>${esc(sess.bossName)}</b><span class="note">${sess.hp}/${sess.hpMax}</span></div><div class="hpbar"><i style="width:${Math.round(sess.hp/sess.hpMax*100)}%"></i></div></div><span class="hearts">${[1,2,3].map(h=>`<span class="${h<=sess.hearts?'':'lost'}">❤️</span>`).join('')}</span></div>`:`<div class="progress"><i style="width:${pct}%"></i></div>`}
     <div class="qcard ${anim==='enter'?'enter':anim==='right'?'pop':anim==='wrong'?'shake':''}">
       ${sess.phase==='right'?'<div class="mark">Đ</div>':''}${sess.phase==='wrong'?'<div class="mark x">S</div>':''}
       <span class="qskill">${esc(q.skill.name)}${q.skill.tag?' · '+q.skill.tag:''}${q.retry?' · Làm lại':''}</span>
@@ -504,7 +629,7 @@ function renderSession(){
       ${!isChoice&&sess.phase==='ask'?padHTML(q.skill.frac):''}
       <div class="row" style="justify-content:space-between">
         ${sess.phase==='ask'?`<button class="btn small" id="hintBtn" type="button" ${sess.hintUsed?'disabled':''}>Xem gợi ý</button>`:'<span></span>'}
-        ${sess.phase==='wrong'?'<button class="btn primary" id="nextBtn" type="button">Câu tiếp theo</button>':''}
+        ${sess.phase==='wrong'?`<button class="btn primary" id="nextBtn" type="button">${sess.boss&&sess.hearts<=0?'Hết tim rồi...':'Câu tiếp theo'}</button>`:''}
       </div>
     </div>
   </div>`;
@@ -513,6 +638,9 @@ function renderSession(){
   const nb=document.getElementById('nextBtn');if(nb){nb.onclick=next;nb.focus()}
   app.querySelectorAll('.choices button').forEach(b=>b.onclick=()=>submit(b.dataset.c));
   app.querySelectorAll('.pad button').forEach(b=>b.onclick=()=>key(b.dataset.k));
+  const be=app.querySelector('.bossbar .bem');
+  if(be&&anim==='right')be.classList.add('hit');
+  if(be&&anim==='wrong'&&!noMotion()){be.classList.add('attack');const f=document.createElement('div');f.className='flash';document.body.appendChild(f);setTimeout(()=>f.remove(),500)}
   if(anim==='right'){floatXP('+'+sess.lastGain);const m=app.querySelector('.mark');if(m){const r=m.getBoundingClientRect();confetti(sess.combo>=3?30:14,r.left+r.width/2,r.top+r.height/2)}}
 }
 function padHTML(frac){const ks=['7','8','9','⌫','4','5','6',frac?'/':'','1','2','3','','0'];return `<div class="pad">${ks.map(k=>k===''?'<span></span>':`<button type="button" data-k="${k}" aria-label="${k==='⌫'?'Xóa':k}">${k}</button>`).join('')}<button type="button" class="ok" data-k="ok" style="grid-column:span 3">Xong</button></div>`}
@@ -538,10 +666,14 @@ function submit(input){
   logEv({t:'answer',pid:sess.pid,sid:sess.sid,skill:q.skill.id,q:plain(q.q),ans:q.ans,input:String(input),ok,secs:Math.round(secs*10)/10,hint:sess.hintUsed,g,retry:!!q.retry});
   if(!q.retry){const id=q.skill.id;sess.results[id]=Math.min(sess.results[id]??4,g);if(ok)sess.correct++;if(sess.hintUsed)sess.hints++}
   if(ok){sess.combo++;sess.bestCombo=Math.max(sess.bestCombo,sess.combo);const gain=(q.retry?3:sess.hintUsed?5:10)+(sess.combo>=3?5:0);sess.xp+=gain;sess.lastGain=gain;
+    if(sess.boss){sess.hp--;SFX.hit()}
     sess.phase='right';sess.anim='right';(sess.combo>=3?SFX.combo:SFX.right)();renderSession();setTimeout(next,900)}
-  else{sess.combo=0;sess.phase='wrong';sess.anim='wrong';SFX.wrong();if(!q.retry)sess.retry.push(q.skill);renderSession()}
+  else{sess.combo=0;sess.phase='wrong';sess.anim='wrong';
+    if(sess.boss){sess.hearts--;SFX.hurt()}else{SFX.wrong();if(!q.retry)sess.retry.push(q.skill)}
+    renderSession()}
 }
 function next(){if(!sess)return;
+  if(sess.boss&&sess.hearts<=0){finish();return}
   sess.i++;
   if(sess.i>=sess.qs.length&&sess.retry.length){ // one fresh retry per missed skill, does not change the schedule
     const s=sess.retry.shift();sess.qs.push({skill:s,...genQ(s),retry:true})}
@@ -553,15 +685,23 @@ function finish(){
   const t=today();if(p.lastDay!==t){p.streak=(p.lastDay===t-1)?p.streak+1:1;p.lastDay=t}
   // game: sao, mở khóa, XP, cấp độ
   let stars=null,prevStars=0,unlocked=null,firstPass=false;
-  if(sess.node){const before=nodeStates(p);prevStars=p.path[sess.node]?.stars||0;stars=starsFor(sess.correct,sess.total,sess.hints);
+  if(sess.node){const before=nodeStates(p);prevStars=p.path[sess.node]?.stars||0;stars=sess.boss?(sess.hearts<=0?0:(sess.hearts===3&&sess.hints===0?3:sess.hearts>=2?2:1)):starsFor(sess.correct,sess.total,sess.hints);
     if(stars>prevStars)p.path[sess.node]={stars,at:now};firstPass=stars>0&&prevStars===0;
     if(firstPass){const idx=before.findIndex(n=>n.key===sess.node);const nx=before[idx+1];if(nx)unlocked=nx.name}}
   const starBonus=stars!=null?Math.max(0,stars-prevStars)*15+(firstPass?20:0):0;const gained=sess.xp+starBonus;
   const lvBefore=lvlOf(p.xp);p.xp+=gained;const lvAfter=lvlOf(p.xp);
+  // thú cưng ăn, xu, rương
+  const pet=p.pet;let fed=0,foodBefore=0,evolved=null;
+  if(pet){foodBefore=pet.food;fed=sess.correct;pet.food+=fed;const s0=stageOf(foodBefore),s1=stageOf(pet.food);if(s1>s0)evolved=PETS[pet.kind].sn[s1]}
+  const coinsBefore=p.coins;p.coins+=sess.correct;
+  let loot=null;
+  if(sess.node&&stars>0)loot=openChest(p,sess.boss?'boss':(stars>prevStars?'station':'replay'));
+  else if(sess.mode==='daily'&&sess.correct>0)loot=openChest(p,'replay');
+  const coinsGained=p.coins-coinsBefore;
   let st=null;if(stars==null||stars>0){st=STICKERS[(p.sessions)%STICKERS.length];p.stickers.push(st)}p.sessions++;
   save();
-  logEv({t:'finish',pid:p.id,sid:sess.sid,mode:sess.mode,node:sess.node,stars,xp:gained,bestCombo:sess.bestCombo,correct:sess.correct,total:sess.total,secs:Math.round((now-sess.sid)/1000),sticker:st,changes});
-  view={name:'done',pid:p.id,changes,correct:sess.correct,total:sess.total,sticker:st,stars,prevStars,unlocked,gained,lvBefore,lvAfter,boss:sess.boss,nodeName:sess.nodeName,nodeKey:sess.node,bestCombo:sess.bestCombo};sess=null;render();window.scrollTo(0,0);
+  logEv({t:'finish',pid:p.id,sid:sess.sid,mode:sess.mode,node:sess.node,stars,xp:gained,bestCombo:sess.bestCombo,correct:sess.correct,total:sess.total,secs:Math.round((now-sess.sid)/1000),sticker:st,changes,fed,evolved,coins:coinsGained,loot:loot&&{coins:loot.coins,items:loot.items.map(i=>i.id)}});
+  view={name:'done',fed,foodBefore,evolved,loot,coinsGained,hpLeft:sess.hp,pid:p.id,changes,correct:sess.correct,total:sess.total,sticker:st,stars,prevStars,unlocked,gained,lvBefore,lvAfter,boss:sess.boss,nodeName:sess.nodeName,nodeKey:sess.node,bestCombo:sess.bestCombo};sess=null;render();window.scrollTo(0,0);
 }
 const G_LABEL={1:['Cần ôn lại','red'],2:['Phải xem gợi ý','amber'],3:['Đúng, hơi chậm',''],4:['Đúng và nhanh','green']};
 function renderDone(){
@@ -572,13 +712,16 @@ function renderDone(){
     <div class="panel stack" style="text-align:center;align-items:center">
       ${v.stars!=null?`<div class="bigstars">${[1,2,3].map((x,i)=>`<span class="${x<=v.stars?'':'off'}" style="animation-delay:${.25+i*.3}s">⭐</span>`).join('')}</div>`:''}
       ${v.sticker?`<div class="sticker-big">${v.sticker}</div>`:'<div style="font-size:64px;line-height:1">💪</div>'}
-      <h1>${fail?'Gần được rồi!':v.boss?'Hạ được trùm rồi!':'Giỏi quá, '+esc(p.name)+'!'}</h1>
+      <h1>${fail?(v.boss?'Trùm mạnh quá!':'Gần được rồi!'):v.boss?'Hạ được trùm rồi!':'Giỏi quá, '+esc(p.name)+'!'}</h1>
       <p class="muted" style="margin:0">${v.nodeName?esc(v.nodeName)+' · ':''}Đúng ${v.correct}/${v.total} câu${v.bestCombo>=3?` · Combo 🔥 x${v.bestCombo}`:''}</p>
-      ${fail?`<p style="margin:0">Cần đúng ít nhất ${Math.ceil(v.total*0.6)}/${v.total} câu để qua trạm. Thử lại nhé, bé làm được mà!</p>`:''}
+      ${fail?`<p style="margin:0">${v.boss?`Trùm còn ${v.hpLeft} máu thôi. Thử lại nhé, lần này chắc chắn hạ được!`:`Cần đúng ít nhất ${Math.ceil(v.total*0.6)}/${v.total} câu để qua trạm. Thử lại nhé, bé làm được mà!`}</p>`:''}
       ${v.unlocked?`<div class="chip green" style="font-size:15px;padding:6px 14px">🔓 Mở khóa: ${esc(v.unlocked)}</div>`:''}
     </div>
     ${lvUp?`<div class="levelup">🎉 Lên cấp ${v.lvAfter.L}: ${rankOf(v.lvAfter.L)}!</div>`:''}
     <div class="panel"><div class="lvl"><div class="badge">${v.lvAfter.L}</div><div class="meta"><div class="row" style="justify-content:space-between;gap:6px"><b>+${v.gained} XP</b><span class="note">${v.lvAfter.cur}/${v.lvAfter.need} XP</span></div><div class="xpbar"><i id="xpFill" style="width:${pctFrom}%"></i></div></div></div></div>
+    ${v.evolved?`<div class="evolve">✨ ${esc(p.pet.name)} tiến hóa thành ${esc(v.evolved)}!</div>`:''}
+    ${p.pet?`<div class="panel"><div class="petcard">${petHTML(p)}<div class="stack" style="flex:1;min-width:0;gap:6px"><div class="row" style="justify-content:space-between;gap:6px"><b>${esc(p.pet.name)} ăn +${v.fed} hạt</b><span class="coin">+${v.coinsGained} 🪙</span></div><div class="foodbar"><i id="foodFill" style="width:${v.evolved?0:foodPct(v.foodBefore)}%"></i></div><div class="note">${FOOD_STAGES[stageOf(p.pet.food)+1]?`${p.pet.food}/${FOOD_STAGES[stageOf(p.pet.food)+1]} hạt để tiến hóa`:'Đã tiến hóa tối đa!'}</div></div></div></div>`:''}
+    ${v.loot?`<div class="panel chest stack" id="chestPanel" style="align-items:center"><h2>${v.loot.kind==='boss'?'Rương của trùm!':'Rương thưởng!'}</h2><button class="box" id="chestBox" type="button" aria-label="Mở rương">🎁</button><p class="note" style="margin:0">Bấm vào rương để mở</p></div>`:''}
     <div class="panel stack"><h2>Lần ôn tới</h2>
       ${view.changes.map(c=>{const s=skillsOf(p).find(x=>x.id===c.id);const [l,cls]=G_LABEL[c.g];return `<div class="row" style="justify-content:space-between"><span style="min-width:0;flex:1 1 200px">${esc(s.name)}</span><span class="chips"><span class="chip ${cls}">${l}</span><span class="chip">${c.ivl===1?'Ngày mai':c.ivl+' ngày nữa'}</span></span></div>`}).join('')}
     </div>
@@ -587,6 +730,12 @@ function renderDone(){
   requestAnimationFrame(()=>requestAnimationFrame(()=>{const f=document.getElementById('xpFill');if(f)f.style.width=pctTo+'%'}));
   if(!fail){setTimeout(()=>{SFX.win();confetti(v.stars===3||v.boss?120:60)},200)}
   if(lvUp)setTimeout(()=>{SFX.level();confetti(80,innerWidth/2,innerHeight/2)},1300);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{const f=document.getElementById('foodFill');if(f)f.style.width=foodPct(p.pet.food)+'%'}));
+  if(v.evolved)setTimeout(()=>{SFX.evolve();confetti(120,innerWidth/2,innerHeight/2)},1800);
+  const cb=document.getElementById('chestBox');if(cb){const open=()=>{if(cb.dataset.open)return;cb.dataset.open=1;cb.classList.add('shake');SFX.tap();
+    setTimeout(()=>{const r=cb.getBoundingClientRect();SFX.chest();confetti(80,r.left+r.width/2,r.top+r.height/2);
+      document.getElementById('chestPanel').innerHTML=`<h2>${v.loot.kind==='boss'?'Rương của trùm!':'Rương thưởng!'}</h2><div class="loot"><div class="it" style="animation-delay:.1s"><b>🪙</b><span>+${v.loot.coins} xu</span></div>${v.loot.items.map((it,i)=>`<div class="it ${RCLS[it.r]}" style="animation-delay:${.4+i*.35}s"><b>${it.em}</b><span>${esc(it.name)}</span><small>${it.dup?'Đã có, đổi thành 15 xu':RNAME[it.r]}</small></div>`).join('')}</div>${v.loot.items.some(i=>!i.dup)?'<p class="note" style="margin:0">Vào Tủ đồ ở trang của bé để mặc cho thú cưng.</p>':''}`},900)};
+    cb.onclick=open}
   const rn=document.getElementById('retryNode');if(rn)rn.onclick=()=>{const n=nodeStates(p).find(x=>x.key===v.nodeKey);sess=buildNodeSession(p,n);go({name:'session',pid:p.id})};
   document.getElementById('again').onclick=()=>go({name:'kid',pid:p.id});
   document.getElementById('home').onclick=()=>go({name:'home'});
@@ -600,7 +749,7 @@ function renderParent(){
     <div class="tabs" role="group" aria-label="Chọn bé">${state.profiles.map(x=>`<button type="button" data-pid="${x.id}" aria-pressed="${x.id===p.id}">${esc(x.name)}</button>`).join('')}</div>
     <div class="panel stack">
       <div class="row"><label for="nameIn" style="font-weight:600">Tên bé</label><input type="text" id="nameIn" value="${esc(p.name)}" style="flex:1 1 180px;width:auto"><button class="btn small" id="saveName" type="button">Lưu tên</button></div>
-      <div class="chips"><span class="chip">Cấp ${lvlOf(p.xp).L} · ${p.xp} XP</span><span class="chip amber">⭐ ${totalStars(p)} sao</span><span class="chip green">${nodeStates(p).filter(n=>n.st==='done').length}/${pathNodes(p).length} trạm</span><span class="chip">${p.sessions} lượt học</span><span class="chip amber">Chuỗi ${p.streak} ngày</span><span class="chip red">${dueCount(p)} kỹ năng đến hạn</span><span class="chip">${newCount(p)}/${skillsOf(p).length} chưa học</span></div>
+      <div class="chips">${p.pet?`<span class="chip">${PETS[p.pet.kind].stages[stageOf(p.pet.food)]} ${esc(p.pet.name)}</span>`:''}<span class="chip amber">🪙 ${p.coins} xu</span><span class="chip">Cấp ${lvlOf(p.xp).L} · ${p.xp} XP</span><span class="chip amber">⭐ ${totalStars(p)} sao</span><span class="chip green">${nodeStates(p).filter(n=>n.st==='done').length}/${pathNodes(p).length} trạm</span><span class="chip">${p.sessions} lượt học</span><span class="chip amber">Chuỗi ${p.streak} ngày</span><span class="chip red">${dueCount(p)} kỹ năng đến hạn</span><span class="chip">${newCount(p)}/${skillsOf(p).length} chưa học</span></div>
     </div>
     <div>
       <h2 style="margin-bottom:8px">Kỹ năng, yếu nhất lên đầu</h2>
@@ -615,6 +764,16 @@ function renderParent(){
           <td class="num">${c?.s?c.lapses:'<span class="muted">–</span>'}</td>
           <td><button class="btn small" type="button" data-practice="${s.id}">Luyện 5 câu</button></td></tr>`}).join('')}</tbody>
       </table></div>
+    </div>
+    <div class="panel stack">
+      <h2>Phần thưởng ngoài đời</h2>
+      <p class="note" style="margin:0">Bé kiếm xu bằng cách làm đúng và mở rương. Bạn đặt phần thưởng kèm giá xu, bé tự đổi trong app, rồi bạn thực hiện ngoài đời và bấm "Đã thưởng".</p>
+      <div class="row"><input type="text" id="rwTitle" placeholder="Ví dụ: 30 phút xem hoạt hình" style="flex:2 1 220px;width:auto"><input type="text" id="rwEm" placeholder="Icon" maxlength="2" style="flex:0 0 70px;width:auto"><input type="text" id="rwCost" inputmode="numeric" placeholder="Giá xu" style="flex:0 0 90px;width:auto"><button class="btn small" id="rwAdd" type="button">Thêm</button></div>
+      <div class="chips">Gợi ý: ${[['📺','30 phút hoạt hình',300],['🍦','Đi ăn kem',800],['🍝','Chọn món bữa tối',500],['🎮','20 phút chơi game',400]].map(([em,t,c])=>`<button type="button" class="chip" data-rwsug="${em}|${t}|${c}" style="border:0;cursor:pointer">${em} ${t} · ${c}</button>`).join('')}</div>
+      <span class="note" id="rwMsg" aria-live="polite"></span>
+      <div>${state.rewards.map(r=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${r.em||'🎁'} ${esc(r.title)} · <b>${r.cost} xu</b></span><button class="btn small ghost" type="button" data-rwdel="${r.id}">Xóa</button></div>`).join('')||'<p class="note" style="margin:0">Chưa có phần thưởng nào.</p>'}</div>
+      <h3 style="font-size:17px">Phiếu bé đã đổi</h3>
+      ${(()=>{const red=state.profiles.flatMap(x=>x.redeemed.map((r,i)=>({...r,pid:x.id,i,kid:x.name}))).sort((a,b)=>(a.done-b.done)||(b.ts-a.ts)).slice(0,20);return red.length?red.map(r=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${r.em||'🎁'} <b>${esc(r.kid)}</b> đổi ${esc(r.title)} <span class="note">· ${new Date(r.ts).toLocaleDateString('vi-VN')} · ${r.cost} xu</span></span>${r.done?'<span class="chip green">Đã thưởng</span>':`<button class="btn small primary" type="button" data-rwdone="${r.pid}:${r.i}">Đã thưởng</button>`}</div>`).join(''):'<p class="note" style="margin:0">Chưa có phiếu nào.</p>'})()}
     </div>
     <div class="panel stack" id="logPanel">
       <h2>Nhật ký học</h2>
@@ -651,9 +810,14 @@ function renderParent(){
     const rows=evs.map(e=>[new Date(e.ts).toLocaleString('vi-VN'),names[e.pid]||e.pid,sk[e.skill]||e.skill,e.q,e.input,e.ans,e.ok?'Đúng':'Sai',e.secs,e.hint?'Có':'',e.retry?'Có':''].map(q).join(','));
     await saveFile('vo-on-toan-nhat-ky.csv','\ufeff'+[head.map(q).join(','),...rows].join('\r\n'),'text/csv');msg.textContent=`Đã xuất ${rows.length} câu trả lời.`};
   document.getElementById('fileIn').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const o=JSON.parse(await f.text());const st=o.state||o;if(!st.profiles)throw 0;state=st;save();if(Array.isArray(o.events))await DB.replaceAll(o.events);msg.textContent='Đã nhập dữ liệu từ file.';setTimeout(()=>renderParent(),600)}catch(err){msg.textContent='File không đúng định dạng sao lưu của Vở Ôn Toán.'}};
+  const rwMsg=document.getElementById('rwMsg');
+  document.getElementById('rwAdd').onclick=()=>{const t=document.getElementById('rwTitle').value.trim(),c=parseInt(document.getElementById('rwCost').value,10),em=document.getElementById('rwEm').value.trim();if(!t||!(c>0)){rwMsg.textContent='Cần tên phần thưởng và giá xu lớn hơn 0.';return}state.rewards.push({id:'r'+Date.now(),title:t,cost:c,em});save();renderParent()};
+  app.querySelectorAll('[data-rwsug]').forEach(b=>b.onclick=()=>{const [em,t,c]=b.dataset.rwsug.split('|');document.getElementById('rwEm').value=em;document.getElementById('rwTitle').value=t;document.getElementById('rwCost').value=c});
+  app.querySelectorAll('[data-rwdel]').forEach(b=>b.onclick=()=>{state.rewards=state.rewards.filter(r=>r.id!==b.dataset.rwdel);save();renderParent()});
+  app.querySelectorAll('[data-rwdone]').forEach(b=>b.onclick=()=>{const [pid,i]=b.dataset.rwdone.split(':');const x=prof(pid).redeemed[+i];if(x){x.done=true;x.doneTs=Date.now();save();logEv({t:'reward_done',pid,reward:x.title});renderParent()}});
   fillLog(p);fillInstall();
   document.getElementById('importBtn').onclick=()=>{try{const s=JSON.parse(box.value);if(!s.profiles)throw 0;state=s;save();msg.textContent='Đã nhập dữ liệu.';setTimeout(()=>renderParent(),600)}catch(e){msg.textContent='Dữ liệu không đúng định dạng. Hãy dán nguyên đoạn đã sao chép.'}};
-  document.getElementById('resetBtn').onclick=()=>{const rc=document.getElementById('resetConfirm');rc.innerHTML=`<button class="btn small" id="yesReset" type="button" style="border-color:var(--red);color:var(--red)">Chắc chắn xóa</button>`;document.getElementById('yesReset').onclick=()=>{Object.assign(p,{skills:{},streak:0,lastDay:null,stickers:[],sessions:0,path:{},xp:0});save();DB.delPid(p.id).then(renderParent)}};
+  document.getElementById('resetBtn').onclick=()=>{const rc=document.getElementById('resetConfirm');rc.innerHTML=`<button class="btn small" id="yesReset" type="button" style="border-color:var(--red);color:var(--red)">Chắc chắn xóa</button>`;document.getElementById('yesReset').onclick=()=>{Object.assign(p,{skills:{},streak:0,lastDay:null,stickers:[],sessions:0,path:{},xp:0,pet:null,coins:0,items:[],redeemed:[]});save();DB.delPid(p.id).then(renderParent)}};
 }
 
 async function fillLog(p){
