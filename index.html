@@ -119,6 +119,60 @@ textarea{min-height:90px;font-family:ui-monospace,Menlo,monospace;font-size:12px
 .log td,.log th{font-size:13px;padding:7px 10px}
 .log .ok{color:var(--green);font-weight:700}.log .no{color:var(--red);font-weight:700}
 .filebtn{position:relative;overflow:hidden}.filebtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
+/* ---- game: level, map, animations ---- */
+.lvl{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.lvl .badge{width:56px;height:56px;border-radius:16px;background:var(--ink);color:var(--paper);display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:26px;box-shadow:0 4px 0 #2e1c63;flex:none}
+.lvl .meta{flex:1 1 160px;min-width:0}
+.xpbar{height:14px;border-radius:999px;background:var(--ink-soft);overflow:hidden;margin-top:4px}
+.xpbar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#f5b400,#ff7a1a);transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+.stat{font-family:var(--f-display);font-weight:800;font-size:20px;white-space:nowrap}
+.cta{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.cta .btn{font-size:18px;padding:14px 16px;border-radius:16px;box-shadow:0 5px 0 var(--grid-strong);text-align:left;display:flex;gap:10px;align-items:center}
+.cta .btn.primary{box-shadow:0 5px 0 #2e1c63}
+.cta .btn:active{transform:translateY(3px);box-shadow:0 2px 0 var(--grid-strong)}
+.cta .btn small{display:block;font-size:13px;font-weight:500;opacity:.85}
+.cta .ic{font-size:28px;line-height:1}
+.map{display:flex;flex-direction:column;align-items:center;padding:8px 0 24px}
+.world{width:100%;background:var(--card);border:2px solid var(--line);border-radius:18px;padding:12px 16px;margin:18px 0 10px;display:flex;align-items:center;gap:12px}
+.world .em{font-size:34px;line-height:1}
+.world h3{font-size:20px}
+.world.locked{opacity:.55}
+.nwrap{display:flex;flex-direction:column;align-items:center;gap:4px;transform:translateX(calc(var(--k) * min(96px, 22vw)));position:relative}
+.node{width:76px;height:76px;border-radius:50%;border:0;display:grid;place-items:center;font-family:var(--f-display);font-weight:800;font-size:30px;color:#fff;background:var(--ink);box-shadow:0 7px 0 #2e1c63;transition:transform .1s}
+.node:active{transform:translateY(4px);box-shadow:0 3px 0 #2e1c63}
+.node.done{background:#1d8a55;box-shadow:0 7px 0 #0f5c37}
+.node.open{background:#f5a300;box-shadow:0 7px 0 #b36b00;animation:pulse 1.6s ease-in-out infinite}
+.node.locked{background:#c9c6d6;box-shadow:0 7px 0 #9f9bb3;cursor:default;font-size:24px}
+.node.boss{width:96px;height:96px;font-size:40px}
+.nlabel{font-size:13px;font-weight:600;text-align:center;max-width:150px;line-height:1.25;color:var(--text)}
+.nwrap.locked .nlabel{color:var(--muted)}
+.nstars{font-size:16px;letter-spacing:1px;height:20px}
+.nstars .off{filter:grayscale(1);opacity:.35}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--grid-strong);margin:5px 0;transform:translateX(calc(var(--k) * min(96px, 22vw)))}
+.dot.on{background:#1d8a55}
+.bubble{position:absolute;top:-34px;background:var(--text);color:var(--paper);font-weight:700;font-size:13px;padding:4px 10px;border-radius:10px;white-space:nowrap;animation:bob 1.2s ease-in-out infinite}
+.bubble:after{content:"";position:absolute;left:50%;bottom:-6px;margin-left:-6px;border:6px solid transparent;border-bottom:0;border-top-color:var(--text)}
+.qcard.enter{animation:slideIn .35s cubic-bezier(.2,.8,.2,1)}
+.qcard.pop{animation:pop .45s ease}
+.qcard.shake{animation:shake .45s ease}
+.mark{animation:stamp .35s cubic-bezier(.2,1.6,.4,1)}
+.combo{animation:pop .4s ease}
+.floatxp{position:absolute;right:20px;top:60px;font-family:var(--f-display);font-weight:800;font-size:28px;color:#f5a300;pointer-events:none;animation:floatUp 1s ease-out forwards}
+.bigstars{display:flex;gap:6px;justify-content:center;font-size:56px;line-height:1}
+.bigstars span{opacity:0;animation:starIn .5s cubic-bezier(.2,1.6,.4,1) forwards}
+.bigstars span.off{filter:grayscale(1)}
+.levelup{background:linear-gradient(90deg,#f5b400,#ff7a1a);color:#fff;border-radius:16px;padding:12px 16px;font-family:var(--f-display);font-weight:800;font-size:22px;text-align:center;animation:pop .6s ease}
+.sticker-big{font-size:72px;line-height:1;animation:bounceIn .7s cubic-bezier(.2,1.6,.4,1)}
+.iconbtn{border:2px solid var(--line);background:var(--card);border-radius:12px;padding:5px 10px;font-size:18px;line-height:1}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.05)}100%{transform:scale(1)}}
+@keyframes shake{0%,100%{transform:none}20%{transform:translateX(-10px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+@keyframes stamp{from{opacity:0;transform:scale(2.2) rotate(-8deg)}to{opacity:1;transform:scale(1) rotate(-8deg)}}
+@keyframes floatUp{from{opacity:1;transform:translateY(0) scale(.8)}to{opacity:0;transform:translateY(-60px) scale(1.2)}}
+@keyframes starIn{from{opacity:0;transform:scale(.2) rotate(-30deg)}to{opacity:1;transform:none}}
+@keyframes bounceIn{0%{transform:scale(.2)}60%{transform:scale(1.15)}100%{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
@@ -128,6 +182,7 @@ textarea{min-height:90px;font-family:ui-monospace,Menlo,monospace;font-size:12px
   <header class="top">
     <button class="brand" id="brand" type="button">Vở Ôn Toán<small>Ôn đúng lúc sắp quên</small></button>
     <div class="row">
+      <button class="iconbtn" id="soundBtn" type="button" aria-label="Bật tắt âm thanh">🔊</button>
       <button class="btn small ghost" id="parentBtn" type="button">Trang phụ huynh</button>
     </div>
   </header>
@@ -293,22 +348,78 @@ function skillStatus(c){if(!c||!c.s)return{k:'new',label:'Chưa học',cls:''};i
 function dueCount(p){return skillsOf(p).filter(s=>{const c=p.skills[s.id];return c&&c.s&&c.due<=today()}).length}
 function newCount(p){return skillsOf(p).filter(s=>!p.skills[s.id]?.s).length}
 
+/* ================= đường học (game path) =================
+   Mỗi bé đi theo một con đường gồm nhiều chặng. Mỗi kỹ năng là một trạm; cuối chặng có trạm trùm trộn các kỹ năng của chặng.
+   Qua trạm (đúng từ 60%) thì mở trạm kế tiếp. Sao: 1 sao đúng 60%, 2 sao đúng 80%, 3 sao đúng hết và không xem gợi ý.
+   Lịch ôn FSRS vẫn chạy riêng theo từng kỹ năng: nút "Ôn bài cũ" lấy các kỹ năng đã học đến hạn. */
+const PATH={
+ g2:[
+  {name:'Làng Số',em:'🏡',skills:['g2_cautao','g2_sosanh','g2_cong','g2_tru']},
+  {name:'Rừng Phép Tính',em:'🌳',skills:['g2_timso','g2_1000','g2_loivan','g2_dayso']},
+  {name:'Đảo Nhân Chia',em:'🏝️',skills:['g2_nhan','g2_chia','g2_nhanloi','g2_canbang']},
+  {name:'Thành Phố Đo Lường',em:'🏙️',skills:['g2_donvi','g2_dongho','g2_tien']},
+ ],
+ g4:[
+  {name:'Vương Quốc Số Lớn',em:'🏰',skills:['g4_giatri','g4_lamtron','g4_congtru']},
+  {name:'Núi Nhân Chia',em:'⛰️',skills:['g4_nhan','g4_chia1','g4_chia2','g4_tbc']},
+  {name:'Biển Phân Số',em:'🌊',skills:['g4_rutgon','g4_congps','g4_nhanps']},
+  {name:'Xưởng Đo Lường',em:'⚙️',skills:['g4_donvi','g4_thoigian','g4_goc']},
+  {name:'Tháp Tư Duy',em:'🗼',skills:['g4_dayso','g4_tonghieu','g4_tuoi','g4_canbang']},
+ ]};
+const skillById=id=>[...SKILLS.g2,...SKILLS.g4].find(s=>s.id===id);
+function pathNodes(p){const out=[];PATH[p.grade].forEach((w,wi)=>{w.skills.forEach(id=>out.push({key:id,skill:id,wi,boss:false,name:skillById(id).name}));out.push({key:`boss_${p.grade}_${wi}`,wi,boss:true,skills:w.skills,name:`Trùm ${w.name}`})});return out}
+function ensureGame(p){
+  if(!p.path){p.path={};for(const s of skillsOf(p))if(p.skills[s.id]?.s)p.path[s.id]={stars:1}} // bé đã học từ bản cũ: tính là đã qua trạm
+  if(p.xp==null)p.xp=0;
+}
+const passed=(p,key)=>(p.path[key]?.stars||0)>0;
+function nodeStates(p){const ns=pathNodes(p);return ns.map((n,i)=>({...n,i,stars:p.path[n.key]?.stars||0,st:passed(p,n.key)?'done':(i===0||passed(p,ns[i-1].key))?'open':'locked'}))}
+function currentNode(p){const ns=nodeStates(p);return ns.find(n=>n.st==='open')||null}
+const totalStars=p=>Object.values(p.path||{}).reduce((a,x)=>a+(x.stars||0),0);
+const lvlNeed=L=>50*L*(L-1);
+function lvlOf(xp){let L=1;while(xp>=lvlNeed(L+1))L++;return{L,cur:xp-lvlNeed(L),need:lvlNeed(L+1)-lvlNeed(L)}}
+const RANKS=['Hạt mầm','Chồi non','Cây nhỏ','Cây lớn','Hiệp sĩ số','Kỵ sĩ số','Phù thủy số','Nhà vô địch','Huyền thoại'];
+const rankOf=L=>RANKS[Math.min(L-1,RANKS.length-1)];
+function starsFor(correct,total,hints){const a=total?correct/total:0;if(a<0.6)return 0;if(a===1&&hints===0)return 3;return a>=0.8?2:1}
+
+/* ================= âm thanh & hiệu ứng ================= */
+let actx=null;
+function tone(freqs,dur=0.12,type='triangle',gap=0.09){if(state.sound===false)return;try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();const t0=actx.currentTime;
+  freqs.forEach((f,i)=>{const o=actx.createOscillator(),g=actx.createGain();o.type=type;o.frequency.value=f;const t=t0+i*gap;g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.18,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.connect(g).connect(actx.destination);o.start(t);o.stop(t+dur+0.02)})}catch(e){}}
+const SFX={right:()=>tone([660,880]),combo:()=>tone([660,880,1100]),wrong:()=>tone([220,180],0.18,'sine',0.12),win:()=>tone([523,659,784,1047],0.18,'triangle',0.12),level:()=>tone([523,659,784,1047,1319],0.2,'square',0.1),tap:()=>tone([440],0.05,'sine')};
+const noMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
+function confetti(n=40,x=innerWidth/2,y=innerHeight/3){if(noMotion())return;const cols=['#f5a300','#4a2f91','#1d8a55','#d2382f','#3aa0ff','#ff6fb5'];
+  for(let i=0;i<n;i++){const d=document.createElement('i');const sz=6+Math.random()*7;d.style.cssText=`position:fixed;left:${x}px;top:${y}px;width:${sz}px;height:${sz*0.6}px;background:${pick(cols)};border-radius:2px;pointer-events:none;z-index:99`;document.body.appendChild(d);
+    const a=Math.random()*Math.PI*2,v=120+Math.random()*260,dx=Math.cos(a)*v,dy=Math.sin(a)*v-200;
+    d.animate([{transform:'translate(0,0) rotate(0)',opacity:1},{transform:`translate(${dx}px,${dy+500}px) rotate(${Math.random()*720}deg)`,opacity:0}],{duration:1200+Math.random()*700,easing:'cubic-bezier(.2,.6,.4,1)'}).onfinish=()=>d.remove()}}
+function floatXP(txt){const c=app.querySelector('.qcard');if(!c||noMotion())return;const e=document.createElement('div');e.className='floatxp';e.textContent=txt;c.appendChild(e);setTimeout(()=>e.remove(),1100)}
+
 /* ================= session building ================= */
 function buildSession(p,onlySkill){
   const list=skillsOf(p);let chosen=[];
   if(onlySkill){chosen=[list.find(s=>s.id===onlySkill)]}
   else{
     const due=list.filter(s=>{const c=p.skills[s.id];return c&&c.s&&c.due<=today()}).sort((a,b)=>cardR(p.skills[a.id])-cardR(p.skills[b.id])).slice(0,4);
-    const fresh=list.filter(s=>!p.skills[s.id]?.s).slice(0,due.length>=3?1:2);
-    chosen=[...due,...fresh];
+    chosen=[...due];
     if(chosen.length<3){const extra=list.filter(s=>p.skills[s.id]?.s&&!chosen.includes(s)).sort((a,b)=>cardR(p.skills[a.id])-cardR(p.skills[b.id]));chosen.push(...extra.slice(0,3-chosen.length))}
   }
+  if(!chosen.length)return null;
   const per=onlySkill?5:2;const qs=[];
   chosen.forEach(s=>{for(let i=0;i<per;i++)qs.push({skill:s,...genQ(s)})});
+  return makeSess(p,chosen,qs,onlySkill?'practice':'daily');
+}
+function buildNodeSession(p,node){
+  const sk=node.boss?node.skills.map(skillById):[skillById(node.skill)];const n=node.boss?8:5;const qs=[];
+  const bag=node.boss?shuffle([...sk,...sk,...sk]).slice(0,n):Array(n).fill(sk[0]);
+  bag.forEach(s=>qs.push({skill:s,...genQ(s)}));
+  return makeSess(p,sk,qs,'path',{node:node.key,boss:node.boss,nodeName:node.name});
+}
+function makeSess(p,chosen,qs,mode,extra={}){
   // interleave so the same skill is not back to back when possible
   let order=shuffle(qs);for(let i=1;i<order.length;i++){if(order[i].skill===order[i-1].skill){const j=order.findIndex((q,k)=>k>i&&q.skill!==order[i].skill);if(j>0)[order[i],order[j]]=[order[j],order[i]]}}
-  const sid=Date.now();logEv({t:'start',pid:p.id,sid,mode:onlySkill?'practice':'daily',skills:chosen.map(s=>s.id),n:order.length});
-  return{sid,pid:p.id,qs:order,i:0,results:{},retry:[],correct:0,total:order.length,input:'',hintUsed:false,start:Date.now(),phase:'ask',chosen:chosen.map(s=>s.id)};
+  const sid=Date.now();logEv({t:'start',pid:p.id,sid,mode,node:extra.node,skills:chosen.map(s=>s.id),n:order.length});
+  return{sid,pid:p.id,qs:order,i:0,results:{},retry:[],correct:0,total:order.length,input:'',hintUsed:false,start:Date.now(),phase:'ask',chosen:chosen.map(s=>s.id),
+    mode,...extra,combo:0,bestCombo:0,xp:0,hints:0,anim:'enter'};
 }
 
 /* ================= rendering ================= */
@@ -317,7 +428,10 @@ let view={name:'home'};let sess=null;
 document.getElementById('brand').onclick=()=>{sess=null;go({name:'home'})};
 document.getElementById('parentBtn').onclick=()=>{sess=null;go({name:'parent',pid:view.pid||state.profiles[0].id})};
 function go(v){view=v;render();window.scrollTo(0,0)}
-function render(){({home:renderHome,kid:renderKid,session:renderSession,done:renderDone,parent:renderParent})[view.name]()}
+const soundBtn=document.getElementById('soundBtn');
+function paintSound(){soundBtn.textContent=state.sound===false?'🔇':'🔊'}
+soundBtn.onclick=()=>{state.sound=state.sound===false;save();paintSound();SFX.tap()};
+function render(){paintSound();state.profiles.forEach(ensureGame);({home:renderHome,kid:renderKid,session:renderSession,done:renderDone,parent:renderParent})[view.name]()}
 
 function renderHome(){
   app.innerHTML=`<div class="stack">
@@ -325,7 +439,7 @@ function renderHome(){
     <div class="kids">${state.profiles.map(p=>{const d=dueCount(p),n=newCount(p);return`<button class="kid" data-pid="${p.id}" type="button">
       <span class="grade">${p.grade==='g2'?'Lớp 2':'Lớp 4'}</span>
       <span class="name">${esc(p.name)}</span>
-      <span class="chips">${d?`<span class="chip red">${d} kỹ năng cần ôn</span>`:''}${n?`<span class="chip">${n} kỹ năng mới</span>`:''}<span class="chip amber">Chuỗi ${p.streak} ngày</span></span>
+      <span class="chips"><span class="chip">Cấp ${lvlOf(p.xp).L} · ${rankOf(lvlOf(p.xp).L)}</span><span class="chip amber">⭐ ${totalStars(p)}</span><span class="chip amber">🔥 ${p.streak} ngày</span>${d?`<span class="chip red">${d} kỹ năng cần ôn</span>`:''}</span>
       <span class="stickers" aria-label="Sticker">${p.stickers.slice(-8).join('')||'<span class="note">Chưa có sticker nào</span>'}</span>
     </button>`}).join('')}</div>
     <p class="note">Mỗi ngày học khoảng 10 phút. App tự nhớ bé hay sai kỹ năng nào để cho ôn lại sớm hơn, kỹ năng nào đã vững thì giãn ra vài ngày, vài tuần mới hỏi lại.</p>
@@ -334,21 +448,39 @@ function renderHome(){
 }
 
 function renderKid(){
-  const p=prof(view.pid),d=dueCount(p),n=newCount(p);const done=p.lastDay===today();
+  const p=prof(view.pid),d=dueCount(p);const lv=lvlOf(p.xp);const ns=nodeStates(p);const cur=ns.find(n=>n.st==='open');
+  const learned=skillsOf(p).some(s=>p.skills[s.id]?.s);
+  const K=[0,.75,1,.75,0,-.75,-1,-.75];let mapHTML='';let k=0;
+  PATH[p.grade].forEach((w,wi)=>{const wn=ns.filter(n=>n.wi===wi);const got=wn.filter(n=>n.st==='done').length;const open=wn.some(n=>n.st!=='locked');
+    mapHTML+=`<div class="world ${open?'':'locked'}"><span class="em">${w.em}</span><div style="flex:1"><span class="qskill">Chặng ${wi+1}</span><h3>${w.name}</h3></div><span class="chip ${got===wn.length?'green':''}">${got}/${wn.length}</span></div>`;
+    wn.forEach((n,j)=>{const kk=K[k%K.length],kn=K[(k+1)%K.length];k++;
+      const inner=n.st==='locked'?'🔒':n.boss?'👑':n.st==='done'?'✓':(n.i+1);
+      mapHTML+=`<div class="nwrap ${n.st}" style="--k:${kk}" ${n===cur?'id="curNode"':''}>${n===cur?`<span class="bubble">${n.stars?'Chơi lại':'Bắt đầu!'}</span>`:''}
+        <button class="node ${n.st} ${n.boss?'boss':''}" type="button" data-node="${n.i}" ${n.st==='locked'?'disabled aria-disabled="true"':''} aria-label="${esc(n.name)}">${inner}</button>
+        <span class="nstars">${n.st==='done'?[1,2,3].map(x=>`<span class="${x<=n.stars?'':'off'}">⭐</span>`).join(''):''}</span>
+        <span class="nlabel">${esc(n.name)}</span></div>`;
+      if(j<wn.length-1||wi<PATH[p.grade].length-1)mapHTML+=`<div class="dot ${n.st==='done'?'on':''}" style="--k:${(kk+kn)/2}"></div><div class="dot ${n.st==='done'?'on':''}" style="--k:${(kk+kn)/2}"></div>`;
+    })});
+  const allDone=!cur;
   app.innerHTML=`<div class="stack">
     <div><span class="qskill">${p.grade==='g2'?'Lớp 2':'Lớp 4'}</span><h1>Chào ${esc(p.name)}!</h1></div>
     <div class="panel stack">
-      <div class="row" style="justify-content:space-between">
-        <div><div class="big-num">${p.streak}</div><div class="note">ngày học liên tiếp</div></div>
-        <div><div class="big-num">${d}</div><div class="note">kỹ năng đến hạn ôn</div></div>
-        <div><div class="big-num">${n}</div><div class="note">kỹ năng chưa học</div></div>
+      <div class="lvl"><div class="badge">${lv.L}</div><div class="meta"><div class="row" style="justify-content:space-between;gap:6px"><b>${rankOf(lv.L)}</b><span class="note">${lv.cur}/${lv.need} XP</span></div><div class="xpbar"><i style="width:${Math.round(lv.cur/lv.need*100)}%"></i></div></div></div>
+      <div class="row" style="justify-content:space-around"><span class="stat">🔥 ${p.streak}</span><span class="stat">⭐ ${totalStars(p)}</span><span class="stat">🏁 ${ns.filter(n=>n.st==='done').length}/${ns.length}</span></div>
+      <div class="cta">
+        ${allDone?`<button class="btn primary" type="button" disabled><span class="ic">🏆</span><span>Đã đi hết đường!<small>Ôn bài cũ hoặc chơi lại trạm để lấy 3 sao</small></span></button>`:
+          `<button class="btn primary" id="goNode" type="button"><span class="ic">${cur.boss?'👑':'▶️'}</span><span>${cur.boss?'Đánh trùm':'Học trạm mới'}<small>${esc(cur.name)}</small></span></button>`}
+        ${learned?`<button class="btn" id="reviewBtn" type="button"><span class="ic">🔁</span><span>Ôn bài cũ<small>${d?`${d} kỹ năng đến hạn`:'Củng cố kỹ năng đã học'}</small></span></button>`:''}
       </div>
-      <button class="btn primary" id="startBtn" type="button" style="font-size:20px;padding:14px">${done?'Học thêm một lượt':'Bắt đầu học hôm nay'}</button>
-      ${done?'<p class="note" style="margin:0">Hôm nay bé đã học rồi, giỏi lắm! Học thêm vẫn được tính.</p>':''}
     </div>
-    <div class="panel stack"><h2>Bộ sưu tập sticker</h2><div class="stickers">${p.stickers.join('')||'<span class="note">Học xong một lượt là được một sticker.</span>'}</div></div>
+    <div class="map" aria-label="Bản đồ đường học">${mapHTML}<div style="font-size:44px;margin-top:10px">🏆</div></div>
+    <div class="panel stack"><h2>Bộ sưu tập sticker</h2><div class="stickers">${p.stickers.join('')||'<span class="note">Qua mỗi trạm là được một sticker.</span>'}</div></div>
   </div>`;
-  document.getElementById('startBtn').onclick=()=>{sess=buildSession(p);go({name:'session',pid:p.id})};
+  const startNode=n=>{SFX.tap();sess=buildNodeSession(p,n);go({name:'session',pid:p.id})};
+  const gn=document.getElementById('goNode');if(gn)gn.onclick=()=>startNode(cur);
+  const rb=document.getElementById('reviewBtn');if(rb)rb.onclick=()=>{SFX.tap();const s2=buildSession(p);if(s2){sess=s2;go({name:'session',pid:p.id})}};
+  app.querySelectorAll('.node:not(.locked)').forEach(b=>b.onclick=()=>startNode(ns[+b.dataset.node]));
+  const cn=document.getElementById('curNode');if(cn&&ns.some(n=>n.st==='done'))setTimeout(()=>cn.scrollIntoView({block:'center',behavior:noMotion()?'auto':'smooth'}),250);
 }
 
 function curQ(){return sess.qs[sess.i]}
@@ -356,11 +488,12 @@ function renderSession(){
   const q=curQ();const p=prof(sess.pid);
   const pct=Math.round(sess.i/sess.qs.length*100);
   const isChoice=!!q.choices;
-  const answered=sess.phase!=='ask';
+  const answered=sess.phase!=='ask';const anim=sess.anim;sess.anim=null;
   app.innerHTML=`<div class="stack">
-    <div class="row" style="justify-content:space-between"><span class="note">${esc(p.name)} · Câu ${sess.i+1}/${sess.qs.length}</span><button class="btn small ghost" id="quit" type="button">Dừng</button></div>
+    <div class="row" style="justify-content:space-between"><span class="note">${sess.boss?'👑 ':''}${esc(sess.nodeName||p.name)} · Câu ${sess.i+1}/${sess.qs.length}</span>
+      <span class="row" style="gap:8px">${sess.combo>=2?`<span class="chip amber ${anim==='right'?'combo':''}">🔥 x${sess.combo}</span>`:''}<span class="chip">⭐ ${sess.xp} XP</span><button class="btn small ghost" id="quit" type="button">Dừng</button></span></div>
     <div class="progress"><i style="width:${pct}%"></i></div>
-    <div class="qcard">
+    <div class="qcard ${anim==='enter'?'enter':anim==='right'?'pop':anim==='wrong'?'shake':''}">
       ${sess.phase==='right'?'<div class="mark">Đ</div>':''}${sess.phase==='wrong'?'<div class="mark x">S</div>':''}
       <span class="qskill">${esc(q.skill.name)}${q.skill.tag?' · '+q.skill.tag:''}${q.retry?' · Làm lại':''}</span>
       <div class="qtext ${q.long?'long':''}">${q.q}</div>
@@ -380,6 +513,7 @@ function renderSession(){
   const nb=document.getElementById('nextBtn');if(nb){nb.onclick=next;nb.focus()}
   app.querySelectorAll('.choices button').forEach(b=>b.onclick=()=>submit(b.dataset.c));
   app.querySelectorAll('.pad button').forEach(b=>b.onclick=()=>key(b.dataset.k));
+  if(anim==='right'){floatXP('+'+sess.lastGain);const m=app.querySelector('.mark');if(m){const r=m.getBoundingClientRect();confetti(sess.combo>=3?30:14,r.left+r.width/2,r.top+r.height/2)}}
 }
 function padHTML(frac){const ks=['7','8','9','⌫','4','5','6',frac?'/':'','1','2','3','','0'];return `<div class="pad">${ks.map(k=>k===''?'<span></span>':`<button type="button" data-k="${k}" aria-label="${k==='⌫'?'Xóa':k}">${k}</button>`).join('')}<button type="button" class="ok" data-k="ok" style="grid-column:span 3">Xong</button></div>`}
 function key(k){if(!sess||sess.phase!=='ask')return;
@@ -402,39 +536,58 @@ function submit(input){
   const q=curQ();const ok=check(q,input);const secs=(Date.now()-sess.start)/1000;
   let g; if(!ok)g=1; else if(sess.hintUsed)g=2; else if(secs>q.skill.slow)g=3; else g=4;
   logEv({t:'answer',pid:sess.pid,sid:sess.sid,skill:q.skill.id,q:plain(q.q),ans:q.ans,input:String(input),ok,secs:Math.round(secs*10)/10,hint:sess.hintUsed,g,retry:!!q.retry});
-  if(!q.retry){const id=q.skill.id;sess.results[id]=Math.min(sess.results[id]??4,g);if(ok)sess.correct++}
-  if(ok){sess.phase='right';renderSession();setTimeout(next,700)}
-  else{sess.phase='wrong';if(!q.retry)sess.retry.push(q.skill);renderSession()}
+  if(!q.retry){const id=q.skill.id;sess.results[id]=Math.min(sess.results[id]??4,g);if(ok)sess.correct++;if(sess.hintUsed)sess.hints++}
+  if(ok){sess.combo++;sess.bestCombo=Math.max(sess.bestCombo,sess.combo);const gain=(q.retry?3:sess.hintUsed?5:10)+(sess.combo>=3?5:0);sess.xp+=gain;sess.lastGain=gain;
+    sess.phase='right';sess.anim='right';(sess.combo>=3?SFX.combo:SFX.right)();renderSession();setTimeout(next,900)}
+  else{sess.combo=0;sess.phase='wrong';sess.anim='wrong';SFX.wrong();if(!q.retry)sess.retry.push(q.skill);renderSession()}
 }
 function next(){if(!sess)return;
   sess.i++;
   if(sess.i>=sess.qs.length&&sess.retry.length){ // one fresh retry per missed skill, does not change the schedule
     const s=sess.retry.shift();sess.qs.push({skill:s,...genQ(s),retry:true})}
   if(sess.i>=sess.qs.length){finish();return}
-  sess.input='';sess.hintUsed=false;sess.phase='ask';sess.start=Date.now();renderSession()}
+  sess.input='';sess.hintUsed=false;sess.phase='ask';sess.anim='enter';sess.start=Date.now();renderSession()}
 function finish(){
   const p=prof(sess.pid);const now=Date.now();const changes=[];
   for(const [id,g] of Object.entries(sess.results)){const before=p.skills[id];const c=fsrsReview(before,g,now);p.skills[id]=c;changes.push({id,g,ivl:c.ivl})}
   const t=today();if(p.lastDay!==t){p.streak=(p.lastDay===t-1)?p.streak+1:1;p.lastDay=t}
-  const st=STICKERS[(p.sessions)%STICKERS.length];p.stickers.push(st);p.sessions++;
+  // game: sao, mở khóa, XP, cấp độ
+  let stars=null,prevStars=0,unlocked=null,firstPass=false;
+  if(sess.node){const before=nodeStates(p);prevStars=p.path[sess.node]?.stars||0;stars=starsFor(sess.correct,sess.total,sess.hints);
+    if(stars>prevStars)p.path[sess.node]={stars,at:now};firstPass=stars>0&&prevStars===0;
+    if(firstPass){const idx=before.findIndex(n=>n.key===sess.node);const nx=before[idx+1];if(nx)unlocked=nx.name}}
+  const starBonus=stars!=null?Math.max(0,stars-prevStars)*15+(firstPass?20:0):0;const gained=sess.xp+starBonus;
+  const lvBefore=lvlOf(p.xp);p.xp+=gained;const lvAfter=lvlOf(p.xp);
+  let st=null;if(stars==null||stars>0){st=STICKERS[(p.sessions)%STICKERS.length];p.stickers.push(st)}p.sessions++;
   save();
-  logEv({t:'finish',pid:p.id,sid:sess.sid,correct:sess.correct,total:sess.total,secs:Math.round((now-sess.sid)/1000),sticker:st,changes});
-  view={name:'done',pid:p.id,changes,correct:sess.correct,total:sess.total,sticker:st};sess=null;render();window.scrollTo(0,0);
+  logEv({t:'finish',pid:p.id,sid:sess.sid,mode:sess.mode,node:sess.node,stars,xp:gained,bestCombo:sess.bestCombo,correct:sess.correct,total:sess.total,secs:Math.round((now-sess.sid)/1000),sticker:st,changes});
+  view={name:'done',pid:p.id,changes,correct:sess.correct,total:sess.total,sticker:st,stars,prevStars,unlocked,gained,lvBefore,lvAfter,boss:sess.boss,nodeName:sess.nodeName,nodeKey:sess.node,bestCombo:sess.bestCombo};sess=null;render();window.scrollTo(0,0);
 }
 const G_LABEL={1:['Cần ôn lại','red'],2:['Phải xem gợi ý','amber'],3:['Đúng, hơi chậm',''],4:['Đúng và nhanh','green']};
 function renderDone(){
   const p=prof(view.pid);
+  const v=view,fail=v.stars===0,lvUp=v.lvAfter.L>v.lvBefore.L;
+  const pctFrom=lvUp?0:Math.round(v.lvBefore.cur/v.lvBefore.need*100),pctTo=Math.round(v.lvAfter.cur/v.lvAfter.need*100);
   app.innerHTML=`<div class="stack">
     <div class="panel stack" style="text-align:center;align-items:center">
-      <div style="font-size:72px;line-height:1">${view.sticker}</div>
-      <h1>Xong rồi, ${esc(p.name)}!</h1>
-      <p class="muted" style="margin:0">Đúng ${view.correct}/${view.total} câu · Chuỗi ${p.streak} ngày</p>
+      ${v.stars!=null?`<div class="bigstars">${[1,2,3].map((x,i)=>`<span class="${x<=v.stars?'':'off'}" style="animation-delay:${.25+i*.3}s">⭐</span>`).join('')}</div>`:''}
+      ${v.sticker?`<div class="sticker-big">${v.sticker}</div>`:'<div style="font-size:64px;line-height:1">💪</div>'}
+      <h1>${fail?'Gần được rồi!':v.boss?'Hạ được trùm rồi!':'Giỏi quá, '+esc(p.name)+'!'}</h1>
+      <p class="muted" style="margin:0">${v.nodeName?esc(v.nodeName)+' · ':''}Đúng ${v.correct}/${v.total} câu${v.bestCombo>=3?` · Combo 🔥 x${v.bestCombo}`:''}</p>
+      ${fail?`<p style="margin:0">Cần đúng ít nhất ${Math.ceil(v.total*0.6)}/${v.total} câu để qua trạm. Thử lại nhé, bé làm được mà!</p>`:''}
+      ${v.unlocked?`<div class="chip green" style="font-size:15px;padding:6px 14px">🔓 Mở khóa: ${esc(v.unlocked)}</div>`:''}
     </div>
+    ${lvUp?`<div class="levelup">🎉 Lên cấp ${v.lvAfter.L}: ${rankOf(v.lvAfter.L)}!</div>`:''}
+    <div class="panel"><div class="lvl"><div class="badge">${v.lvAfter.L}</div><div class="meta"><div class="row" style="justify-content:space-between;gap:6px"><b>+${v.gained} XP</b><span class="note">${v.lvAfter.cur}/${v.lvAfter.need} XP</span></div><div class="xpbar"><i id="xpFill" style="width:${pctFrom}%"></i></div></div></div></div>
     <div class="panel stack"><h2>Lần ôn tới</h2>
       ${view.changes.map(c=>{const s=skillsOf(p).find(x=>x.id===c.id);const [l,cls]=G_LABEL[c.g];return `<div class="row" style="justify-content:space-between"><span style="min-width:0;flex:1 1 200px">${esc(s.name)}</span><span class="chips"><span class="chip ${cls}">${l}</span><span class="chip">${c.ivl===1?'Ngày mai':c.ivl+' ngày nữa'}</span></span></div>`}).join('')}
     </div>
-    <div class="row"><button class="btn primary" id="again" type="button">Về trang của bé</button><button class="btn" id="home" type="button">Đổi người học</button></div>
+    <div class="row">${fail&&v.nodeKey?'<button class="btn primary" id="retryNode" type="button">Thử lại trạm này</button>':''}<button class="btn ${fail?'':'primary'}" id="again" type="button">${v.nodeKey?'Về bản đồ':'Về trang của bé'}</button><button class="btn" id="home" type="button">Đổi người học</button></div>
   </div>`;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{const f=document.getElementById('xpFill');if(f)f.style.width=pctTo+'%'}));
+  if(!fail){setTimeout(()=>{SFX.win();confetti(v.stars===3||v.boss?120:60)},200)}
+  if(lvUp)setTimeout(()=>{SFX.level();confetti(80,innerWidth/2,innerHeight/2)},1300);
+  const rn=document.getElementById('retryNode');if(rn)rn.onclick=()=>{const n=nodeStates(p).find(x=>x.key===v.nodeKey);sess=buildNodeSession(p,n);go({name:'session',pid:p.id})};
   document.getElementById('again').onclick=()=>go({name:'kid',pid:p.id});
   document.getElementById('home').onclick=()=>go({name:'home'});
 }
@@ -447,7 +600,7 @@ function renderParent(){
     <div class="tabs" role="group" aria-label="Chọn bé">${state.profiles.map(x=>`<button type="button" data-pid="${x.id}" aria-pressed="${x.id===p.id}">${esc(x.name)}</button>`).join('')}</div>
     <div class="panel stack">
       <div class="row"><label for="nameIn" style="font-weight:600">Tên bé</label><input type="text" id="nameIn" value="${esc(p.name)}" style="flex:1 1 180px;width:auto"><button class="btn small" id="saveName" type="button">Lưu tên</button></div>
-      <div class="chips"><span class="chip">${p.sessions} lượt học</span><span class="chip amber">Chuỗi ${p.streak} ngày</span><span class="chip red">${dueCount(p)} kỹ năng đến hạn</span><span class="chip">${newCount(p)}/${skillsOf(p).length} chưa học</span></div>
+      <div class="chips"><span class="chip">Cấp ${lvlOf(p.xp).L} · ${p.xp} XP</span><span class="chip amber">⭐ ${totalStars(p)} sao</span><span class="chip green">${nodeStates(p).filter(n=>n.st==='done').length}/${pathNodes(p).length} trạm</span><span class="chip">${p.sessions} lượt học</span><span class="chip amber">Chuỗi ${p.streak} ngày</span><span class="chip red">${dueCount(p)} kỹ năng đến hạn</span><span class="chip">${newCount(p)}/${skillsOf(p).length} chưa học</span></div>
     </div>
     <div>
       <h2 style="margin-bottom:8px">Kỹ năng, yếu nhất lên đầu</h2>
@@ -500,7 +653,7 @@ function renderParent(){
   document.getElementById('fileIn').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const o=JSON.parse(await f.text());const st=o.state||o;if(!st.profiles)throw 0;state=st;save();if(Array.isArray(o.events))await DB.replaceAll(o.events);msg.textContent='Đã nhập dữ liệu từ file.';setTimeout(()=>renderParent(),600)}catch(err){msg.textContent='File không đúng định dạng sao lưu của Vở Ôn Toán.'}};
   fillLog(p);fillInstall();
   document.getElementById('importBtn').onclick=()=>{try{const s=JSON.parse(box.value);if(!s.profiles)throw 0;state=s;save();msg.textContent='Đã nhập dữ liệu.';setTimeout(()=>renderParent(),600)}catch(e){msg.textContent='Dữ liệu không đúng định dạng. Hãy dán nguyên đoạn đã sao chép.'}};
-  document.getElementById('resetBtn').onclick=()=>{const rc=document.getElementById('resetConfirm');rc.innerHTML=`<button class="btn small" id="yesReset" type="button" style="border-color:var(--red);color:var(--red)">Chắc chắn xóa</button>`;document.getElementById('yesReset').onclick=()=>{Object.assign(p,{skills:{},streak:0,lastDay:null,stickers:[],sessions:0});save();DB.delPid(p.id).then(renderParent)}};
+  document.getElementById('resetBtn').onclick=()=>{const rc=document.getElementById('resetConfirm');rc.innerHTML=`<button class="btn small" id="yesReset" type="button" style="border-color:var(--red);color:var(--red)">Chắc chắn xóa</button>`;document.getElementById('yesReset').onclick=()=>{Object.assign(p,{skills:{},streak:0,lastDay:null,stickers:[],sessions:0,path:{},xp:0});save();DB.delPid(p.id).then(renderParent)}};
 }
 
 async function fillLog(p){
