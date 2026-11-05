@@ -44,3 +44,23 @@ rồi mở http://localhost:8000. (Service worker cần http/https, mở file tr
 - Sau lần mở đầu tiên, app chạy không cần mạng.
 
 Dữ liệu lưu trong `localStorage` (key `vo-on-toan-v1`) và IndexedDB `vo-on-toan` (bản sao state + nhật ký).
+
+## Đạp Xe Sài Gòn (`saigon/`)
+
+Game 3D riêng cho 2 bé, nằm ở thư mục `saigon/` và chạy tại https://hvnon.github.io/zlearning/saigon/ (cũng là PWA cài được, chạy offline). Bé đạp xe từ nhà qua các con đường thật của Quận 1, Quận 3 tới một địa danh, vừa đi vừa:
+- **Học luật giao thông:** dừng đèn đỏ trước vạch, nhường người đi bộ, đi sát lề phải, lách xe hàng rong, nhường xe cứu thương, đi chậm gần trường học, giơ tay trước khi rẽ. Sai luật mất 1 trong 3 ❤️, chú công an giải thích; hết tim thì đạp lại từ đầu đường.
+- **Mua bán ở hàng quán:** bánh mì, nước mía, trái cây. Bé chọn hàng, tự tính tổng tiền, đưa tiền và tính tiền thối (lớp 2: cộng trừ; lớp 4: thêm nhân và so giá combo). Cuối chuyến giúp dì bán hàng tính tiền cho khách.
+- **Lịch sử tên đường:** qua mỗi đường hiện thẻ kể chuyện về yếu nhân (Võ Thị Sáu, Hai Bà Trưng, Lê Lợi, Pasteur) và địa danh (Nhà hát Thành phố, chợ Bến Thành), cuối chuyến có đố vui. Thẻ vào bộ sưu tập.
+- Phần thưởng: xu (tiền thừa + điểm), sao theo số lỗi, "bằng lái xe đạp" khi đi đúng luật suốt chuyến, tiệm sơn xe đổi màu xe/áo/mũ bằng xu.
+- Hai góc nhìn: sau lưng xe (3D) và bản đồ nhìn từ trên cao (nút 🗺️ khi đang đi). Có chế độ "đồ họa nhẹ" cho máy yếu. Mỗi chuyến ngẫu nhiên trời sáng, hoàng hôn hoặc chập tối.
+
+| File | Vai trò |
+|---|---|
+| `saigon/index.html` | Giao diện, HUD, nút điều khiển |
+| `saigon/game.js` | Lối chơi: sự kiện trên đường, mua bán, câu đố, lưu tiến độ (`localStorage` key `dap-xe-sai-gon-v1`) |
+| `saigon/world.js` | Dựng thế giới 3D bằng three.js: đường, nhà, cây, xe, người, xe đạp |
+| `saigon/data.js` | Tuyến đường, sự kiện, giá hàng quán, thẻ lịch sử, câu đố (sửa nội dung ở đây) |
+| `saigon/vendor/three.module.min.js` | three.js r170 (MIT) |
+| `saigon/sw.js`, `saigon/manifest.webmanifest`, `saigon/icons/` | PWA |
+
+Tuyến hiện có: Nhà (Võ Thị Sáu) → Hai Bà Trưng → Lê Lợi (qua Nhà hát Thành phố, ngã tư Pasteur) → Chợ Bến Thành. Các tuyến khác (Nhà thờ Đức Bà, Dinh Độc Lập, Thảo Cầm Viên, Bến Nhà Rồng) để sẵn chỗ trong `data.js`.
