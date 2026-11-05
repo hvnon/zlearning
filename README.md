@@ -4,6 +4,10 @@ App ôn toán cho 2 bé (lớp 2 và lớp 4). Là web app tĩnh (PWA): cài đ�
 
 ## Tính năng
 - Đường học kiểu game: mỗi lớp có 4–5 chặng (Làng Số, Rừng Phép Tính, Biển Phân Số...), mỗi kỹ năng là một trạm, cuối chặng có trạm trùm trộn các kỹ năng. Qua trạm (đúng từ 60%) thì mở trạm kế tiếp; 1–3 sao theo độ chính xác.
+- Thú cưng: bé chọn và đặt tên (rồng, mèo, thỏ, rô-bốt), mỗi câu đúng là 1 hạt, tiến hóa qua 4 hình dạng (0/30/100/250 hạt), buồn nếu bỏ học từ 2 ngày. Tủ đồ để mặc mũ, đồ chơi mở được từ rương.
+- Trận đánh trùm: trùm có thanh máu bằng số câu, bé có 3 tim, sai là mất tim, hết tim là thua.
+- Rương thưởng: qua trạm hoặc thêm sao được rương (xu + 1 món đồ, độ hiếm thường/hiếm/cực hiếm), trùm cho rương to (2 món). Đồ trùng đổi thành xu.
+- Xu và phiếu thưởng ngoài đời: bố mẹ đặt phần thưởng kèm giá xu ở trang phụ huynh, bé tự đổi trong app, bố mẹ bấm "Đã thưởng" khi thực hiện.
 - XP, cấp độ và danh hiệu (Hạt mầm → Huyền thoại), combo khi đúng liên tiếp, sticker.
 - Hiệu ứng: pháo giấy, sao bay, rung khi sai, âm thanh (tắt được bằng nút 🔊). Tự tắt chuyển động nếu máy bật giảm chuyển động.
 - Nút "Ôn bài cũ" lấy các kỹ năng đã học đến hạn theo FSRS.
