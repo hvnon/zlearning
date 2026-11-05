@@ -1,0 +1,438 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Vở Ôn Toán</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Be+Vietnam+Pro:wght@400;500;600&display=swap">
+<style>
+/* Layout: one centered "notebook page" column on ô-li grid paper; ink-purple for the child's work, teacher-red for marks. */
+:root{
+  --paper:#fbfaf6; --grid:#dfe3f1; --grid-strong:#c9cfe8;
+  --ink:#4a2f91; --ink-soft:#ece6fa; --text:#25213a; --muted:#6b6784;
+  --red:#d2382f; --red-soft:#fde6e3; --green:#1d8a55; --green-soft:#ddf3e7;
+  --amber:#b36b00; --amber-soft:#fdf0d6; --card:#ffffff; --line:#e3e0ee;
+  --f-display:"Baloo 2", "Be Vietnam Pro", system-ui, sans-serif;
+  --f-body:"Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#17152a; --grid:#232040; --grid-strong:#2c2850;
+  --ink:#b9a6ff; --ink-soft:#2b2550; --text:#ece9f8; --muted:#a29dc0;
+  --red:#ff7a6e; --red-soft:#3d1f22; --green:#5fd39a; --green-soft:#16362a;
+  --amber:#f1b54a; --amber-soft:#3a2c12; --card:#1f1c36; --line:#332f55; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#17152a; --grid:#232040; --grid-strong:#2c2850;
+  --ink:#b9a6ff; --ink-soft:#2b2550; --text:#ece9f8; --muted:#a29dc0;
+  --red:#ff7a6e; --red-soft:#3d1f22; --green:#5fd39a; --green-soft:#16362a;
+  --amber:#f1b54a; --amber-soft:#3a2c12; --card:#1f1c36; --line:#332f55; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background-color:var(--paper);color:var(--text);font-family:var(--f-body);font-size:16px;line-height:1.5;
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px),
+  linear-gradient(var(--grid-strong) 1px,transparent 1px);
+  background-size:12px 12px,12px 12px,48px 48px}
+.wrap{max-width:720px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.brand{font-family:var(--f-display);font-weight:800;font-size:28px;color:var(--ink);letter-spacing:.2px;line-height:1;cursor:pointer;background:none;border:0;padding:0}
+.brand small{display:block;font-family:var(--f-body);font-weight:500;font-size:12px;color:var(--muted);letter-spacing:.6px;text-transform:uppercase;margin-top:6px}
+h1,h2,h3{font-family:var(--f-display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:30px;font-weight:800}
+h2{font-size:22px;font-weight:700}
+.muted{color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:16px}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+.btn{border:2px solid var(--ink);background:var(--card);color:var(--ink);border-radius:12px;padding:10px 18px;font-weight:600}
+.btn.primary{background:var(--ink);color:var(--paper)}
+.btn.ghost{border-color:var(--line);color:var(--muted)}
+.btn.small{padding:6px 12px;font-size:14px;border-radius:10px}
+.btn:disabled{opacity:.45;cursor:default}
+.kids{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.kid{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:20px;text-align:left;display:flex;flex-direction:column;gap:10px}
+.kid:hover{border-color:var(--ink)}
+.kid .grade{font-size:12px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
+.kid .name{font-family:var(--f-display);font-size:28px;font-weight:800;color:var(--ink);line-height:1}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font-size:13px;font-weight:600;border-radius:999px;padding:3px 10px;white-space:nowrap;background:var(--ink-soft);color:var(--ink);font-variant-numeric:tabular-nums}
+.chip.red{background:var(--red-soft);color:var(--red)}
+.chip.green{background:var(--green-soft);color:var(--green)}
+.chip.amber{background:var(--amber-soft);color:var(--amber)}
+.panel{background:var(--card);border:2px solid var(--line);border-radius:18px;padding:20px}
+.stickers{font-size:28px;letter-spacing:4px;line-height:1.3;word-break:break-all}
+/* session */
+.progress{height:10px;border-radius:999px;background:var(--ink-soft);overflow:hidden}
+.progress > i{display:block;height:100%;background:var(--ink);border-radius:999px;transition:width .3s}
+.qcard{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:22px 20px;display:flex;flex-direction:column;gap:16px;position:relative}
+.qskill{font-size:12px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
+.qtext{font-family:var(--f-display);font-size:26px;font-weight:700;line-height:1.3;color:var(--text)}
+.qtext.long{font-family:var(--f-body);font-size:19px;font-weight:500;line-height:1.55}
+.qtext .big{font-family:var(--f-display);font-size:32px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+.answer{min-height:64px;border-bottom:3px dashed var(--ink);font-family:var(--f-display);font-size:38px;font-weight:800;color:var(--ink);display:flex;align-items:flex-end;padding:0 4px 2px;font-variant-numeric:tabular-nums}
+.answer .ph{color:var(--muted);font-size:20px;font-weight:500;font-family:var(--f-body);padding-bottom:10px}
+.pad{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.pad button{background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:12px 0;font-family:var(--f-display);font-size:26px;font-weight:700;color:var(--text);min-height:58px}
+.pad button:active{background:var(--ink-soft)}
+.pad .ok{background:var(--ink);color:var(--paper);border-color:var(--ink);font-size:20px}
+.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.choices button{background:var(--paper);border:2px solid var(--line);border-radius:14px;padding:14px 10px;font-family:var(--f-display);font-size:22px;font-weight:700;min-height:62px}
+.choices button:hover{border-color:var(--ink)}
+.hint{background:var(--amber-soft);color:var(--text);border-radius:12px;padding:10px 14px;font-size:15px}
+.feedback{border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:6px}
+.feedback.bad{background:var(--red-soft)}
+.feedback.bad b{color:var(--red)}
+.mark{position:absolute;top:10px;right:16px;font-family:var(--f-display);font-weight:800;font-size:44px;line-height:1;color:var(--green);transform:rotate(-8deg);pointer-events:none}
+.mark.x{color:var(--red)}
+.fig{display:flex;justify-content:center}
+.fig svg{max-width:220px;width:100%;height:auto}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;line-height:1;margin:0 4px;font-variant-numeric:tabular-nums}
+.frac span:first-child{border-bottom:3px solid currentColor;padding:0 4px 2px}
+.frac span:last-child{padding-top:2px}
+.eq{font-size:30px;line-height:1.5}
+/* parent */
+.tablewrap{overflow-x:auto;border:2px solid var(--line);border-radius:14px;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:12px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);font-weight:600;background:var(--paper)}
+td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+.meter{width:70px;height:8px;border-radius:999px;background:var(--ink-soft);display:inline-block;vertical-align:middle;margin-right:6px;overflow:hidden}
+.meter i{display:block;height:100%}
+.tabs{display:flex;gap:8px;flex-wrap:wrap}
+.tabs button{border:2px solid var(--line);background:var(--card);border-radius:999px;padding:6px 14px;font-weight:600}
+.tabs button[aria-pressed="true"]{border-color:var(--ink);color:var(--ink);background:var(--ink-soft)}
+textarea,input[type=text]{width:100%;font:inherit;font-size:14px;border:2px solid var(--line);border-radius:12px;padding:10px;background:var(--paper);color:var(--text)}
+textarea{min-height:90px;font-family:ui-monospace,Menlo,monospace;font-size:12px}
+.note{font-size:14px;color:var(--muted)}
+.big-num{font-family:var(--f-display);font-size:44px;font-weight:800;color:var(--ink);line-height:1}
+@media (max-width:480px){.qtext{font-size:23px}.answer{font-size:32px}h1{font-size:26px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <button class="brand" id="brand" type="button">Vở Ôn Toán<small>Ôn đúng lúc sắp quên</small></button>
+    <div class="row">
+      <button class="btn small ghost" id="parentBtn" type="button">Trang phụ huynh</button>
+    </div>
+  </header>
+  <main id="app"></main>
+</div>
+
+<script>
+/* ================= utilities ================= */
+const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const gcd=(a,b)=>{a=Math.abs(a);b=Math.abs(b);while(b){[a,b]=[b,a%b]}return a};
+const fmt=n=>Number(n).toLocaleString('vi-VN');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const fr=(a,b)=>`<span class="frac"><span>${a}</span><span>${b}</span></span>`;
+const simp=(a,b)=>{const g=gcd(a,b);a/=g;b/=g;return b===1?String(a):`${a}/${b}`};
+const today=()=>{const d=new Date();return Math.floor((d.getTime()-d.getTimezoneOffset()*60000)/86400000)};
+const dayLabel=n=>{const t=today();if(n<=t)return'Hôm nay';if(n===t+1)return'Ngày mai';const d=new Date(n*86400000);return `${d.getUTCDate()}/${d.getUTCMonth()+1}`};
+
+/* ================= FSRS-4.5 (default weights), scheduled per skill ================= */
+const W=[0.4872,1.4003,3.7145,13.8206,5.1618,1.2298,0.8975,0.031,1.6474,0.1367,1.0461,2.1072,0.0793,0.3246,1.587,0.2272,2.8755];
+const F=19/81, C=-0.5, RET=0.9;
+const clamp=(x,a,b)=>Math.min(b,Math.max(a,x));
+const retr=(t,s)=>Math.pow(1+F*t/s,C);
+const initD=g=>clamp(W[4]-(g-3)*W[5],1,10);
+function fsrsReview(card,g,now){ // g: 1 Again, 2 Hard, 3 Good, 4 Easy
+  let s,d;
+  if(!card||!card.s){ s=W[g-1]; d=initD(g); }
+  else{
+    const t=Math.max(0,(now-card.last)/86400000);
+    const r=retr(t,card.s);
+    d=clamp(W[7]*initD(3)+(1-W[7])*(card.d-W[6]*(g-3)),1,10);
+    if(g===1){ s=Math.min(card.s, W[11]*Math.pow(card.d,-W[12])*(Math.pow(card.s+1,W[13])-1)*Math.exp((1-r)*W[14])); }
+    else{ s=card.s*(1+Math.exp(W[8])*(11-card.d)*Math.pow(card.s,-W[9])*(Math.exp((1-r)*W[10])-1)*(g===2?W[15]:1)*(g===4?W[16]:1)); }
+  }
+  const ivl=clamp(Math.round(s/F*(Math.pow(RET,1/C)-1)),1,180);
+  return {s,d,last:now,due:today()+ivl,reps:(card?.reps||0)+1,lapses:(card?.lapses||0)+(g===1&&card?.s?1:0),ivl};
+}
+const cardR=c=>c&&c.s?retr(Math.max(0,(Date.now()-c.last)/86400000),c.s):null;
+
+/* ================= skills & problem generators ================= */
+const WORDS_G2=[
+ ()=>{const a=rnd(18,45),b=rnd(5,19);return{q:`Lớp 2A có ${a} bạn nữ. Số bạn nam nhiều hơn số bạn nữ ${b} bạn. Hỏi lớp 2A có bao nhiêu bạn nam?`,ans:a+b,hint:'"Nhiều hơn" thì làm phép cộng.',ex:`${a} + ${b} = ${a+b}`}},
+ ()=>{const a=rnd(40,90),b=rnd(8,35);return{q:`Bao gạo nặng ${a} kg. Bao ngô nhẹ hơn bao gạo ${b} kg. Hỏi bao ngô nặng bao nhiêu ki-lô-gam?`,ans:a-b,hint:'"Nhẹ hơn" thì làm phép trừ.',ex:`${a} − ${b} = ${a-b}`}},
+ ()=>{const a=rnd(35,95),b=rnd(9,30);return{q:`Cây cam có ${a} quả. Bà hái ${b} quả để biếu hàng xóm. Hỏi trên cây còn lại bao nhiêu quả cam?`,ans:a-b,hint:'Hái đi thì số quả ít đi.',ex:`${a} − ${b} = ${a-b}`}},
+ ()=>{const a=rnd(25,60),b=rnd(15,39);return{q:`Mai gấp được ${a} con hạc giấy, Lan gấp được ${b} con. Hỏi cả hai bạn gấp được bao nhiêu con hạc?`,ans:a+b,hint:'"Cả hai" thì gộp lại.',ex:`${a} + ${b} = ${a+b}`}},
+];
+const FRUITS=[['🍎','🍌'],['🐱','🐶'],['⭐','🌙'],['🍓','🍇'],['🚗','🚲']];
+
+const SKILLS={
+ g2:[
+  {id:'g2_cong',name:'Cộng có nhớ (phạm vi 100)',slow:12,gen(){let a,b;do{a=rnd(12,79);b=rnd(6,49)}while((a%10)+(b%10)<10||a+b>100);return{q:`<span class="big">${a} + ${b} = ?</span>`,ans:a+b,hint:`Cộng hàng đơn vị trước: ${a%10} + ${b%10} = ${a%10+b%10}, viết ${(a+b)%10} nhớ 1.`,ex:`${a} + ${b} = ${a+b}`}}},
+  {id:'g2_tru',name:'Trừ có nhớ (phạm vi 100)',slow:14,gen(){let a,b;do{a=rnd(31,99);b=rnd(7,a-10)}while((a%10)>=(b%10));return{q:`<span class="big">${a} − ${b} = ?</span>`,ans:a-b,hint:`${a%10} không trừ được ${b%10}, lấy ${10+a%10} − ${b%10} rồi nhớ 1 sang hàng chục.`,ex:`${a} − ${b} = ${a-b}`}}},
+  {id:'g2_sosanh',name:'So sánh số có ba chữ số',slow:8,gen(){const a=rnd(100,999);let b=Math.random()<.15?a:(Math.random()<.5?a+rnd(-9,9):Math.floor(a/100)*100+rnd(0,99));b=clamp(b,100,999);const s=a>b?'>':a<b?'<':'=';return{q:`<span class="big">${a} &nbsp;?&nbsp; ${b}</span>`,choices:['<','=','>'],ans:s,hint:'So sánh hàng trăm trước, bằng nhau thì so hàng chục, rồi hàng đơn vị.',ex:`${a} ${s} ${b}`}}},
+  {id:'g2_cautao',name:'Cấu tạo số (trăm, chục, đơn vị)',slow:10,gen(){const h=rnd(1,9),t=rnd(0,9),u=rnd(0,9),n=h*100+t*10+u;if(Math.random()<.5)return{q:`Số gồm <span class="big">${h}</span> trăm, <span class="big">${t}</span> chục và <span class="big">${u}</span> đơn vị là số nào?`,long:1,ans:n,hint:'Viết lần lượt chữ số hàng trăm, hàng chục, hàng đơn vị.',ex:`${h} trăm ${t} chục ${u} đơn vị = ${n}`};return{q:`<span class="big">${n} = ${h*100} + ? + ${u}</span>`,ans:t*10,hint:`Chữ số hàng chục là ${t}, vậy là ${t} chục.`,ex:`${n} = ${h*100} + ${t*10} + ${u}`}}},
+  {id:'g2_nhan',name:'Bảng nhân 2 và 5',slow:6,gen(){const a=pick([2,5]),b=rnd(1,10);return Math.random()<.5?{q:`<span class="big">${a} × ${b} = ?</span>`,ans:a*b,hint:`${a} được lấy ${b} lần: cộng ${a} liên tiếp ${b} lần.`,ex:`${a} × ${b} = ${a*b}`}:{q:`<span class="big">${b} × ${a} = ?</span>`,ans:a*b,hint:`Đổi chỗ thừa số: ${b} × ${a} = ${a} × ${b}.`,ex:`${b} × ${a} = ${a*b}`}}},
+  {id:'g2_chia',name:'Bảng chia 2 và 5',slow:8,gen(){const a=pick([2,5]),b=rnd(1,10);return{q:`<span class="big">${a*b} : ${a} = ?</span>`,ans:b,hint:`Nhẩm: ${a} nhân mấy bằng ${a*b}?`,ex:`${a*b} : ${a} = ${b} vì ${a} × ${b} = ${a*b}`}}},
+  {id:'g2_timso',name:'Tìm số còn thiếu',slow:14,gen(){const a=rnd(11,60),b=rnd(10,39),t=pick([0,1,2]);if(t===0)return{q:`<span class="big">? + ${b} = ${a+b}</span>`,ans:a,hint:'Số hạng chưa biết = tổng trừ số hạng đã biết.',ex:`${a+b} − ${b} = ${a}`};if(t===1)return{q:`<span class="big">${a+b} − ? = ${a}</span>`,ans:b,hint:'Số trừ = số bị trừ trừ hiệu.',ex:`${a+b} − ${a} = ${b}`};return{q:`<span class="big">? − ${b} = ${a}</span>`,ans:a+b,hint:'Số bị trừ = hiệu cộng số trừ.',ex:`${a} + ${b} = ${a+b}`}}},
+  {id:'g2_dayso',name:'Quy luật dãy số',tag:'Tư duy',slow:15,gen(){const d=pick([2,3,5,10,4]),up=Math.random()<.7;let s=up?rnd(1,40):rnd(60,99);const seq=[0,1,2,3,4].map(i=>up?s+i*d:s-i*d);const hole=pick([2,3,4]);const shown=seq.map((x,i)=>i===hole?'?':x).join(', ');return{q:`Điền số còn thiếu:<br><span class="big">${shown}</span>`,long:1,ans:seq[hole],hint:`Xem hai số liền nhau hơn kém nhau bao nhiêu.`,ex:`Mỗi số ${up?'hơn':'kém'} số trước ${d}: ${seq.join(', ')}`}}},
+  {id:'g2_canbang',name:'Đoán giá trị con vật, đồ vật',tag:'Tư duy',slow:25,gen(){const [A,B]=pick(FRUITS),a=rnd(2,9),b=rnd(1,9);return{q:`<div class="eq">${A} + ${A} = ${2*a}<br>${A} + ${B} = ${a+b}<br>${B} = ?</div>`,long:1,ans:b,hint:`Từ dòng đầu, tìm ${A} trước: hai ${A} bằng ${2*a}.`,ex:`${A} = ${a}, nên ${B} = ${a+b} − ${a} = ${b}`}}},
+  {id:'g2_1000',name:'Cộng, trừ trong phạm vi 1000',slow:22,gen(){if(Math.random()<.5){let a,b;do{a=rnd(105,750);b=rnd(102,499)}while(a+b>999);return{q:`<span class="big">${a} + ${b} = ?</span>`,ans:a+b,hint:'Đặt tính thẳng cột, cộng từ phải sang trái.',ex:`${a} + ${b} = ${a+b}`}}const a=rnd(300,999),b=rnd(101,a-50);return{q:`<span class="big">${a} − ${b} = ?</span>`,ans:a-b,hint:'Đặt tính thẳng cột, trừ từ phải sang trái, nhớ khi cần.',ex:`${a} − ${b} = ${a-b}`}}},
+  {id:'g2_dongho',name:'Xem đồng hồ',slow:15,gen(){const h=rnd(1,12),m=pick([0,15,30,45]);const lab=(h,m)=>m===0?`${h} giờ`:m===30?`${h} giờ rưỡi`:`${h} giờ ${m} phút`;const opts=new Set([lab(h,m)]);while(opts.size<4){opts.add(lab(pick([h,h%12+1,(h+10)%12+1,rnd(1,12)]),pick([0,15,30,45])))}return{q:`Đồng hồ chỉ mấy giờ?<div class="fig">${clockSVG(h,m)}</div>`,long:1,choices:shuffle([...opts]),ans:lab(h,m),hint:'Kim ngắn chỉ giờ, kim dài chỉ phút. Kim dài chỉ số 3 là 15 phút, số 6 là 30 phút, số 9 là 45 phút.',ex:`Đó là ${lab(h,m)}`}}},
+  {id:'g2_donvi',name:'Đổi đơn vị độ dài',slow:12,gen(){return pick([
+    ()=>{const n=rnd(1,9);return{q:`<span class="big">${n} m = ? dm</span>`,ans:n*10,hint:'1 m = 10 dm.',ex:`${n} m = ${n*10} dm`}},
+    ()=>{const n=rnd(1,9);return{q:`<span class="big">${n} dm = ? cm</span>`,ans:n*10,hint:'1 dm = 10 cm.',ex:`${n} dm = ${n*10} cm`}},
+    ()=>{const n=rnd(2,9);return{q:`<span class="big">${n*10} cm = ? dm</span>`,ans:n,hint:'10 cm = 1 dm.',ex:`${n*10} cm = ${n} dm`}},
+    ()=>{const n=rnd(1,5);return{q:`<span class="big">${n} m = ? cm</span>`,ans:n*100,hint:'1 m = 100 cm.',ex:`${n} m = ${n*100} cm`}},
+    ()=>({q:`<span class="big">1 km = ? m</span>`,ans:1000,hint:'Ki-lô-mét dài gấp 1000 lần mét.',ex:'1 km = 1000 m'})])()}},
+  {id:'g2_tien',name:'Tiền Việt Nam',slow:20,gen(){const bills=[1,2,5,10,20,50];const k=rnd(2,3);const ch=[];for(let i=0;i<k;i++)ch.push(pick(bills));const sum=ch.reduce((x,y)=>x+y,0);if(Math.random()<.5)return{q:`Bé có các tờ tiền: ${ch.map(x=>`<b>${fmt(x*1000)} đồng</b>`).join(', ')}. Hỏi bé có tất cả bao nhiêu nghìn đồng?`,long:1,ans:sum,hint:'Cộng số nghìn trên từng tờ tiền.',ex:`${ch.join(' + ')} = ${sum} nghìn đồng`};const have=pick([50,100]),cost=rnd(12,have-5);return{q:`Mẹ đưa ${have} nghìn đồng để mua một quyển truyện giá ${cost} nghìn đồng. Người bán trả lại bao nhiêu nghìn đồng?`,long:1,ans:have-cost,hint:'Tiền trả lại = tiền đưa − giá tiền.',ex:`${have} − ${cost} = ${have-cost} nghìn đồng`}}},
+  {id:'g2_loivan',name:'Toán có lời văn (nhiều hơn, ít hơn)',slow:30,gen(){const p=pick(WORDS_G2)();p.long=1;return p}},
+  {id:'g2_nhanloi',name:'Toán có lời văn phép nhân, chia',slow:25,gen(){return pick([
+    ()=>{const n=rnd(3,10);return{q:`Mỗi bàn có 2 bạn ngồi. Hỏi ${n} bàn có bao nhiêu bạn?`,ans:2*n,hint:'2 được lấy '+n+' lần.',ex:`2 × ${n} = ${2*n}`}},
+    ()=>{const n=rnd(3,10);return{q:`Mỗi bông hoa có 5 cánh. Hỏi ${n} bông hoa có bao nhiêu cánh?`,ans:5*n,hint:'5 được lấy '+n+' lần.',ex:`5 × ${n} = ${5*n}`}},
+    ()=>{const k=pick([2,5]),n=rnd(2,10);return{q:`Có ${k*n} cái kẹo chia đều cho ${k} bạn. Hỏi mỗi bạn được mấy cái kẹo?`,ans:n,hint:'Chia đều thì làm phép chia.',ex:`${k*n} : ${k} = ${n}`}},
+    ()=>{const n=rnd(2,10);return{q:`Có ${5*n} quả cam xếp vào các đĩa, mỗi đĩa 5 quả. Hỏi xếp được mấy đĩa?`,ans:n,hint:'Mỗi đĩa 5 quả, xem '+5*n+' có mấy lần 5.',ex:`${5*n} : 5 = ${n}`}}])();}},
+ ],
+ g4:[
+  {id:'g4_giatri',name:'Giá trị của chữ số (đến lớp triệu)',slow:20,gen(){let ds;do{ds=[rnd(1,9),...Array.from({length:7},()=>rnd(0,9))]}while(new Set(ds).size<6);const n=Number(ds.join(''));let i;do{i=rnd(0,7)}while(ds[i]===0||ds.filter(x=>x===ds[i]).length>1);const val=ds[i]*Math.pow(10,7-i);return{q:`Trong số <span class="big">${fmt(n)}</span>, chữ số <b>${ds[i]}</b> có giá trị là bao nhiêu?`,long:1,ans:val,hint:'Xác định chữ số đó ở hàng nào: đơn vị, chục, trăm, nghìn, chục nghìn, trăm nghìn, triệu, chục triệu.',ex:`Chữ số ${ds[i]} có giá trị ${fmt(val)}`}}},
+  {id:'g4_lamtron',name:'Làm tròn số',slow:20,gen(){const [p,lab]=pick([[1000,'hàng nghìn'],[10000,'hàng chục nghìn'],[100000,'hàng trăm nghìn']]);const n=rnd(1000000,9999999);if(n%p===0)return this.gen();const r=Math.round(n/p)*p;return{q:`Làm tròn số <span class="big">${fmt(n)}</span> đến ${lab}.`,long:1,ans:r,hint:`Nhìn chữ số ngay bên phải ${lab}: từ 5 trở lên thì làm tròn lên, dưới 5 thì làm tròn xuống.`,ex:`${fmt(n)} ≈ ${fmt(r)}`}}},
+  {id:'g4_congtru',name:'Cộng, trừ số có nhiều chữ số',slow:40,gen(){if(Math.random()<.5){const a=rnd(10000,499999),b=rnd(10000,399999);return{q:`<span class="big">${fmt(a)} + ${fmt(b)} = ?</span>`,ans:a+b,hint:'Đặt tính thẳng cột từ hàng đơn vị.',ex:`${fmt(a)} + ${fmt(b)} = ${fmt(a+b)}`}}const a=rnd(200000,999999),b=rnd(10000,a-10000);return{q:`<span class="big">${fmt(a)} − ${fmt(b)} = ?</span>`,ans:a-b,hint:'Đặt tính thẳng cột, trừ từ phải sang trái, nhớ khi cần.',ex:`${fmt(a)} − ${fmt(b)} = ${fmt(a-b)}`}}},
+  {id:'g4_nhan',name:'Nhân với số có hai chữ số',slow:60,gen(){const a=rnd(105,989),b=rnd(12,98);return{q:`<span class="big">${a} × ${b} = ?</span>`,ans:a*b,hint:`Tách ${b} = ${Math.floor(b/10)*10} + ${b%10}: tính ${a} × ${b%10} và ${a} × ${Math.floor(b/10)*10} rồi cộng lại.`,ex:`${a} × ${b%10} = ${a*(b%10)}; ${a} × ${Math.floor(b/10)*10} = ${a*Math.floor(b/10)*10}; cộng lại = ${fmt(a*b)}`}}},
+  {id:'g4_chia1',name:'Chia cho số có một chữ số',slow:40,gen(){const d=rnd(3,9),q=rnd(120,1999);return{q:`<span class="big">${fmt(d*q)} : ${d} = ?</span>`,ans:q,hint:'Chia từ trái sang phải, mỗi lần lấy một hoặc hai chữ số.',ex:`${fmt(d*q)} : ${d} = ${fmt(q)}`}}},
+  {id:'g4_chia2',name:'Chia cho số có hai chữ số',slow:60,gen(){const d=rnd(12,48),q=rnd(21,240);return{q:`<span class="big">${fmt(d*q)} : ${d} = ?</span>`,ans:q,hint:`Ước lượng: làm tròn ${d} thành ${Math.round(d/10)*10} để đoán thương từng bước.`,ex:`${fmt(d*q)} : ${d} = ${q}`}}},
+  {id:'g4_tbc',name:'Trung bình cộng',slow:45,gen(){const n=pick([3,4]),avg=rnd(20,90);let xs=Array.from({length:n-1},()=>avg+rnd(-15,15));xs.push(avg*n-xs.reduce((a,b)=>a+b,0));if(xs[n-1]<=0)return this.gen();xs=shuffle(xs);if(Math.random()<.5)return{q:`Tìm trung bình cộng của các số: <span class="big">${xs.join('; ')}</span>`,long:1,ans:avg,hint:`Cộng tất cả lại rồi chia cho ${n}.`,ex:`(${xs.join(' + ')}) : ${n} = ${avg*n} : ${n} = ${avg}`};return{q:`Một cửa hàng ${n} ngày bán được lần lượt ${xs.map(x=>x+' kg').join(', ')} gạo. Hỏi trung bình mỗi ngày bán được bao nhiêu ki-lô-gam?`,long:1,ans:avg,hint:`Tổng số gạo chia cho ${n} ngày.`,ex:`(${xs.join(' + ')}) : ${n} = ${avg}`}}},
+  {id:'g4_tonghieu',name:'Tìm hai số khi biết tổng và hiệu',tag:'Tư duy',slow:50,gen(){const small=rnd(15,400),H=rnd(5,150),big=small+H,S=small+big;const askBig=Math.random()<.5;const v=pick([['Hai thùng có tất cả',`lít dầu. Thùng thứ nhất nhiều hơn thùng thứ hai`,'lít.',askBig?'Hỏi thùng thứ nhất có bao nhiêu lít dầu?':'Hỏi thùng thứ hai có bao nhiêu lít dầu?'],['Hai lớp trồng được tất cả',`cây. Lớp 4A trồng nhiều hơn lớp 4B`,'cây.',askBig?'Hỏi lớp 4A trồng được bao nhiêu cây?':'Hỏi lớp 4B trồng được bao nhiêu cây?']]);return{q:`${v[0]} ${S} ${v[1]} ${H} ${v[2]} ${v[3]}`,long:1,ans:askBig?big:small,hint:'Số lớn = (tổng + hiệu) : 2. Số bé = (tổng − hiệu) : 2.',ex:askBig?`(${S} + ${H}) : 2 = ${big}`:`(${S} − ${H}) : 2 = ${small}`}}},
+  {id:'g4_rutgon',name:'Rút gọn phân số',frac:1,slow:25,gen(){let a,b;do{a=rnd(1,9);b=rnd(2,12)}while(a>=b||gcd(a,b)!==1);const k=rnd(2,9);return{q:`Rút gọn phân số <span class="big">${fr(a*k,b*k)}</span> thành phân số tối giản.`,long:1,ans:`${a}/${b}`,exact:1,hint:`Tìm số lớn nhất mà cả ${a*k} và ${b*k} đều chia hết.`,ex:`Chia cả tử và mẫu cho ${k}: ${a*k}/${b*k} = ${a}/${b}`}}},
+  {id:'g4_congps',name:'Cộng, trừ phân số',frac:1,slow:40,gen(){const b=rnd(3,9),k=pick([1,1,2,3]),B=b*k;let a1=rnd(1,b),a2=rnd(1,B);const add=Math.random()<.6;let n=add?a1*k+a2:a1*k-a2;if(!add&&n<=0)return this.gen();const q=add?`${fr(a1,b)} + ${fr(a2,B)}`:`${fr(a1,b)} − ${fr(a2,B)}`;return{q:`<span class="big">${q} = ?</span><div class="note" style="margin-top:6px">Viết kết quả dạng tối giản, ví dụ 3/4</div>`,long:1,ans:simp(n,B),exact:1,hint:k>1?`Quy đồng: ${fr(a1,b)} = ${fr(a1*k,B)}, rồi ${add?'cộng':'trừ'} hai tử số.`:`Cùng mẫu số thì ${add?'cộng':'trừ'} hai tử số, giữ nguyên mẫu.`,ex:`= ${a1*k}/${B} ${add?'+':'−'} ${a2}/${B} = ${n}/${B} = ${simp(n,B)}`}}},
+  {id:'g4_nhanps',name:'Nhân, chia phân số',frac:1,slow:40,gen(){const a=rnd(1,8),b=rnd(2,9),c=rnd(1,8),d=rnd(2,9);if(Math.random()<.55){return{q:`<span class="big">${fr(a,b)} × ${fr(c,d)} = ?</span><div class="note" style="margin-top:6px">Viết kết quả dạng tối giản</div>`,long:1,ans:simp(a*c,b*d),exact:1,hint:'Tử nhân tử, mẫu nhân mẫu, rồi rút gọn.',ex:`= ${a*c}/${b*d} = ${simp(a*c,b*d)}`}}return{q:`<span class="big">${fr(a,b)} : ${fr(c,d)} = ?</span><div class="note" style="margin-top:6px">Viết kết quả dạng tối giản</div>`,long:1,ans:simp(a*d,b*c),exact:1,hint:`Chia cho một phân số là nhân với phân số đảo ngược: ${fr(d,c)}.`,ex:`= ${a}/${b} × ${d}/${c} = ${a*d}/${b*c} = ${simp(a*d,b*c)}`}}},
+  {id:'g4_donvi',name:'Đổi đơn vị khối lượng, diện tích',slow:25,gen(){return pick([
+    ()=>{const t=rnd(1,9),h=rnd(1,9);return{q:`<span class="big">${t} tấn ${h} tạ = ? kg</span>`,ans:t*1000+h*100,hint:'1 tấn = 1000 kg, 1 tạ = 100 kg.',ex:`${t*1000} + ${h*100} = ${t*1000+h*100} kg`}},
+    ()=>{const y=rnd(2,9);return{q:`<span class="big">${y} yến = ? kg</span>`,ans:y*10,hint:'1 yến = 10 kg.',ex:`${y} yến = ${y*10} kg`}},
+    ()=>{const t=rnd(2,9);return{q:`<span class="big">${t*10} tạ = ? tấn</span>`,ans:t,hint:'10 tạ = 1 tấn.',ex:`${t*10} tạ = ${t} tấn`}},
+    ()=>{const m=rnd(2,9);return{q:`<span class="big">${m} m² = ? dm²</span>`,ans:m*100,hint:'1 m² = 100 dm².',ex:`${m} m² = ${m*100} dm²`}},
+    ()=>{const m=rnd(2,9);return{q:`<span class="big">${m*100} cm² = ? dm²</span>`,ans:m,hint:'100 cm² = 1 dm².',ex:`${m*100} cm² = ${m} dm²`}}])()}},
+  {id:'g4_thoigian',name:'Giây, phút, thế kỷ',slow:25,gen(){return pick([
+    ()=>{const m=rnd(1,5),s=rnd(5,55);return{q:`<span class="big">${m} phút ${s} giây = ? giây</span>`,ans:m*60+s,hint:'1 phút = 60 giây.',ex:`${m} × 60 + ${s} = ${m*60+s} giây`}},
+    ()=>{const c=rnd(2,5);return{q:`<span class="big">${c} thế kỷ = ? năm</span>`,ans:c*100,hint:'1 thế kỷ = 100 năm.',ex:`${c} thế kỷ = ${c*100} năm`}},
+    ()=>{const y=pick([1010,1288,1428,1789,1945,1975,2000,2026,1802,1911]);const c=Math.ceil(y/100);return{q:`Năm <span class="big">${y}</span> thuộc thế kỷ thứ mấy?`,long:1,ans:c,hint:'Từ năm 1 đến năm 100 là thế kỷ I; từ năm 101 đến năm 200 là thế kỷ II...',ex:`Năm ${y} thuộc thế kỷ ${c} (${roman(c)})`}}])()}},
+  {id:'g4_goc',name:'Góc nhọn, vuông, tù, bẹt',slow:10,gen(){const k=pick(['nhọn','vuông','tù','bẹt']);const deg=k==='nhọn'?rnd(25,65):k==='vuông'?90:k==='tù'?rnd(115,155):180;return{q:`Đây là góc gì?<div class="fig">${angleSVG(deg)}</div>`,long:1,choices:['Góc nhọn','Góc vuông','Góc tù','Góc bẹt'],ans:'Góc '+k,hint:'So với góc vuông (như góc quyển vở): nhỏ hơn là góc nhọn, lớn hơn là góc tù, thẳng hàng là góc bẹt.',ex:`Góc này khoảng ${deg}°, là góc ${k}`}}},
+  {id:'g4_dayso',name:'Quy luật dãy số nâng cao',tag:'Tư duy',slow:40,gen(){return pick([
+    ()=>{const s=rnd(1,5),seq=[0,1,2,3,4,5].map(i=>s*Math.pow(2,i));return{seq,ex:'Mỗi số gấp đôi số trước'}},
+    ()=>{let s=rnd(1,10),d=rnd(1,3);const seq=[s];for(let i=1;i<6;i++){seq.push(seq[i-1]+d+i-1)}return{seq,ex:'Khoảng cách giữa hai số tăng thêm 1 mỗi lần'}},
+    ()=>{const seq=[1,2,3,4,5,6].map(i=>i*i);return{seq,ex:'Đó là 1×1, 2×2, 3×3, ...'}},
+    ()=>{let a=rnd(1,3),b=rnd(1,4);const seq=[a,b];for(let i=2;i<6;i++)seq.push(seq[i-1]+seq[i-2]);return{seq,ex:'Mỗi số bằng tổng hai số đứng trước'}},
+    ()=>{const s=rnd(2,9),seq=[s];for(let i=1;i<6;i++)seq.push(i%2?seq[i-1]+3:seq[i-1]*2);return{seq,ex:'Xen kẽ: cộng 3, rồi nhân 2'}}])()},
+    post(o){const hole=5;return{q:`Số tiếp theo là số nào?<br><span class="big">${o.seq.slice(0,5).join(', ')}, ?</span>`,long:1,ans:o.seq[hole],hint:'Thử xem hiệu hoặc thương giữa các số liền nhau có quy luật gì.',ex:`${o.ex}: ${o.seq.join(', ')}`}}},
+  {id:'g4_tuoi',name:'Bài toán tuổi',tag:'Tư duy',slow:50,gen(){return pick([
+    ()=>{const c=rnd(6,12),d=rnd(22,32),m=c+d;return{q:`Mẹ hơn con ${d} tuổi. Tổng số tuổi của hai mẹ con là ${c+m} tuổi. Hỏi con bao nhiêu tuổi?`,ans:c,hint:'Đây là bài tổng và hiệu: tuổi con là số bé.',ex:`(${c+m} − ${d}) : 2 = ${c} tuổi`}},
+    ()=>{const c=rnd(5,10),k=pick([3,4]),n=rnd(2,8);return{q:`Năm nay con ${c} tuổi, tuổi mẹ gấp ${k} lần tuổi con. Hỏi ${n} năm nữa mẹ bao nhiêu tuổi?`,ans:c*k+n,hint:'Tìm tuổi mẹ năm nay trước.',ex:`Mẹ năm nay ${c} × ${k} = ${c*k} tuổi, ${n} năm nữa là ${c*k+n} tuổi`}},
+    ()=>{const f=rnd(30,40),c=rnd(4,10),n=rnd(2,9),T=f+c+2*n;return{q:`Hiện nay bố ${f} tuổi, con ${c} tuổi. Hỏi bao nhiêu năm nữa thì tổng số tuổi của hai bố con là ${T} tuổi?`,ans:n,hint:'Mỗi năm trôi qua, tổng tuổi hai bố con tăng thêm 2.',ex:`(${T} − ${f+c}) : 2 = ${n} năm`}}])()},post(o){o.long=1;return o}},
+  {id:'g4_canbang',name:'Suy luận giá trị ẩn',tag:'Tư duy',slow:50,gen(){const [A,B]=pick(FRUITS),Cc=pick(['🎈','💎','🔔','🍩']),a=rnd(2,9),b=rnd(2,9),c=rnd(2,12);return{q:`<div class="eq">${A} + ${A} + ${A} = ${3*a}<br>${A} + ${B} + ${B} = ${a+2*b}<br>${B} + ${Cc} + ${Cc} = ${b+2*c}<br>${Cc} = ?</div>`,long:1,ans:c,hint:`Giải lần lượt: tìm ${A}, rồi ${B}, cuối cùng mới tới ${Cc}.`,ex:`${A} = ${a}, ${B} = ${b}, ${Cc} = (${b+2*c} − ${b}) : 2 = ${c}`}}},
+ ]
+};
+function genQ(skill){let o=skill.gen();if(skill.post)o=skill.post(o);o.ans=String(o.ans);return o}
+function roman(n){const m=[[10,'X'],[9,'IX'],[5,'V'],[4,'IV'],[1,'I']];let s='';for(const[v,r]of m){while(n>=v){s+=r;n-=v}}return s}
+function clockSVG(h,m){const cx=100,cy=100;let ticks='';for(let i=1;i<=12;i++){const a=(i*30-90)*Math.PI/180;ticks+=`<text x="${cx+74*Math.cos(a)}" y="${cy+74*Math.sin(a)+7}" text-anchor="middle" font-size="20" font-weight="700" fill="var(--text)" font-family="Baloo 2, sans-serif">${i}</text>`}
+  const ha=((h%12)*30+m*0.5-90)*Math.PI/180, ma=(m*6-90)*Math.PI/180;
+  return `<svg viewBox="0 0 200 200" role="img" aria-label="Đồng hồ"><circle cx="100" cy="100" r="94" fill="var(--card)" stroke="var(--ink)" stroke-width="5"/>${ticks}<line x1="100" y1="100" x2="${cx+45*Math.cos(ha)}" y2="${cy+45*Math.sin(ha)}" stroke="var(--text)" stroke-width="8" stroke-linecap="round"/><line x1="100" y1="100" x2="${cx+66*Math.cos(ma)}" y2="${cy+66*Math.sin(ma)}" stroke="var(--red)" stroke-width="5" stroke-linecap="round"/><circle cx="100" cy="100" r="7" fill="var(--ink)"/></svg>`}
+function angleSVG(deg){const r=deg*Math.PI/180,rot=rnd(-20,20)*Math.PI/180,ox=110,oy=120,L=90;const p1=[ox+L*Math.cos(rot),oy-L*Math.sin(rot)],p2=[ox+L*Math.cos(rot+r),oy-L*Math.sin(rot+r)];
+  const a1=[ox+26*Math.cos(rot),oy-26*Math.sin(rot)],a2=[ox+26*Math.cos(rot+r),oy-26*Math.sin(rot+r)];
+  const arc=deg===90?`<path d="M${ox+18*Math.cos(rot)} ${oy-18*Math.sin(rot)} L${ox+18*Math.cos(rot)+18*Math.cos(rot+r)} ${oy-18*Math.sin(rot)-18*Math.sin(rot+r)} L${ox+18*Math.cos(rot+r)} ${oy-18*Math.sin(rot+r)}" fill="none" stroke="var(--red)" stroke-width="3"/>`:`<path d="M${a1[0]} ${a1[1]} A26 26 0 0 0 ${a2[0]} ${a2[1]}" fill="none" stroke="var(--red)" stroke-width="3"/>`;
+  return `<svg viewBox="0 0 220 220" role="img" aria-label="Một góc"><line x1="${ox}" y1="${oy}" x2="${p1[0]}" y2="${p1[1]}" stroke="var(--ink)" stroke-width="5" stroke-linecap="round"/><line x1="${ox}" y1="${oy}" x2="${p2[0]}" y2="${p2[1]}" stroke="var(--ink)" stroke-width="5" stroke-linecap="round"/>${arc}<circle cx="${ox}" cy="${oy}" r="5" fill="var(--text)"/></svg>`}
+
+/* ================= state ================= */
+const KEY='vo-on-toan-v1';
+const STICKERS=['🦋','🌟','🐱','🌈','🐼','🍓','🚀','🦄','🐢','🌻','🐳','🎈','🐰','🍉','🦊','🐧','🌸','🐝','🍦','🐬'];
+function freshState(){return{profiles:[
+  {id:'k2',name:'Bé lớp 2',grade:'g2',skills:{},streak:0,lastDay:null,stickers:[],sessions:0},
+  {id:'k4',name:'Bé lớp 4',grade:'g4',skills:{},streak:0,lastDay:null,stickers:[],sessions:0}]}}
+let state;
+try{state=JSON.parse(localStorage.getItem(KEY))||freshState()}catch(e){state=freshState()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+const prof=id=>state.profiles.find(p=>p.id===id);
+const skillsOf=p=>SKILLS[p.grade];
+
+function skillStatus(c){if(!c||!c.s)return{k:'new',label:'Chưa học',cls:''};if(c.due<=today())return{k:'due',label:'Đến hạn ôn',cls:'red'};const r=cardR(c);if(r<0.93)return{k:'soon',label:'Sắp đến hạn',cls:'amber'};return{k:'good',label:'Nhớ tốt',cls:'green'}}
+function dueCount(p){return skillsOf(p).filter(s=>{const c=p.skills[s.id];return c&&c.s&&c.due<=today()}).length}
+function newCount(p){return skillsOf(p).filter(s=>!p.skills[s.id]?.s).length}
+
+/* ================= session building ================= */
+function buildSession(p,onlySkill){
+  const list=skillsOf(p);let chosen=[];
+  if(onlySkill){chosen=[list.find(s=>s.id===onlySkill)]}
+  else{
+    const due=list.filter(s=>{const c=p.skills[s.id];return c&&c.s&&c.due<=today()}).sort((a,b)=>cardR(p.skills[a.id])-cardR(p.skills[b.id])).slice(0,4);
+    const fresh=list.filter(s=>!p.skills[s.id]?.s).slice(0,due.length>=3?1:2);
+    chosen=[...due,...fresh];
+    if(chosen.length<3){const extra=list.filter(s=>p.skills[s.id]?.s&&!chosen.includes(s)).sort((a,b)=>cardR(p.skills[a.id])-cardR(p.skills[b.id]));chosen.push(...extra.slice(0,3-chosen.length))}
+  }
+  const per=onlySkill?5:2;const qs=[];
+  chosen.forEach(s=>{for(let i=0;i<per;i++)qs.push({skill:s,...genQ(s)})});
+  // interleave so the same skill is not back to back when possible
+  let order=shuffle(qs);for(let i=1;i<order.length;i++){if(order[i].skill===order[i-1].skill){const j=order.findIndex((q,k)=>k>i&&q.skill!==order[i].skill);if(j>0)[order[i],order[j]]=[order[j],order[i]]}}
+  return{pid:p.id,qs:order,i:0,results:{},retry:[],correct:0,total:order.length,input:'',hintUsed:false,start:Date.now(),phase:'ask',chosen:chosen.map(s=>s.id)};
+}
+
+/* ================= rendering ================= */
+const app=document.getElementById('app');
+let view={name:'home'};let sess=null;
+document.getElementById('brand').onclick=()=>{sess=null;go({name:'home'})};
+document.getElementById('parentBtn').onclick=()=>{sess=null;go({name:'parent',pid:view.pid||state.profiles[0].id})};
+function go(v){view=v;render();window.scrollTo(0,0)}
+function render(){({home:renderHome,kid:renderKid,session:renderSession,done:renderDone,parent:renderParent})[view.name]()}
+
+function renderHome(){
+  app.innerHTML=`<div class="stack">
+    <h1>Hôm nay ai học?</h1>
+    <div class="kids">${state.profiles.map(p=>{const d=dueCount(p),n=newCount(p);return`<button class="kid" data-pid="${p.id}" type="button">
+      <span class="grade">${p.grade==='g2'?'Lớp 2':'Lớp 4'}</span>
+      <span class="name">${esc(p.name)}</span>
+      <span class="chips">${d?`<span class="chip red">${d} kỹ năng cần ôn</span>`:''}${n?`<span class="chip">${n} kỹ năng mới</span>`:''}<span class="chip amber">Chuỗi ${p.streak} ngày</span></span>
+      <span class="stickers" aria-label="Sticker">${p.stickers.slice(-8).join('')||'<span class="note">Chưa có sticker nào</span>'}</span>
+    </button>`}).join('')}</div>
+    <p class="note">Mỗi ngày học khoảng 10 phút. App tự nhớ bé hay sai kỹ năng nào để cho ôn lại sớm hơn, kỹ năng nào đã vững thì giãn ra vài ngày, vài tuần mới hỏi lại.</p>
+  </div>`;
+  app.querySelectorAll('.kid').forEach(b=>b.onclick=()=>go({name:'kid',pid:b.dataset.pid}));
+}
+
+function renderKid(){
+  const p=prof(view.pid),d=dueCount(p),n=newCount(p);const done=p.lastDay===today();
+  app.innerHTML=`<div class="stack">
+    <div><span class="qskill">${p.grade==='g2'?'Lớp 2':'Lớp 4'}</span><h1>Chào ${esc(p.name)}!</h1></div>
+    <div class="panel stack">
+      <div class="row" style="justify-content:space-between">
+        <div><div class="big-num">${p.streak}</div><div class="note">ngày học liên tiếp</div></div>
+        <div><div class="big-num">${d}</div><div class="note">kỹ năng đến hạn ôn</div></div>
+        <div><div class="big-num">${n}</div><div class="note">kỹ năng chưa học</div></div>
+      </div>
+      <button class="btn primary" id="startBtn" type="button" style="font-size:20px;padding:14px">${done?'Học thêm một lượt':'Bắt đầu học hôm nay'}</button>
+      ${done?'<p class="note" style="margin:0">Hôm nay bé đã học rồi, giỏi lắm! Học thêm vẫn được tính.</p>':''}
+    </div>
+    <div class="panel stack"><h2>Bộ sưu tập sticker</h2><div class="stickers">${p.stickers.join('')||'<span class="note">Học xong một lượt là được một sticker.</span>'}</div></div>
+  </div>`;
+  document.getElementById('startBtn').onclick=()=>{sess=buildSession(p);go({name:'session',pid:p.id})};
+}
+
+function curQ(){return sess.qs[sess.i]}
+function renderSession(){
+  const q=curQ();const p=prof(sess.pid);
+  const pct=Math.round(sess.i/sess.qs.length*100);
+  const isChoice=!!q.choices;
+  const answered=sess.phase!=='ask';
+  app.innerHTML=`<div class="stack">
+    <div class="row" style="justify-content:space-between"><span class="note">${esc(p.name)} · Câu ${sess.i+1}/${sess.qs.length}</span><button class="btn small ghost" id="quit" type="button">Dừng</button></div>
+    <div class="progress"><i style="width:${pct}%"></i></div>
+    <div class="qcard">
+      ${sess.phase==='right'?'<div class="mark">Đ</div>':''}${sess.phase==='wrong'?'<div class="mark x">S</div>':''}
+      <span class="qskill">${esc(q.skill.name)}${q.skill.tag?' · '+q.skill.tag:''}${q.retry?' · Làm lại':''}</span>
+      <div class="qtext ${q.long?'long':''}">${q.q}</div>
+      ${sess.hintUsed&&sess.phase==='ask'?`<div class="hint"><b>Gợi ý:</b> ${q.hint}</div>`:''}
+      ${isChoice?`<div class="choices">${q.choices.map(c=>`<button type="button" data-c="${esc(c)}" ${answered?'disabled':''}>${esc(c)}</button>`).join('')}</div>`
+        :`<div class="answer" aria-live="polite">${sess.input?esc(sess.input):'<span class="ph">Bấm số để trả lời</span>'}</div>`}
+      ${sess.phase==='wrong'?`<div class="feedback bad"><div>Chưa đúng rồi. Đáp án là <b>${esc(q.ans)}</b></div><div class="note">${q.ex}</div></div>`:''}
+      ${!isChoice&&sess.phase==='ask'?padHTML(q.skill.frac):''}
+      <div class="row" style="justify-content:space-between">
+        ${sess.phase==='ask'?`<button class="btn small" id="hintBtn" type="button" ${sess.hintUsed?'disabled':''}>Xem gợi ý</button>`:'<span></span>'}
+        ${sess.phase==='wrong'?'<button class="btn primary" id="nextBtn" type="button">Câu tiếp theo</button>':''}
+      </div>
+    </div>
+  </div>`;
+  document.getElementById('quit').onclick=()=>{sess=null;go({name:'kid',pid:p.id})};
+  const hb=document.getElementById('hintBtn');if(hb)hb.onclick=()=>{sess.hintUsed=true;renderSession()};
+  const nb=document.getElementById('nextBtn');if(nb){nb.onclick=next;nb.focus()}
+  app.querySelectorAll('.choices button').forEach(b=>b.onclick=()=>submit(b.dataset.c));
+  app.querySelectorAll('.pad button').forEach(b=>b.onclick=()=>key(b.dataset.k));
+}
+function padHTML(frac){const ks=['7','8','9','⌫','4','5','6',frac?'/':'','1','2','3','','0'];return `<div class="pad">${ks.map(k=>k===''?'<span></span>':`<button type="button" data-k="${k}" aria-label="${k==='⌫'?'Xóa':k}">${k}</button>`).join('')}<button type="button" class="ok" data-k="ok" style="grid-column:span 3">Xong</button></div>`}
+function key(k){if(!sess||sess.phase!=='ask')return;
+  if(k==='ok'){if(sess.input)submit(sess.input);return}
+  if(k==='⌫')sess.input=sess.input.slice(0,-1);
+  else if(sess.input.length<12){if(k==='/'&&(sess.input.includes('/')||!sess.input))return;sess.input+=k}
+  renderSession()}
+document.addEventListener('keydown',e=>{if(view.name!=='session'||!sess)return;
+  if(sess.phase==='wrong'&&(e.key==='Enter'||e.key===' ')){e.preventDefault();next();return}
+  const q=curQ();if(q.choices)return;
+  if(/^[0-9]$/.test(e.key))key(e.key);else if(e.key==='Backspace')key('⌫');else if(e.key==='Enter')key('ok');else if(e.key==='/'&&q.skill.frac)key('/')});
+
+function check(q,input){
+  const norm=s=>String(s).replace(/[.\s]/g,'');
+  if(q.choices)return input===q.ans;
+  if(q.exact)return norm(input)===norm(q.ans);
+  return norm(input)===norm(q.ans);
+}
+function submit(input){
+  const q=curQ();const ok=check(q,input);const secs=(Date.now()-sess.start)/1000;
+  let g; if(!ok)g=1; else if(sess.hintUsed)g=2; else if(secs>q.skill.slow)g=3; else g=4;
+  if(!q.retry){const id=q.skill.id;sess.results[id]=Math.min(sess.results[id]??4,g);if(ok)sess.correct++}
+  if(ok){sess.phase='right';renderSession();setTimeout(next,700)}
+  else{sess.phase='wrong';if(!q.retry)sess.retry.push(q.skill);renderSession()}
+}
+function next(){if(!sess)return;
+  sess.i++;
+  if(sess.i>=sess.qs.length&&sess.retry.length){ // one fresh retry per missed skill, does not change the schedule
+    const s=sess.retry.shift();sess.qs.push({skill:s,...genQ(s),retry:true})}
+  if(sess.i>=sess.qs.length){finish();return}
+  sess.input='';sess.hintUsed=false;sess.phase='ask';sess.start=Date.now();renderSession()}
+function finish(){
+  const p=prof(sess.pid);const now=Date.now();const changes=[];
+  for(const [id,g] of Object.entries(sess.results)){const before=p.skills[id];const c=fsrsReview(before,g,now);p.skills[id]=c;changes.push({id,g,ivl:c.ivl})}
+  const t=today();if(p.lastDay!==t){p.streak=(p.lastDay===t-1)?p.streak+1:1;p.lastDay=t}
+  const st=STICKERS[(p.sessions)%STICKERS.length];p.stickers.push(st);p.sessions++;
+  save();
+  view={name:'done',pid:p.id,changes,correct:sess.correct,total:sess.total,sticker:st};sess=null;render();window.scrollTo(0,0);
+}
+const G_LABEL={1:['Cần ôn lại','red'],2:['Phải xem gợi ý','amber'],3:['Đúng, hơi chậm',''],4:['Đúng và nhanh','green']};
+function renderDone(){
+  const p=prof(view.pid);
+  app.innerHTML=`<div class="stack">
+    <div class="panel stack" style="text-align:center;align-items:center">
+      <div style="font-size:72px;line-height:1">${view.sticker}</div>
+      <h1>Xong rồi, ${esc(p.name)}!</h1>
+      <p class="muted" style="margin:0">Đúng ${view.correct}/${view.total} câu · Chuỗi ${p.streak} ngày</p>
+    </div>
+    <div class="panel stack"><h2>Lần ôn tới</h2>
+      ${view.changes.map(c=>{const s=skillsOf(p).find(x=>x.id===c.id);const [l,cls]=G_LABEL[c.g];return `<div class="row" style="justify-content:space-between"><span style="min-width:0;flex:1 1 200px">${esc(s.name)}</span><span class="chips"><span class="chip ${cls}">${l}</span><span class="chip">${c.ivl===1?'Ngày mai':c.ivl+' ngày nữa'}</span></span></div>`}).join('')}
+    </div>
+    <div class="row"><button class="btn primary" id="again" type="button">Về trang của bé</button><button class="btn" id="home" type="button">Đổi người học</button></div>
+  </div>`;
+  document.getElementById('again').onclick=()=>go({name:'kid',pid:p.id});
+  document.getElementById('home').onclick=()=>go({name:'home'});
+}
+
+function renderParent(){
+  const p=prof(view.pid);
+  const rows=skillsOf(p).map((s,i)=>({s,i,c:p.skills[s.id]})).sort((a,b)=>{const ra=a.c?.s?cardR(a.c):2,rb=b.c?.s?cardR(b.c):2;return ra-rb||a.i-b.i});
+  app.innerHTML=`<div class="stack">
+    <h1>Trang phụ huynh</h1>
+    <div class="tabs" role="group" aria-label="Chọn bé">${state.profiles.map(x=>`<button type="button" data-pid="${x.id}" aria-pressed="${x.id===p.id}">${esc(x.name)}</button>`).join('')}</div>
+    <div class="panel stack">
+      <div class="row"><label for="nameIn" style="font-weight:600">Tên bé</label><input type="text" id="nameIn" value="${esc(p.name)}" style="flex:1 1 180px;width:auto"><button class="btn small" id="saveName" type="button">Lưu tên</button></div>
+      <div class="chips"><span class="chip">${p.sessions} lượt học</span><span class="chip amber">Chuỗi ${p.streak} ngày</span><span class="chip red">${dueCount(p)} kỹ năng đến hạn</span><span class="chip">${newCount(p)}/${skillsOf(p).length} chưa học</span></div>
+    </div>
+    <div>
+      <h2 style="margin-bottom:8px">Kỹ năng, yếu nhất lên đầu</h2>
+      <p class="note" style="margin:0 0 10px">"Độ nhớ" là khả năng bé làm đúng nếu hỏi ngay bây giờ, tính bằng thuật toán FSRS. App hẹn ôn lại lúc độ nhớ tụt về khoảng 90%.</p>
+      <div class="tablewrap"><table>
+        <thead><tr><th>Kỹ năng</th><th>Trạng thái</th><th>Độ nhớ</th><th>Ôn lần tới</th><th>Số lần quên</th><th></th></tr></thead>
+        <tbody>${rows.map(({s,c})=>{const st=skillStatus(c),r=cardR(c);const col=r==null?'var(--line)':r<0.9?'var(--red)':r<0.95?'var(--amber)':'var(--green)';return`<tr>
+          <td>${esc(s.name)}${s.tag?` <span class="chip" style="font-size:11px">${s.tag}</span>`:''}</td>
+          <td><span class="chip ${st.cls}">${st.label}</span></td>
+          <td class="num">${r==null?'<span class="muted">–</span>':`<span class="meter"><i style="width:${Math.round(r*100)}%;background:${col}"></i></span>${Math.round(r*100)}%`}</td>
+          <td class="num">${c?.s?dayLabel(c.due):'<span class="muted">–</span>'}</td>
+          <td class="num">${c?.s?c.lapses:'<span class="muted">–</span>'}</td>
+          <td><button class="btn small" type="button" data-practice="${s.id}">Luyện 5 câu</button></td></tr>`}).join('')}</tbody>
+      </table></div>
+    </div>
+    <div class="panel stack">
+      <h2>Sao lưu dữ liệu</h2>
+      <p class="note" style="margin:0">Tiến độ chỉ lưu trên trình duyệt của máy này. Muốn chuyển sang máy khác thì sao chép đoạn dữ liệu rồi dán vào máy kia.</p>
+      <div class="row"><button class="btn small" id="copyBtn" type="button">Sao chép dữ liệu</button><button class="btn small" id="importBtn" type="button">Nhập dữ liệu đã dán</button><span class="note" id="msg" aria-live="polite"></span></div>
+      <textarea id="dataBox" aria-label="Dữ liệu sao lưu" placeholder="Dán dữ liệu sao lưu vào đây rồi bấm Nhập"></textarea>
+      <div class="row"><button class="btn small ghost" id="resetBtn" type="button">Xóa tiến độ của ${esc(p.name)}</button><span id="resetConfirm"></span></div>
+    </div>
+  </div>`;
+  app.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>go({name:'parent',pid:b.dataset.pid}));
+  document.getElementById('saveName').onclick=()=>{const v=document.getElementById('nameIn').value.trim();if(v){p.name=v;save();renderParent()}};
+  app.querySelectorAll('[data-practice]').forEach(b=>b.onclick=()=>{sess=buildSession(p,b.dataset.practice);go({name:'session',pid:p.id})});
+  const msg=document.getElementById('msg'),box=document.getElementById('dataBox');
+  document.getElementById('copyBtn').onclick=()=>{const t=JSON.stringify(state);box.value=t;navigator.clipboard?.writeText(t).then(()=>msg.textContent='Đã sao chép.').catch(()=>{box.select();msg.textContent='Đã hiện dữ liệu ở ô bên dưới, bấm giữ để sao chép.'})||(box.select())};
+  document.getElementById('importBtn').onclick=()=>{try{const s=JSON.parse(box.value);if(!s.profiles)throw 0;state=s;save();msg.textContent='Đã nhập dữ liệu.';setTimeout(()=>renderParent(),600)}catch(e){msg.textContent='Dữ liệu không đúng định dạng. Hãy dán nguyên đoạn đã sao chép.'}};
+  document.getElementById('resetBtn').onclick=()=>{const rc=document.getElementById('resetConfirm');rc.innerHTML=`<button class="btn small" id="yesReset" type="button" style="border-color:var(--red);color:var(--red)">Chắc chắn xóa</button>`;document.getElementById('yesReset').onclick=()=>{Object.assign(p,{skills:{},streak:0,lastDay:null,stickers:[],sessions:0});save();renderParent()}};
+}
+render();
+</script>
+
+</body></html>
