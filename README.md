@@ -1,4 +1,17 @@
-# Vở Ôn Toán
+# zzzlearning
+
+Góc học của 2 bé (lớp 2 và lớp 4): một trang chủ **zzzlearning** mở ra 2 app con, tất cả là web app tĩnh (PWA), cài được lên màn hình chính của iPad, iPhone, Android, máy tính và chạy offline hoàn toàn. Chạy tại https://hvnon.github.io/zlearning/.
+
+| Thư mục | App |
+|---|---|
+| `/` (`index.html`, `sw.js`, `manifest.webmanifest`, `icons/`) | Trang chủ zzzlearning: 2 thẻ vào app con, hiện nhanh tiến độ mỗi bé |
+| `toan/` | Vở Ôn Toán |
+| `saigon/` | Đạp Xe Sài Gòn |
+| `fonts/` | Font Baloo 2 và Be Vietnam Pro tự host, dùng chung cho cả 3 |
+
+Mỗi app con có manifest và service worker riêng (phạm vi thư mục của nó) nên cài riêng từng app cũng được; cài trang chủ thì vào được cả hai. Dữ liệu lưu trong `localStorage`/IndexedDB theo tên miền nên dùng chung giữa trang chủ và app con.
+
+# Vở Ôn Toán (`toan/`)
 
 App ôn toán cho 2 bé (lớp 2 và lớp 4). Là web app tĩnh (PWA): cài được lên màn hình chính của iPad, iPhone, điện thoại Android, máy tính, và chạy offline hoàn toàn.
 
@@ -23,12 +36,12 @@ App ôn toán cho 2 bé (lớp 2 và lớp 4). Là web app tĩnh (PWA): cài đ�
 ## Cấu trúc
 | File | Vai trò |
 |---|---|
-| `index.html` | Toàn bộ app (HTML, CSS, JS) |
-| `manifest.webmanifest` | Thông tin để cài app (tên, icon, màu) |
-| `sw.js` | Service worker, lưu app vào máy để chạy offline |
-| `fonts/` | Font Baloo 2 và Be Vietnam Pro tự host (không cần Google Fonts) |
-| `icons/` | Icon app |
-| `.github/workflows/pages.yml` | Tự deploy lên GitHub Pages mỗi lần push |
+| `toan/index.html` | Toàn bộ app (HTML, CSS, JS) |
+| `toan/manifest.webmanifest` | Thông tin để cài app (tên, icon, màu) |
+| `toan/sw.js` | Service worker, lưu app vào máy để chạy offline |
+| `fonts/` | Font Baloo 2 và Be Vietnam Pro tự host (không cần Google Fonts), ở thư mục gốc |
+| `toan/icons/` | Icon app |
+| `.github/workflows/pages.yml` | Tự deploy lên GitHub Pages mỗi lần push (gom `index.html`, `sw.js`, `manifest`, `fonts`, `icons`, `toan`, `saigon`) |
 
 Thêm file mới vào app thì thêm vào `ASSETS` trong `sw.js` và tăng `VERSION`.
 
@@ -36,10 +49,10 @@ Thêm file mới vào app thì thêm vào `ASSETS` trong `sw.js` và tăng `VERS
 ```
 python3 -m http.server 8000
 ```
-rồi mở http://localhost:8000. (Service worker cần http/https, mở file trực tiếp thì app vẫn chạy nhưng không cài được.)
+rồi mở http://localhost:8000 (trang chủ), http://localhost:8000/toan/ hoặc http://localhost:8000/saigon/. (Service worker cần http/https, mở file trực tiếp thì app vẫn chạy nhưng không cài được.)
 
 ## Cài lên máy
-- iPhone / iPad: mở link bằng Safari → Chia sẻ → Thêm vào MH chính.
+- iPhone / iPad: mở link bằng Safari → Chia sẻ → Thêm vào MH chính (mở trang chủ thì cài zzzlearning, mở `toan/` hay `saigon/` thì cài riêng app đó).
 - Android: mở bằng Chrome → menu ⋮ → Cài đặt ứng dụng.
 - Sau lần mở đầu tiên, app chạy không cần mạng.
 
@@ -51,7 +64,7 @@ Game 3D riêng cho 2 bé, nằm ở thư mục `saigon/` và chạy tại https:
 - **Học luật giao thông:** dừng đèn đỏ trước vạch, nhường người đi bộ, đi sát lề phải, lách xe hàng rong, nhường xe cứu thương, đi chậm gần trường học, giơ tay trước khi rẽ. Sai luật mất 1 trong 3 ❤️, chú công an giải thích; hết tim thì đạp lại từ đầu đường.
 - **Mua bán ở hàng quán:** bánh mì, nước mía, trái cây. Bé chọn hàng, tự tính tổng tiền, đưa tiền và tính tiền thối (lớp 2: cộng trừ; lớp 4: thêm nhân và so giá combo). Cuối chuyến giúp dì bán hàng tính tiền cho khách.
 - **Lịch sử tên đường:** qua mỗi đường hiện thẻ kể chuyện về yếu nhân (Võ Thị Sáu, Hai Bà Trưng, Lê Lợi, Pasteur) và địa danh (Nhà hát Thành phố, chợ Bến Thành), cuối chuyến có đố vui. Thẻ vào bộ sưu tập.
-- Phần thưởng: xu (tiền thừa + điểm), sao theo số lỗi, "bằng lái xe đạp" khi đi đúng luật suốt chuyến, tiệm sơn xe đổi màu xe/áo/mũ bằng xu.
+- Phần thưởng: xu (tiền thừa + điểm), sao theo số lỗi, "bằng lái xe đạp" khi đi đúng luật suốt chuyến, tủ thời trang 👗 (tóc, mặt, trang phục, mũ, ba lô, màu xe, giỏ, cờ, tua rua; vài món đặc biệt mua bằng xu).
 - Hai góc nhìn: sau lưng xe (3D) và bản đồ nhìn từ trên cao (nút 🗺️ khi đang đi). Có chế độ "đồ họa nhẹ" cho máy yếu. Mỗi chuyến ngẫu nhiên trời sáng, hoàng hôn hoặc chập tối.
 
 | File | Vai trò |

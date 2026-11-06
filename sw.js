@@ -1,52 +1,42 @@
-/* Service worker: lưu toàn bộ app vào máy để chạy offline.
-   Khi có mạng, app vẫn mở ngay từ bản đã lưu và tải bản mới ở nền; lần mở sau sẽ dùng bản mới.
-   Thêm file mới vào app thì nhớ thêm vào ASSETS và tăng VERSION. */
-const VERSION = 'v5';
-const CACHE = 'vo-on-toan-' + VERSION;
+/* Service worker của trang chủ zzzlearning (phạm vi: cả thư mục, nhưng chỉ lo trang chủ + font + icon).
+   Hai app con (toan/, saigon/) có service worker riêng với phạm vi hẹp hơn nên tự lo file của mình;
+   request vào app con mà chưa có sw riêng thì cho đi mạng bình thường.
+   Thêm file cho trang chủ thì thêm vào ASSETS và tăng VERSION. */
+const VERSION = 'v1';
+const CACHE = 'zzzlearning-' + VERSION;
+const FONTS = ['Baloo2-500', 'Baloo2-700', 'Baloo2-800', 'BeVietnamPro-400', 'BeVietnamPro-500', 'BeVietnamPro-600']
+  .flatMap(f => ['latin', 'latin-ext', 'vietnamese'].map(r => `./fonts/${f}-${r}.woff2`));
 const ASSETS = [
-  './', './index.html', './manifest.webmanifest', './fonts/fonts.css',
+  './', './index.html', './manifest.webmanifest', './fonts/fonts.css', ...FONTS,
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png',
-  './fonts/Baloo2-500-latin-ext.woff2',
-  './fonts/Baloo2-500-latin.woff2',
-  './fonts/Baloo2-500-vietnamese.woff2',
-  './fonts/Baloo2-700-latin-ext.woff2',
-  './fonts/Baloo2-700-latin.woff2',
-  './fonts/Baloo2-700-vietnamese.woff2',
-  './fonts/Baloo2-800-latin-ext.woff2',
-  './fonts/Baloo2-800-latin.woff2',
-  './fonts/Baloo2-800-vietnamese.woff2',
-  './fonts/BeVietnamPro-400-latin-ext.woff2',
-  './fonts/BeVietnamPro-400-latin.woff2',
-  './fonts/BeVietnamPro-400-vietnamese.woff2',
-  './fonts/BeVietnamPro-500-latin-ext.woff2',
-  './fonts/BeVietnamPro-500-latin.woff2',
-  './fonts/BeVietnamPro-500-vietnamese.woff2',
-  './fonts/BeVietnamPro-600-latin-ext.woff2',
-  './fonts/BeVietnamPro-600-latin.woff2',
-  './fonts/BeVietnamPro-600-vietnamese.woff2',
+  './toan/icons/icon-192.png', './saigon/icons/icon-192.png'
 ];
+const BASE = new URL('./', self.location.href).pathname;
+const ASSET_PATHS = new Set(ASSETS.map(a => new URL(a, self.location.href).pathname));
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
 });
 
 self.addEventListener('activate', e => {
+  // Xóa bản cũ của trang chủ và cache của Vở Ôn Toán thời còn nằm ở thư mục gốc (v1..v5); toan/sw.js giờ dùng cache riêng.
   e.waitUntil(caches.keys()
-    .then(keys => Promise.all(keys.filter(k => k.startsWith('vo-on-toan-') && k !== CACHE).map(k => caches.delete(k))))
+    .then(keys => Promise.all(keys.filter(k => (k.startsWith('zzzlearning-') && k !== CACHE) || /^vo-on-toan-v[1-5]$/.test(k)).map(k => caches.delete(k))))
     .then(() => self.clients.claim()));
 });
 
 self.addEventListener('fetch', e => {
   const req = e.request;
-  if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
+  if (req.method !== 'GET') return;
+  const url = new URL(req.url);
+  if (url.origin !== location.origin) return;
+  const isHome = req.mode === 'navigate' && (url.pathname === BASE || url.pathname === BASE + 'index.html');
+  if (!isHome && !ASSET_PATHS.has(url.pathname)) return; // của app con: đi mạng, sw của app con sẽ lo khi đã cài
+  const key = isHome ? './index.html' : req;
   e.respondWith((async () => {
     const cache = await caches.open(CACHE);
-    const key = req.mode === 'navigate' ? './index.html' : req;
-    const cached = await cache.match(key, { ignoreSearch: req.mode === 'navigate' });
-    const fresh = fetch(req).then(res => {
-      if (res.ok) cache.put(key, res.clone());
-      return res;
-    }).catch(() => null);
+    const cached = await cache.match(key, { ignoreSearch: true });
+    const fresh = fetch(req).then(res => { if (res.ok) cache.put(key, res.clone()); return res; }).catch(() => null);
     if (cached) { e.waitUntil(fresh); return cached; }
     return (await fresh) || new Response('Offline', { status: 503 });
   })());
