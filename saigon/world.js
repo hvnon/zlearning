@@ -1,4 +1,4 @@
-/* Thế giới 3D của Đạp Xe Sài Gòn: đường phố, nhà cửa, cây xanh, xe cộ, người đi bộ, xe đạp của bé.
+/* Thế giới 3D của Shipper Nhí Sài Gòn: đường phố, nhà cửa, cây xanh, xe cộ, người đi bộ, xe đạp của bé.
    Dùng three.js (vendor/three.module.min.js, giấy phép MIT). Đơn vị: mét. Hướng đi ban đầu là -Z. */
 import * as THREE from './vendor/three.module.min.js';
 

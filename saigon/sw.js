@@ -1,7 +1,7 @@
-/* Service worker của Đạp Xe Sài Gòn: lưu toàn bộ game vào máy để chạy offline.
+/* Service worker của Shipper Nhí Sài Gòn: lưu toàn bộ game vào máy để chạy offline.
    Có mạng thì vẫn mở ngay từ bản đã lưu và tải bản mới ở nền; lần mở sau dùng bản mới.
    Thêm file mới thì nhớ thêm vào ASSETS và tăng VERSION. Font dùng chung với Vở Ôn Toán ở ../fonts/. */
-const VERSION = 'v7';
+const VERSION = 'v8';
 const CACHE = 'dap-xe-sai-gon-' + VERSION;
 const FONTS = ['Baloo2-500', 'Baloo2-700', 'Baloo2-800', 'BeVietnamPro-400', 'BeVietnamPro-500', 'BeVietnamPro-600']
   .flatMap(f => ['latin', 'latin-ext', 'vietnamese'].map(r => `../fonts/${f}-${r}.woff2`));

@@ -1,4 +1,4 @@
-/* zzz.js: dữ liệu dùng chung của zzzlearning cho cả trang chủ và 2 app con (Vở Ôn Toán, Đạp Xe Sài Gòn).
+/* zzz.js: dữ liệu dùng chung của zzzlearning cho cả trang chủ và 2 app con (Vở Ôn Toán, Shipper Nhí Sài Gòn).
    Tất cả nằm trong localStorage của cùng tên miền:
    - zzz-wallet  : ví xu chung { k2: n, k4: n }. Lần đầu tạo bằng cách cộng xu đang có của 2 app.
    - zzz-kids    : tên bé dùng chung [{ id, name, grade }]. App đổi tên thì ghi vào đây, app khác mở lên sẽ lấy tên mới.

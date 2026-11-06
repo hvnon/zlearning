@@ -1,7 +1,7 @@
 {
-  "name": "Đạp Xe Sài Gòn",
-  "short_name": "Đạp Xe SG",
-  "description": "Game đạp xe khám phá Sài Gòn cho bé: học luật giao thông, mua bán ở hàng quán và lịch sử tên đường.",
+  "name": "Shipper Nhí Sài Gòn",
+  "short_name": "Shipper Nhí",
+  "description": "Bé làm shipper nhí: đạp xe đi mua đồ giúp mẹ, tính tiền giúp cô bán hàng, học luật giao thông và lịch sử tên đường Sài Gòn.",
   "id": "./",
   "start_url": "./",
   "scope": "./",

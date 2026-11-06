@@ -1,4 +1,4 @@
-/* Đạp Xe Sài Gòn: lối chơi, giao diện, lưu tiến độ. Thế giới 3D nằm trong world.js, dữ liệu trong data.js. */
+/* Shipper Nhí Sài Gòn: lối chơi, giao diện, lưu tiến độ. Thế giới 3D nằm trong world.js, dữ liệu trong data.js. */
 import { THREE, World, createRenderer, makeBike, makePedestrian, makeMoto, makeAmbulance, makeCar, makeItemSprite, drawSignCanvas, rng, AVATAR_DEFAULT, BIKE_DEFAULT } from './world.js';
 
 /* ================= tiện ích ================= */
