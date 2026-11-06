@@ -7,7 +7,7 @@ const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt
 const money = (k) => `${k} nghìn`;
 const moneyFull = (k) => `${k} nghìn (${(k * 1000).toLocaleString('vi-VN')}đ)`;
 const shuffle = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-const todayStr = () => new Date().toISOString().slice(0, 10);
+const todayStr = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 
 /* ================= lưu trữ ================= */
@@ -59,7 +59,7 @@ const home = $('home'), play = $('play');
 
 function paintSound() { $('soundBtn').textContent = state.sound ? '🔊' : '🔇'; }
 $('soundBtn').onclick = () => { state.sound = !state.sound; save(); paintSound(); if (state.sound) Audio.bell(); };
-$('parentBtn').onclick = () => { if (window.ZZZ && ZZZ.fromHub()) { location.href = '../phuhuynh/'; return; } showParent = !showParent; renderHome(); };
+$('parentBtn').onclick = () => { if (window.ZZZ && ZZZ.fromHub()) { location.href = '../phuhuynh/'; return; } if (showParent) { showParent = false; renderHome(); return; } const open = () => { showParent = true; renderHome(); }; if (window.ZZZ) ZZZ.gate(open); else open(); };
 $('brand').onclick = () => { showParent = false; renderHome(); };
 
 function renderHome() {
@@ -67,6 +67,7 @@ function renderHome() {
   const p = prof(selectedKid);
   const allCards = Object.values(CARDS);
   const totalStars = (x) => Object.values(x.stars).reduce((a, b) => a + b, 0);
+  const lockChip = (x) => { if (!window.ZZZ) return ''; const st = ZZZ.status(x.id); return st.why === 'math' ? '<span class="chip">🔒 Làm toán trước</span>' : st.why === 'time' ? '<span class="chip">⏱️ Hết giờ hôm nay</span>' : ''; };
   $('homeBody').innerHTML = `
     <section class="stack">
       <h2>Ai đạp xe hôm nay?</h2>
@@ -74,7 +75,7 @@ function renderHome() {
         <button class="kid" type="button" data-pid="${x.id}" aria-pressed="${x.id === selectedKid}">
           <span class="grade">${x.grade === 'g2' ? 'Lớp 2' : 'Lớp 4'}</span>
           <span class="name">${esc(x.name)}</span>
-          <span class="row" style="gap:6px"><span class="chip amber">🪙 ${x.coins}</span><span class="chip">⭐ ${totalStars(x)}</span><span class="chip green">📜 ${x.cards.length}/${allCards.length}</span>${x.license ? '<span class="chip">🪪 Bằng lái</span>' : ''}</span>
+          <span class="row" style="gap:6px"><span class="chip amber">🪙 ${x.coins}</span><span class="chip">⭐ ${totalStars(x)}</span><span class="chip green">📜 ${x.cards.length}/${allCards.length}</span>${x.license ? '<span class="chip">🪪 Bằng lái</span>' : ''}${lockChip(x)}</span>
           <span class="edit" data-edit="${x.id}" role="button" aria-label="Đổi tên" title="Đổi tên">✏️</span>
           <span class="edit" style="right:50px" data-paint="${x.id}" role="button" aria-label="Tủ thời trang" title="Tủ thời trang">👗</span>
         </button>`).join('')}</div>
@@ -262,9 +263,10 @@ function prepRoute(route) {
 
 async function startTrip(routeId) {
   const route = ROUTES.find(r => r.id === routeId); if (!route || route.soon) return;
+  const p = prof(selectedKid);
+  if (window.ZZZ) { const st = ZZZ.status(p.id); if (!st.canRide) { showBlocked(p, st); return; } }
   if (!ensure3D()) return;
   Audio.get();
-  const p = prof(selectedKid);
   prepRoute(route);
   home.hidden = true; play.hidden = false; resize();
   const streets = world.buildRoute(route, 7);
@@ -297,7 +299,17 @@ function showBrief() {
     <div class="actions"><button class="btn ghost" id="homeBtn" type="button">Về trang chính</button><button class="btn primary" id="okBtn" type="button">Lên xe! 🚲</button></div>`);
   return new Promise(res => { $('okBtn').onclick = () => { closeModal(); res(); }; $('homeBtn').onclick = () => { closeModal(); exitToHome(); }; });
 }
-function exitToHome() { G = null; play.hidden = true; home.hidden = false; setCtx([]); renderHome(); }
+function exitToHome() { flushRide(); G = null; play.hidden = true; home.hidden = false; setCtx([]); renderHome(); }
+/* Việc hôm nay (bố mẹ đặt ở trang phụ huynh chung): chưa làm đủ toán hoặc hết phút đạp xe thì chưa cho lên xe. */
+function showBlocked(p, st) {
+  const pl = st.plan, t = st.today, math = st.why === 'math';
+  openModal(`<div class="head"><div class="avatar" style="background:#ef6c00">👩</div><div><div class="kicker">Mẹ nhắn</div><h2>${math ? 'Làm toán xong rồi mới đạp xe nha!' : 'Hôm nay đạp xe đủ giờ rồi!'}</h2></div></div>
+    <p style="margin:0">${math ? `Việc hôm nay: làm <b>${pl.math} câu</b> trong Vở Ôn Toán. ${esc(p.name)} đã làm <b>${Math.min(t.answers, pl.math)}/${pl.math}</b> câu, còn <b>${pl.math - t.answers}</b> câu nữa thôi. Xong là được +${ZZZ.DAILY_BONUS} xu và lên xe liền!` : `Bố mẹ cho đạp xe <b>${pl.rideMin} phút</b> mỗi ngày, hôm nay đã đủ rồi. Mai đạp tiếp nhé, xe vẫn chờ con 🚲`}</p>
+    <div class="actions"><button class="btn ghost" id="okBtn" type="button">Để sau</button>${math ? `<a class="btn primary" href="../toan/${ZZZ.fromHub() ? '?hub=1' : ''}">📘 Đi làm toán</a>` : ''}</div>`);
+  $('okBtn').onclick = closeModal;
+}
+/* Cộng phút chơi hôm nay vào dữ liệu chung (mỗi ~5 giây một lần và khi rời chuyến). */
+function flushRide() { if (window.ZZZ && G && G.rideAcc) { ZZZ.logToday(G.p.id, { ride: G.rideAcc }); G.rideAcc = 0; } }
 
 /* ---------- HUD ---------- */
 let lastHUD = '';
@@ -333,8 +345,10 @@ function praise(text, coins) { G.coins += coins; Audio.coin(); banner(`${text} +
 let lastT = 0;
 function tick(now) {
   requestAnimationFrame(tick);
-  const dt = Math.min(.05, (now - lastT) / 1000 || 0); lastT = now;
+  const raw = (now - lastT) / 1000 || 0, dt = Math.min(.05, raw); lastT = now;
   if (play.hidden || !G) return;
+  // phút chơi hôm nay (tính cả lúc mua bán, đọc thẻ) cho "Việc hôm nay"
+  if (window.ZZZ && !G.finished) { G.rideAcc = (G.rideAcc || 0) + Math.min(1, raw); if (G.rideAcc >= 5) flushRide(); }
   if (!G.paused && !modalOpen && !G.finished) update(dt);
   renderFrame(dt);
 }
@@ -696,7 +710,7 @@ async function shopFlow(e) {
 
 /* ---------- về đích ---------- */
 async function finishTrip() {
-  G.finished = true; stopBike(); setCtx([]); updateHUD(true);
+  flushRide(); G.finished = true; stopBike(); setCtx([]); updateHUD(true);
   Audio.fanfare(); banner('🎉 Tới chợ Bến Thành rồi!', 'good', 3000); confetti();
   await sleep(1400);
   const goal = CARDS[G.route.goalCard];
