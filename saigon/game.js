@@ -95,7 +95,11 @@ function renderHome() {
     <section class="stack">
       <h2>Bộ sưu tập thẻ của ${esc(p.name)}</h2>
       <div class="album">${allCards.map(c => `<button class="tile ${p.cards.includes(c.id) ? 'unlocked' : 'locked'}" type="button" data-card="${c.id}" ${p.cards.includes(c.id) ? '' : 'disabled'}><span class="e">${c.emoji}</span><span class="n">${esc(c.title)}</span></button>`).join('')}</div>
-      ${p.stamps.length ? `<div class="row"><span class="muted">Tem địa danh:</span>${p.stamps.map(s => `<span class="chip amber">${CARDS[s] ? CARDS[s].emoji + ' ' + esc(CARDS[s].title) : esc(s)}</span>`).join('')}</div>` : ''}
+    </section>
+    <section class="stack">
+      <div class="row" style="justify-content:space-between"><h2>Bản đồ con dấu của ${esc(p.name)}</h2><span class="chip amber">📍 ${ROUTES.filter(r => p.stamps.includes(r.goalCard)).length}/${ROUTES.length} nơi${p.explorer ? ' · 🏅 Nhà thám hiểm Sài Gòn' : ''}</span></div>
+      ${stampMap(p)}
+      <p class="muted" style="margin:0;font-size:14px">Đạp tới một nơi là được đóng dấu lên bản đồ. Bấm vào một nơi để đi chuyến đó. Đủ 5 con dấu được danh hiệu <b>Nhà thám hiểm Sài Gòn</b> và thưởng 50 xu.</p>
     </section>
     ${showParent ? renderParent() : ''}
     <p class="muted" style="font-size:13px;margin:0">Bấm 👗 trên thẻ của bé để mở tủ thời trang (tóc, mặt, trang phục, mũ, màu xe...). Cách chơi: giữ nút <b>Đạp</b> để đi, <b>Thắng</b> để dừng. Xe đạp đi <b>sát lề phải</b>; gặp xe hàng rong đậu thì bấm <b>Lách trái</b> rồi về lề. Đèn đỏ dừng trước vạch, nhường người đi bộ, giơ tay trước khi rẽ. Bàn phím: mũi tên ← → đạp/thắng, ↑ ↓ đổi làn, A/D giơ tay, E vào quán, B chuông.</p>`;
@@ -105,10 +109,45 @@ function renderHome() {
     selectedKid = b.dataset.pid; renderHome();
   });
   $('homeBody').querySelectorAll('[data-route]').forEach(b => b.onclick = () => startTrip(b.dataset.route));
+  $('homeBody').querySelectorAll('[data-go]').forEach(b => { b.onclick = () => startTrip(b.dataset.go); b.onkeydown = (ev) => { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); startTrip(b.dataset.go); } }; });
   $('homeBody').querySelectorAll('[data-lite]').forEach(b => b.onclick = () => { const v = b.dataset.lite === '1'; if (v !== !!state.lite) { state.lite = v; save(); if (renderer) { renderer.dispose(); renderer = null; } renderHome(); } });
   $('homeBody').querySelectorAll('[data-view]').forEach(b => b.onclick = () => { state.view = b.dataset.view; save(); renderHome(); });
   $('homeBody').querySelectorAll('[data-card]').forEach(b => b.onclick = () => showCard(CARDS[b.dataset.card], { readOnly: true }));
   if (showParent) bindParent();
+}
+/* Bản đồ con dấu: vị trí cách điệu của nhà và 5 nơi đến (không theo tỉ lệ thật), đường đi nét đứt từ nhà. */
+const STAMP_MAP = {
+  home: [150, 95],
+  benthanh: { at: [235, 312], way: 'M150 95 V312 H235' },
+  dinh: { at: [262, 188], way: 'M150 95 V188 H262' },
+  ducba: { at: [358, 168], way: 'M150 95 H358 V168' },
+  zoo: { at: [492, 108], way: 'M150 95 H492 V108' },
+  nharong: { at: [462, 332], way: 'M150 95 V252 H462 V332' }
+};
+function stampMap(p) {
+  const [hx, hy] = STAMP_MAP.home;
+  const nodes = ROUTES.map(r => {
+    const m = STAMP_MAP[r.id]; if (!m) return '';
+    const done = p.stamps.includes(r.goalCard), [x, y] = m.at, st = p.stars[r.id] || 0;
+    return `<path class="way ${done ? 'done' : ''}" d="${m.way}"/>
+      <g class="node ${done ? 'done' : 'todo'}" data-go="${r.id}" role="button" tabindex="0" aria-label="${esc(r.to)}${done ? ', đã tới' : ', chưa tới'}">
+        <circle cx="${x}" cy="${y}" r="30"/>
+        <text class="em" x="${x}" y="${y + 10}" text-anchor="middle">${r.emoji}</text>
+        <text class="nm" x="${x}" y="${y + 50}" text-anchor="middle">${esc(r.to)}</text>
+        <text class="sr" x="${x}" y="${y + 66}" text-anchor="middle">${st ? '⭐'.repeat(st) + '☆'.repeat(3 - st) : '☆☆☆'}</text>
+        ${done ? `<g class="seal" transform="rotate(-14 ${x + 24} ${y - 26})"><rect x="${x - 2}" y="${y - 36}" width="54" height="19" rx="6"/><text x="${x + 25}" y="${y - 22.5}" text-anchor="middle">ĐÃ TỚI</text></g>` : ''}
+      </g>`;
+  }).join('');
+  return `<svg class="smap" viewBox="0 0 640 400" role="img" aria-label="Bản đồ con dấu">
+    <rect class="bg" width="640" height="400" rx="16"/>
+    <path class="river" d="M600 -10 C 585 80, 625 150, 585 220 S 520 330, 548 420"/>
+    <path class="river thin" d="M300 400 C 330 360, 420 350, 470 332 S 540 300, 585 220"/>
+    <rect class="park" x="300" y="112" width="86" height="34" rx="8"/><rect class="park" x="438" y="60" width="92" height="70" rx="10"/>
+    <line class="grid" x1="40" y1="60" x2="520" y2="60"/><line class="grid" x1="40" y1="250" x2="520" y2="250"/><line class="grid" x1="90" y1="20" x2="90" y2="380"/><line class="grid" x1="400" y1="20" x2="400" y2="320"/>
+    <text class="rv" x="612" y="120" text-anchor="middle" transform="rotate(80 612 120)">sông Sài Gòn</text>
+    ${nodes}
+    <g class="node home" aria-label="Nhà mình"><circle cx="${hx}" cy="${hy}" r="26"/><text class="em" x="${hx}" y="${hy + 9}" text-anchor="middle">🏠</text><text class="nm" x="${hx}" y="${hy - 34}" text-anchor="middle">Nhà mình</text></g>
+  </svg>`;
 }
 function renameKid(pid) {
   const p = prof(pid);
@@ -235,7 +274,7 @@ function showCard(card, { readOnly = false, isNew = false } = {}) {
 const VMAX = 6.5, ACC = 2.6, COAST = .7, BRAKE = 6.5, LANE_D = [3.9, 1.6];
 let renderer, world, bike, canvas = $('cv');
 let G = null; // phiên chơi hiện tại
-Object.defineProperty(window, '__G', { get: () => G });
+Object.defineProperty(window, '__G', { get: () => G }); Object.defineProperty(window, '__W', { get: () => world }); // để kiểm tra tự động xem được trạng thái và thế giới
 const input = { pedal: false, brake: false };
 function releaseInputs() { input.pedal = input.brake = false; document.querySelectorAll('.pad.on').forEach(b => b.classList.remove('on')); }
 
@@ -257,7 +296,7 @@ function resize() {
 function prepRoute(route) {
   for (const st of route.streets) {
     st.cardTitle = 'Đ. ' + CARDS[st.card].title.replace(/^Đường /, '');
-    for (const ev of st.events) { if (ev.card) ev.cardTitle = 'Đ. ' + CARDS[ev.card].title.replace(/^Đường /, ''); if (ev.shop) ev.shopDef = SHOPS[ev.shop]; }
+    for (const ev of st.events) { if (ev.card) ev.cardTitle = 'Đ. ' + CARDS[ev.card].title.replace(/^Đường /, ''); if (ev.shop) ev.shopDef = SHOPS[ev.shop]; if (ev.type === 'school' && ev.card) ev.sign = CARDS[ev.card].sign || CARDS[ev.card].title.toUpperCase(); }
   }
 }
 
@@ -269,7 +308,7 @@ async function startTrip(routeId) {
   Audio.get();
   prepRoute(route);
   home.hidden = true; play.hidden = false; resize();
-  const streets = world.buildRoute(route, 7);
+  const streets = world.buildRoute(route, 7 + ROUTES.indexOf(route));
   if (bike) world.actors.remove(bike);
   bike = makeBike({ bike: p.bike, avatar: p.avatar }); world.actors.add(bike);
   const time = new URLSearchParams(location.search).get('time') || ['morning', 'morning', 'morning', 'sunset', 'dusk'][Math.floor(Math.random() * 5)]; world.setTime(time);
@@ -479,7 +518,12 @@ function processEvents(dt) {
         const inZone = G.s > e.s && G.s < e.s + 60;
         if (!e.entered && inZone) { e.entered = true; e.hot = 0; banner('🏫 Gần trường học: đi chậm lại nhé!', '', 2600); }
         if (inZone) { G.schoolHot = G.v > VMAX * .55; if (G.schoolHot) { e.hot += dt; if (e.hot > 1.6 && !e.violated) { e.violated = true; violate('speed'); G.v = VMAX * .4; return; } } }
-        else { G.schoolHot = false; if (e.entered && G.s >= e.s + 60) { e.done = true; if (!e.violated) praise('Đi chậm qua trường học đúng! 👍', 5); } }
+        else { G.schoolHot = false; if (e.entered && G.s >= e.s + 60) { e.done = true; if (!e.violated) praise('Đi chậm qua trường học đúng! 👍', 5); if (e.card && !G.cardShown[e.card]) { G.cardShown[e.card] = true; stopBike(); showStreetCard(CARDS[e.card]); return; } } }
+        break;
+      }
+      case 'bridge': {
+        if (!e.entered && rel < 20) { e.entered = true; banner('🌉 Lên cầu Khánh Hội! Nhìn sông Sài Gòn hai bên kìa.', '', 3200); }
+        if (rel < -80) e.done = true;
         break;
       }
       case 'landmark': {
@@ -711,11 +755,13 @@ async function shopFlow(e) {
 /* ---------- về đích ---------- */
 async function finishTrip() {
   flushRide(); G.finished = true; stopBike(); setCtx([]); updateHUD(true);
-  Audio.fanfare(); banner('🎉 Tới chợ Bến Thành rồi!', 'good', 3000); confetti();
+  Audio.fanfare(); banner(`🎉 Tới ${G.route.to} rồi!`, 'good', 3000); confetti();
   await sleep(1400);
   const goal = CARDS[G.route.goalCard];
   const isNew = !G.p.cards.includes(goal.id); if (isNew) G.p.cards.push(goal.id);
   if (!G.p.stamps.includes(goal.id)) G.p.stamps.push(goal.id);
+  // đủ con dấu của mọi tuyến -> Nhà thám hiểm Sài Gòn (một lần, +50 xu ở tổng kết)
+  const explorerNew = !G.p.explorer && ROUTES.every(r => r.soon || G.p.stamps.includes(r.goalCard)); if (explorerNew) G.p.explorer = true;
   save();
   await showCard(goal, { isNew });
   // kiểm nhiệm vụ
@@ -727,9 +773,10 @@ async function finishTrip() {
     <p style="margin:0">Tiền còn lại <b>${moneyFull(G.money)}</b> con được giữ làm xu.</p>
     <div class="actions"><button class="btn primary" id="okBtn" type="button">Tiếp</button></div>`);
   await waitClick('okBtn');
-  // giúp bán hàng
-  openModal(`<div class="head"><div class="avatar" style="background:#8d6e63">🍊</div><div><div class="kicker">Trong chợ</div><h2>Dì Năm: "Giúp dì bán hàng một chút nha!"</h2></div></div><p style="margin:0">Khách đông quá, con tính tiền giúp dì 2 lượt, mỗi lượt đúng được 10 xu.</p>
-    <div class="actions"><button class="btn ghost" id="skipBtn" type="button">Thôi, con mệt rồi</button><button class="btn primary" id="okBtn" type="button">Giúp dì! 💪</button></div>`);
+  // giúp bán hàng (người giúp tùy tuyến, xem helper trong data.js)
+  const hp = G.route.helper, hpTitle = hp.who.split(' ')[0], hpLow = hpTitle.toLowerCase();
+  openModal(`<div class="head"><div class="avatar" style="background:${hp.bg}">${hp.emoji}</div><div><div class="kicker">${esc(hp.where)}</div><h2>${esc(hp.who)}: "${esc(hp.ask)}"</h2></div></div><p style="margin:0">Khách đông quá, con tính tiền giúp ${esc(hpLow)} 2 lượt, mỗi lượt đúng được 10 xu.</p>
+    <div class="actions"><button class="btn ghost" id="skipBtn" type="button">Thôi, con mệt rồi</button><button class="btn primary" id="okBtn" type="button">Giúp ${esc(hpLow)}! 💪</button></div>`);
   const help = await new Promise(res => { $('okBtn').onclick = () => res(true); $('skipBtn').onclick = () => res(false); });
   if (help) await sellFlow();
   // câu đố
@@ -745,7 +792,7 @@ async function finishTrip() {
   }
   // tổng kết
   const stars = G.violations === 0 ? 3 : G.violations <= 2 ? 2 : 1;
-  const coins = G.coins + G.money;
+  const coins = G.coins + G.money + (explorerNew ? 50 : 0);
   const secs = Math.round((Date.now() - G.startAt) / 1000);
   const p = G.p;
   p.coins += coins; p.stars[G.route.id] = Math.max(p.stars[G.route.id] || 0, stars);
@@ -758,6 +805,7 @@ async function finishTrip() {
   openModal(`<div class="stars-big">${'⭐'.repeat(stars)}${'☆'.repeat(3 - stars)}</div><h2 style="text-align:center">${stars === 3 ? 'Tuyệt vời! Đi đúng luật suốt chuyến!' : stars === 2 ? 'Giỏi lắm! Chỉ vài lỗi nhỏ.' : 'Về tới đích rồi! Lần sau cẩn thận hơn nhé.'}</h2>
     <div class="result"><div class="cell"><b>${G.violations}</b><span>lỗi giao thông</span></div><div class="cell"><b>${G.math[0]}/${G.math[1]}</b><span>bài toán đúng</span></div><div class="cell"><b>${G.quiz[0]}/${G.quiz[1]}</b><span>câu đố đúng</span></div><div class="cell"><b>🪙 ${boost ? coins * 2 : coins}</b><span>xu nhận được${boost ? ' (×2 cuối tuần)' : ''}</span></div></div>
     ${gotLicense ? '<div class="cop"><div class="face">🪪</div><div class="say"><b>Bằng lái xe đạp!</b> Con đã đi đúng luật suốt chuyến, chú công an tặng con bằng lái xe đạp nè.</div></div>' : ''}
+    ${explorerNew ? '<div class="cop"><div class="face">🏅</div><div class="say"><b>Nhà thám hiểm Sài Gòn!</b> Con đã đạp xe tới đủ 5 nơi trên bản đồ con dấu. Thưởng thêm 50 xu!</div></div>' : ''}
     ${stk ? `<div class="cop"><div class="face">${stk.em}</div><div class="say"><b>Sticker mới: ${esc(stk.name)}!</b> Chuyến đi 3 sao được một sticker vào album cả nhà (xem ở trang chủ zzzlearning).</div></div>` : ''}
     <p class="muted" style="margin:0;text-align:center">Thẻ đã sưu tập: ${(G.tripCards || []).concat(G.route.goalCard).map(id => CARDS[id].emoji).join(' ')} · ${Math.round(secs / 60)} phút</p>
     <div class="actions"><button class="btn ghost" id="againBtn" type="button">Đạp lại</button><button class="btn primary" id="okBtn" type="button">Về trang chính</button></div>`);
@@ -765,13 +813,15 @@ async function finishTrip() {
   $('againBtn').onclick = () => { closeModal(); const rid = G.route.id; exitToHome(); startTrip(rid); };
 }
 async function sellFlow() {
-  const g2 = G.p.grade === 'g2';
-  const a = g2 ? 40 : 38, b = g2 ? 25 : 28, n = g2 ? 1 : 3;
+  const hp = G.route.helper, gr = G.p.grade, g2 = gr === 'g2';
+  const [i0, i1] = hp.items, m = hp.multi, unit = m.unit || 'kg';
+  const a = g2 ? i0.price[gr] : m.price, b = i1.price[gr], n = g2 ? 1 : m.n;
   const total = g2 ? a + b : a * n + b;
-  await askNumber({ kicker: 'Giúp dì Năm bán hàng', title: 'Khách thứ nhất', prompt: g2 ? `Khách mua 🍊 1 kg cam <b>${a} nghìn</b> và 🍌 1 nải chuối <b>${b} nghìn</b>. Tổng bao nhiêu nghìn?` : `Khách mua 🥭 ${n} kg xoài giá <b>${a} nghìn</b>/kg và 🍌 1 nải chuối <b>${b} nghìn</b>. Tổng bao nhiêu nghìn?`, answer: total, explain: g2 ? `${a} + ${b} = ${total} nghìn.` : `${n} × ${a} + ${b} = ${total} nghìn.` });
-  const paid = g2 ? 100 : 200;
-  await askNumber({ kicker: 'Giúp dì Năm bán hàng', title: 'Khách thứ hai', prompt: `Khách mua hết <b>${total} nghìn</b> và đưa tờ <b>${paid} nghìn</b>. Dì thối lại bao nhiêu nghìn?`, answer: paid - total, explain: `${paid} − ${total} = ${paid - total} nghìn.` });
-  openModal(`<h2>Dì Năm: "Cảm ơn con nhiều lắm!" 🍊</h2><div class="actions"><button class="btn primary" id="okBtn" type="button">Tiếp</button></div>`); await waitClick('okBtn');
+  const whoL = hp.who.replace(/^\S+/, w => w.toLowerCase()), kicker = `Giúp ${whoL} ${hp.job}`;
+  await askNumber({ kicker, title: 'Khách thứ nhất', prompt: g2 ? `Khách mua ${i0.emoji} ${esc(i0.label)} <b>${a} nghìn</b> và ${i1.emoji} ${esc(i1.label)} <b>${b} nghìn</b>. Tổng bao nhiêu nghìn?` : `Khách mua ${m.emoji} ${n} ${esc(m.label)} giá <b>${a} nghìn</b>/${esc(unit)} và ${i1.emoji} ${esc(i1.label)} <b>${b} nghìn</b>. Tổng bao nhiêu nghìn?`, answer: total, explain: g2 ? `${a} + ${b} = ${total} nghìn.` : `${n} × ${a} + ${b} = ${total} nghìn.` });
+  const paid = total < 50 ? 50 : total < 100 ? 100 : 200;
+  await askNumber({ kicker, title: 'Khách thứ hai', prompt: `Khách mua hết <b>${total} nghìn</b> và đưa tờ <b>${paid} nghìn</b>. ${esc(hp.who.split(' ')[0])} thối lại bao nhiêu nghìn?`, answer: paid - total, explain: `${paid} − ${total} = ${paid - total} nghìn.` });
+  openModal(`<h2>${esc(hp.who)}: "Cảm ơn con nhiều lắm!" ${hp.emoji}</h2><div class="actions"><button class="btn primary" id="okBtn" type="button">Tiếp</button></div>`); await waitClick('okBtn');
 }
 
 /* ---------- pháo giấy ---------- */

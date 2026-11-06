@@ -156,6 +156,14 @@ export function drawSignCanvas(type, size = 256) {
   else if (type === 'stop') { g.fillStyle = '#d32f2f'; g.beginPath(); for (let i = 0; i < 8; i++) { const a = Math.PI / 8 + i * Math.PI / 4; g.lineTo(128 + 118 * Math.cos(a), 128 + 118 * Math.sin(a)); } g.closePath(); g.fill(); g.fillStyle = '#fff'; g.font = 'bold 72px sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('STOP', 128, 132); }
   return c;
 }
+function clockTexture() {
+  return canvasTex(256, 256, (c) => { c.fillStyle = '#fff'; c.beginPath(); c.arc(128, 128, 120, 0, 7); c.fill(); c.strokeStyle = '#222'; c.lineWidth = 8; c.beginPath(); c.arc(128, 128, 112, 0, 7); c.stroke(); for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; c.beginPath(); c.moveTo(128 + 95 * Math.cos(a), 128 + 95 * Math.sin(a)); c.lineTo(128 + 108 * Math.cos(a), 128 + 108 * Math.sin(a)); c.stroke(); } c.lineWidth = 10; c.beginPath(); c.moveTo(128, 128); c.lineTo(128, 60); c.moveTo(128, 128); c.lineTo(185, 128); c.stroke(); }, 'clock');
+}
+/* bảng emoji to (thú trong vườn, biển hiệu): sprite luôn quay về camera */
+function emojiBillboard(emoji, size) {
+  const t = canvasTex(128, 128, (c) => { c.clearRect(0, 0, 128, 128); c.font = '100px sans-serif'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(emoji, 64, 72); }, 'emoji128-' + emoji);
+  const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true })); sp.scale.set(size, size, 1); sp.position.y = size / 2; return sp;
+}
 function signTexture(type) {
   return canvasTex(256, 256, (g) => { g.drawImage(drawSignCanvas(type, 256), 0, 0); }, 'sign-' + type);
 }
@@ -176,8 +184,18 @@ const M = {
   curb: new THREE.MeshStandardMaterial({ color: 0x9e9e9e, roughness: .9 }),
   ground: new THREE.MeshStandardMaterial({ color: 0x8e9e7a, roughness: 1 }),
   lamp: new THREE.MeshStandardMaterial({ color: 0xfff3c4, emissive: 0xffe08a, emissiveIntensity: 0, roughness: .4 }),
-  window: new THREE.MeshStandardMaterial({ color: 0x90caf9, emissive: 0xffd27a, emissiveIntensity: 0, roughness: .1, metalness: .2, transparent: true, opacity: .6 })
+  window: new THREE.MeshStandardMaterial({ color: 0x90caf9, emissive: 0xffd27a, emissiveIntensity: 0, roughness: .1, metalness: .2, transparent: true, opacity: .6 }),
+  water: new THREE.MeshStandardMaterial({ color: 0x3d8fbf, roughness: .25, metalness: .15 }),
+  stone: new THREE.MeshStandardMaterial({ color: 0xcfd8dc, roughness: .9 }),
+  lawn: new THREE.MeshStandardMaterial({ color: 0x7cb342, roughness: 1 }),
+  bronze: new THREE.MeshStandardMaterial({ color: 0x5d6d4b, roughness: .5, metalness: .4 }),
+  brick: new THREE.MeshStandardMaterial({ color: 0xb5563c, roughness: .9 }),
+  ochre: new THREE.MeshStandardMaterial({ color: 0xf2c75c, roughness: .9 }),
+  tile: new THREE.MeshStandardMaterial({ color: 0xb23a2b, roughness: .9 }),
+  green: new THREE.MeshStandardMaterial({ color: 0x2e7d32, roughness: .8 }),
+  olive: new THREE.MeshStandardMaterial({ color: 0x556b2f, roughness: .9 })
 };
+const mat = (color, roughness = .85) => new THREE.MeshStandardMaterial({ color, roughness });
 const G = {
   box: new THREE.BoxGeometry(1, 1, 1),
   cyl: new THREE.CylinderGeometry(1, 1, 1, 10),
@@ -245,6 +263,18 @@ export function createRenderer(canvas, lite = false) {
   return renderer;
 }
 
+/* Khoảng dọc đường không xây nhà: quanh đèn/vạch qua đường, trường, địa danh, cầu */
+function gapsOf(st) {
+  const gaps = [];
+  for (const ev of st.events) {
+    if (ev.type === 'light' || ev.type === 'zebra') gaps.push([ev.x - (ev.card ? 7 : 3), ev.x + (ev.card ? 7 : 3)]);
+    if (ev.type === 'school') gaps.push([ev.x + 10, ev.x + 50]);
+    if (ev.type === 'landmark') gaps.push([ev.x - 14, ev.x + 14]);
+    if (ev.type === 'bridge') gaps.push([ev.x - 6, ev.x + 86]);
+  }
+  return gaps;
+}
+
 export class World {
   constructor() {
     this.scene = new THREE.Scene();
@@ -261,7 +291,7 @@ export class World {
     const cm = new THREE.MeshBasicMaterial({ map: cloudTexture(), transparent: true, depthWrite: false, fog: false });
     const cg = new THREE.PlaneGeometry(90, 45);
     for (let i = 0; i < 14; i++) { const c = new THREE.Mesh(cg, cm); const a = i / 14 * Math.PI * 2; c.position.set(Math.cos(a) * 380, 120 + (i % 4) * 25, Math.sin(a) * 380); c.lookAt(0, 90, 0); sky.add(c); }
-    this.ground = new THREE.Mesh(new THREE.PlaneGeometry(3000, 3000), M.ground); this.ground.rotation.x = -Math.PI / 2; this.ground.position.y = -.05; this.ground.receiveShadow = true; this.scene.add(this.ground);
+    this.ground = new THREE.Mesh(new THREE.PlaneGeometry(3000, 3000, 40, 40), M.ground); // chia nhỏ để độ sâu chính xác, mặt đường không bị mặt đất đè this.ground.rotation.x = -Math.PI / 2; this.ground.position.y = -.05; this.ground.receiveShadow = true; this.scene.add(this.ground);
     this.statics = new THREE.Group(); this.scene.add(this.statics);
     this.glows = []; this.facadeMats = [];
     this.actors = new THREE.Group(); this.scene.add(this.actors);
@@ -284,35 +314,30 @@ export class World {
       const isLast = i === route.streets.length - 1;
       const seg = this.path.addStraight(st.length);
       const info = { def: st, s0: seg.s0, len: st.length, seg, events: [], objects: {} };
-      const gaps = []; // chỗ không xây nhà (ngã tư nhỏ, hẻm)
-      for (const ev of st.events) {
-        const e = Object.assign({}, ev, { s: seg.s0 + ev.x });
-        info.events.push(e);
-        if (ev.type === 'light' || ev.type === 'zebra') gaps.push([ev.x - (ev.card ? 7 : 3), ev.x + (ev.card ? 7 : 3)]);
-        if (ev.type === 'school') gaps.push([ev.x + 10, ev.x + 50]);
-        if (ev.type === 'landmark') gaps.push([ev.x - 14, ev.x + 14]);
-      }
-      this.buildStraight(seg, st, info, gaps, r, () => facadeVariant++, isLast);
+      const gaps = gapsOf(st); // chỗ không xây nhà (ngã tư nhỏ, hẻm, cầu, trường, địa danh)
+      for (const ev of st.events) info.events.push(Object.assign({}, ev, { s: seg.s0 + ev.x }));
+      const prevTurn = i > 0 ? route.streets[i - 1].turn : null;
+      this.buildStraight(seg, st, info, gaps, r, () => facadeVariant++, isLast, prevTurn);
       // biển tên đường đầu phố (hai bên)
       const card = st.cardTitle || '';
       this.addStreetSign(seg, 7, 5.6, card); this.addStreetSign(seg, 7, -5.6, card);
       if (!isLast) {
         const arc = this.path.addTurn(st.turn);
         info.turnSeg = arc; info.cornerS = arc.s0; info.endS = arc.s0 + arc.len;
-        this.buildIntersection(seg, arc, r, () => facadeVariant++, st.next);
+        this.buildIntersection(seg, arc, r, () => facadeVariant++, st.next, st, route.streets[i + 1]);
       } else { info.endS = seg.s0 + seg.len; }
       streets.push(info);
     });
     // nhà của bé ở đầu tuyến
     this.addHome(streets[0].seg);
-    // nơi đến: chợ Bến Thành
-    this.addMarket(streets[streets.length - 1].seg);
+    // nơi đến: mô hình theo thẻ địa danh của tuyến
+    this.addGoal(streets[streets.length - 1].seg, route);
     this.totalLength = this.path.length;
     return streets;
   }
 
   /* một đoạn phố thẳng: mặt đường, lề, nhà hai bên, cây, đèn đường, xe máy đậu, vật thể sự kiện */
-  buildStraight(seg, st, info, gaps, r, nextVariant, isLast) {
+  buildStraight(seg, st, info, gaps, r, nextVariant, isLast, prevTurn = null) {
     const { start, dir, right, len } = seg;
     const place = (obj, s, d, y = 0) => { obj.position.copy(start).addScaledVector(dir, s).addScaledVector(right, d); obj.position.y += y; obj.lookAt(obj.position.clone().add(dir)); this.statics.add(obj); return obj; };
     const s0 = -3, s1 = len + (isLast ? 14 : 3);
@@ -328,8 +353,12 @@ export class World {
       sw.receiveShadow = true; sw.castShadow = false;
       const g = new THREE.Group(); g.add(sw); place(g, (s0 + s1) / 2, side * 6.5, .075);
     }
+    // bờ sông (nếu có) thay cho dãy nhà một bên
+    if (st.river) this.addRiverside(place, seg, st, info, r, isLast, prevTurn);
+    const onBridge = (s) => info.events.some(e => e.type === 'bridge' && s > e.x - 6 && s < e.x + 86);
     // nhà hai bên
     for (const side of [1, -1]) {
+      if (st.river === side) continue;
       let s = -2 + r() * 2;
       while (s < len - 2) {
         const w = r.int(4, 7) + r() * 1.5;
@@ -356,10 +385,10 @@ export class World {
     // cây, đèn đường, xe máy đậu
     for (const side of [1, -1]) {
       for (let s = 6 + (side === 1 ? 7 : 0); s < len - 6; s += 14 + r() * 4) {
-        const busy = info.events.some(e => Math.abs(e.x - s) < 7 && side === 1);
+        const busy = info.events.some(e => Math.abs(e.x - s) < 7 && side === 1) || onBridge(s);
         if (busy) continue;
         if (r() < .8) this.addTree(place, s, side * 6.9, r);
-        if (r() < .5) this.addParkedMotos(place, s + 5, side * 6.4, r);
+        if (r() < .5 && st.river !== side) this.addParkedMotos(place, s + 5, side * 6.4, r);
       }
       for (let s = 18; s < len - 10; s += 30) { if (!info.events.some(e => Math.abs(e.x - s) < 5)) this.addLamp(place, s, side * 5.3); }
     }
@@ -371,6 +400,7 @@ export class World {
       else if (e.type === 'obstacle') this.addObstacle(place, e, r);
       else if (e.type === 'school') this.addSchool(place, e);
       else if (e.type === 'landmark') this.addLandmark(place, e);
+      else if (e.type === 'bridge') this.addBridge(place, e, st);
     }
   }
 
@@ -474,20 +504,182 @@ export class World {
   addSchool(place, e) {
     this.addSignPost(place, e.x - 6, 5.5, 'school');
     const g = new THREE.Group();
-    const wall = new THREE.MeshStandardMaterial({ color: 0xfff176, roughness: .9 });
-    const b = box(34, 8, 12, wall, 0, 4, -8); b.castShadow = true; b.receiveShadow = true; g.add(b);
-    const roof = box(35, .6, 13, new THREE.MeshStandardMaterial({ color: 0xc0392b, roughness: .9 }), 0, 8.3, -8); g.add(roof);
-    // cửa sổ
-    for (let i = 0; i < 7; i++) for (let f = 0; f < 2; f++) { const w = box(2.4, 1.8, .1, M.window, -14 + i * 4.6, 2.3 + f * 3.4, -1.95); g.add(w); }
-    const sign = new THREE.Mesh(new THREE.BoxGeometry(12, 1.2, .1), [wall, wall, wall, wall, new THREE.MeshStandardMaterial({ map: textBoardTexture('TRƯỜNG TIỂU HỌC', { bg: '#1565c0', w: 1024, h: 110, size: 72 }), roughness: .5 }), wall]); sign.position.set(0, 7.2, -1.9); g.add(sign);
+    const named = !!e.card, floors = named ? 3 : 2, h = floors * 3.4 + 1.2;
+    const wall = new THREE.MeshStandardMaterial({ color: named ? 0xf4d58d : 0xfff176, roughness: .9 });
+    const b = box(34, h, 12, wall, 0, h / 2, -8); b.castShadow = true; b.receiveShadow = true; g.add(b);
+    const roof = box(35, .6, 13, new THREE.MeshStandardMaterial({ color: 0xc0392b, roughness: .9 }), 0, h + .3, -8); g.add(roof);
+    if (named) { const top = new THREE.Mesh(new THREE.ConeGeometry(1, 1, 4), M.tile); top.rotation.y = Math.PI / 4; top.scale.set(35 / 2 * Math.SQRT2, 2.6, 13 / 2 * Math.SQRT2); top.position.set(0, h + 1.9, -8); g.add(top); }
+    // cửa sổ (trường có tên: cửa vòm trắng kiểu Pháp)
+    for (let i = 0; i < 7; i++) for (let f = 0; f < floors; f++) { const w = box(2.4, 1.8, .1, M.window, -14 + i * 4.6, 2.3 + f * 3.4, -1.95); g.add(w); if (named) { const arc = new THREE.Mesh(new THREE.CircleGeometry(1.25, 16), M.white); arc.position.set(-14 + i * 4.6, 3.1 + f * 3.4, -1.98); g.add(arc); w.position.z = -1.9; } }
+    const sign = new THREE.Mesh(new THREE.BoxGeometry(named ? 16 : 12, 1.2, .1), [wall, wall, wall, wall, new THREE.MeshStandardMaterial({ map: textBoardTexture(e.sign || 'TRƯỜNG TIỂU HỌC', { bg: '#1565c0', w: 1024, h: 110, size: 72 }), roughness: .5 }), wall]); sign.position.set(0, h - .8, -1.9); g.add(sign);
     // cổng và hàng rào
     for (let x = -17; x <= 17; x += 1.1) { if (Math.abs(x) < 2.5) continue; g.add(cyl(.05, 1.6, M.pole, x, .8, -.2)); }
     g.add(box(34, .12, .1, M.pole, 0, 1.55, -.2));
     g.add(cyl(.12, 7, M.pole, -4, 3.5, 1)); const flag = box(1.6, 1.05, .05, M.red, -3.2, 6.4, 1); g.add(flag);
     const star = new THREE.Mesh(new THREE.CircleGeometry(.25, 5), M.yellow); star.position.set(-3.2, 6.4, 1.04); g.add(star);
+    if (named) for (const x of [-15, 15]) { const t = new THREE.Group(); t.add(cyl(.22, 6, M.trunk, 0, 3, 0)); const c = new THREE.Mesh(G.leaf, M.leaf[0]); c.scale.set(3, 2.4, 3); c.position.y = 7; c.castShadow = true; t.add(c); t.position.set(x, 0, 1.5); g.add(t); }
     place(g, e.x + 30, 8);
     g.rotation.y += Math.PI / 2; // mặt tiền ra đường
     e.obj = { zone: [e.x, e.x + 60] };
+  }
+  /* bờ sông một bên đường: kè đá, lan can, mặt nước rộng, vài chiếc tàu, nhà cao bên bờ xa.
+     Mặt nước được cắt ở hai đầu để không tràn lên đường trước/sau khi rẽ: nếu đường trước rẽ về phía sông
+     (nước nằm dọc đường trước) thì bắt đầu sát góc; nếu đường này rẽ về phía sông thì dừng trước ngã tư. */
+  addRiverside(place, seg, st, info, r, isLast, prevTurn = null) {
+    const side = st.river, len = seg.len;
+    const towardRiver = side === -1 ? 'left' : 'right';
+    const prevToward = prevTurn === towardRiver, nextToward = !isLast && st.turn === towardRiver;
+    const a = prevToward ? -2 : -12, b = isLast ? len + 200 : len - 2;
+    const water = new THREE.Mesh(new THREE.PlaneGeometry(130, b - a), M.water); water.rotation.x = -Math.PI / 2; water.receiveShadow = true;
+    const wg = new THREE.Group(); wg.add(water); place(wg, (a + b) / 2, side * (9.5 + 65), .03);
+    const qb = isLast ? len + 20 : b;
+    const quay = box(1.2, .7, qb - a, M.stone, 0, 0, 0); const qg = new THREE.Group(); qg.add(quay); place(qg, (a + qb) / 2, side * 8.9, .35);
+    for (let x = a + 3; x < qb - 1; x += 5) { const post = cyl(.05, 1.1, M.pole, 0, .55, 0); const pg = new THREE.Group(); pg.add(post); place(pg, x, side * 8.3); }
+    const rail = box(.08, .08, qb - a - 4, M.pole, 0, 0, 0); const rg = new THREE.Group(); rg.add(rail); place(rg, (a + qb) / 2, side * 8.3, 1.1);
+    // tàu thuyền
+    for (let x = 30 + r() * 20; x < len - 10; x += 55 + r() * 30) {
+      const bt = new THREE.Group(); const big = r() < .4;
+      bt.add(box(big ? 16 : 7, big ? 2.6 : 1.4, big ? 5 : 2.6, mat(big ? 0x37474f : r.pick([0x1565c0, 0x6d4c41, 0x2e7d32])), 0, big ? 1.3 : .7, 0));
+      bt.add(box(big ? 6 : 2.4, big ? 3 : 1.5, big ? 4 : 2, M.white, big ? -3 : -1, big ? 4.1 : 2.1, 0));
+      if (big) bt.add(cyl(.5, 2.4, M.red, -3, 6.8, 0));
+      place(bt, x, side * (18 + r() * 25), .1); bt.rotation.y += (r() - .5) * .6;
+    }
+    // bờ xa: vài tòa nhà cao (chừa góc sông nơi hai đường ven sông gặp nhau)
+    const ta = prevToward ? a + 150 : a + 10, tb = nextToward ? len - 150 : b - 20;
+    for (let x = ta + r() * 20; x < tb; x += 28 + r() * 20) {
+      const hgt = 25 + r() * 45; const t = box(9 + r() * 6, hgt, 9 + r() * 6, new THREE.MeshStandardMaterial({ color: r.pick([0x90caf9, 0xb0bec5, 0xe3f2fd, 0xcfd8dc]), roughness: .4, metalness: .2 }), 0, hgt / 2, 0);
+      const tg = new THREE.Group(); tg.add(t); place(tg, x, side * (148 + r() * 25));
+    }
+  }
+  /* cầu 80 m: lan can hai bên, mặt nước bên dưới (bên không có bờ sông sẵn) */
+  addBridge(place, e, st) {
+    for (const side of [1, -1]) {
+      for (let x = e.x; x <= e.x + 80; x += 4) { const post = cyl(.06, 1.3, M.pole, 0, .65, 0); const pg = new THREE.Group(); pg.add(post); place(pg, x, side * 5.6); }
+      for (const y of [1.3, .75]) { const rail = box(.1, .1, 81, M.pole, 0, 0, 0); const rg = new THREE.Group(); rg.add(rail); place(rg, e.x + 40, side * 5.6, y); }
+      if (st.river !== side) {
+        const water = new THREE.Mesh(new THREE.PlaneGeometry(72, 92), M.water); water.rotation.x = -Math.PI / 2;
+        const wg = new THREE.Group(); wg.add(water); place(wg, e.x + 40, side * 44.5, .03);
+        const bank = box(2, .5, 92, M.stone, 0, 0, 0); const bg = new THREE.Group(); bg.add(bank); place(bg, e.x + 40, side * 9.2, .25);
+      }
+    }
+    // cột đèn cao đầu cầu
+    for (const x of [e.x - 2, e.x + 82]) for (const side of [1, -1]) { const g = new THREE.Group(); g.add(cyl(.12, 9, M.pole, 0, 4.5, 0)); g.add(box(.6, .25, .4, M.lamp, 0, 9, 0)); place(g, x, side * 5.9); }
+    e.obj = { zone: [e.x, e.x + 80] };
+  }
+  /* nơi đến của tuyến, đặt ở cuối đường cuối cùng */
+  addGoal(seg, route) {
+    const id = route.goalCard;
+    if (id === 'ducba') this.addCathedral(seg);
+    else if (id === 'dinh') this.addPalace(seg);
+    else if (id === 'zoo') this.addZoo(seg);
+    else if (id === 'nharong') this.addWharf(seg);
+    else this.addMarket(seg);
+  }
+  /* nhóm đặt ở cuối đường (s = len + 40), local +Z hướng về phía xe tới, +X là bên phải đường */
+  goalGroup(seg) { const g = new THREE.Group(); g.position.copy(seg.start).addScaledVector(seg.dir, seg.len + 40); g.lookAt(g.position.clone().addScaledVector(seg.dir, -1)); this.statics.add(g); return g; }
+  plaza(g, w, d, x, z, texture = true) {
+    if (texture) { const pt = plazaTexture(); pt.wrapS = pt.wrapT = THREE.RepeatWrapping; pt.repeat.set(w / 4.4, d / 4); const pl = new THREE.Mesh(new THREE.PlaneGeometry(w, d), new THREE.MeshStandardMaterial({ map: pt, roughness: 1 })); pl.rotation.x = -Math.PI / 2; pl.position.set(x, .01, z); pl.receiveShadow = true; g.add(pl); }
+    else { const pl = new THREE.Mesh(new THREE.PlaneGeometry(w, d), M.lawn); pl.rotation.x = -Math.PI / 2; pl.position.set(x, .01, z); pl.receiveShadow = true; g.add(pl); }
+  }
+  bigTree(g, x, z, h = 5, leaf = 1) { const t = new THREE.Group(); t.add(cyl(.22, h, M.trunk, 0, h / 2, 0)); const c = new THREE.Mesh(G.leaf, M.leaf[leaf]); c.scale.set(h * .55, h * .45, h * .55); c.position.y = h + .6; c.castShadow = true; t.add(c); t.position.set(x, 0, z); g.add(t); }
+  board(g, text, bg, w, h, x, y, z, size = 84) {
+    const b = new THREE.Mesh(new THREE.BoxGeometry(w, h, .1), [M.pole, M.pole, M.pole, M.pole, new THREE.MeshStandardMaterial({ map: textBoardTexture(text, { bg, w: 1024, h: 120, size }), roughness: .5 }), M.pole]); b.position.set(x, y, z); g.add(b); return b;
+  }
+  /* Nhà thờ Đức Bà: gạch đỏ, hai tháp chuông nhọn, cửa sổ tròn, tượng Đức Mẹ, công viên */
+  addCathedral(seg) {
+    const g = this.goalGroup(seg);
+    const nave = box(22, 14, 40, M.brick, 0, 7, -20); nave.castShadow = true; nave.receiveShadow = true; g.add(nave);
+    const roof = box(12.7, 12.7, 41, M.stone, 0, 14, -20); roof.rotation.z = Math.PI / 4; g.add(roof);
+    g.add(box(8, 20, 1, M.brick, 0, 10, 4.5)); // mặt tiền giữa hai tháp
+    for (const x of [-8.5, 8.5]) {
+      const t = box(7, 30, 7, M.brick, x, 15, 1.5); t.castShadow = true; g.add(t);
+      const sp = new THREE.Mesh(new THREE.ConeGeometry(5, 12, 4), M.stone); sp.rotation.y = Math.PI / 4; sp.position.set(x, 36, 1.5); sp.castShadow = true; g.add(sp);
+      g.add(box(.25, 2, .25, M.white, x, 43, 1.5)); g.add(box(1.2, .25, .25, M.white, x, 43.4, 1.5));
+      for (const y of [19, 26]) { g.add(box(1, 4, .2, M.white, x - 1.6, y, 5.05)); g.add(box(1, 4, .2, M.white, x + 1.6, y, 5.05)); }
+      for (const y of [8, 13]) { g.add(box(1.6, 2.6, .2, M.white, x, y, 5.05)); }
+      g.add(box(2, 3.6, .3, mat(0x4e342e), x, 1.8, 5.1)); // cửa tháp
+    }
+    const rose = new THREE.Mesh(new THREE.CircleGeometry(2.4, 24), mat(0x5c6bc0, .3)); rose.position.set(0, 14, 5.05); g.add(rose);
+    const roseRing = new THREE.Mesh(new THREE.RingGeometry(2.4, 3, 24), M.white); roseRing.position.set(0, 14, 5.06); g.add(roseRing);
+    g.add(box(3, 5, .3, mat(0x4e342e), 0, 2.5, 5.1)); const arc = new THREE.Mesh(new THREE.CircleGeometry(1.7, 20), M.white); arc.position.set(0, 5.4, 5.12); g.add(arc);
+    for (let i = 0; i < 4; i++) g.add(box(18 + i * 2, .25, 1 + i * .6, M.stone, 0, .125 + (3 - i) * .25, 5.6 + i * .3)); // bậc thềm
+    // công viên trước nhà thờ + tượng Đức Mẹ Hòa Bình
+    this.plaza(g, 70, 24, 0, 18, false); this.plaza(g, 8, 22, 0, 18);
+    g.add(cyl(1.3, 2.6, M.stone, 0, 1.3, 15)); g.add(cyl(.55, 2.6, M.white, 0, 3.9, 15)); g.add(sph(.45, M.white, 0, 5.6, 15));
+    for (const [x, z] of [[-26, 12], [-18, 24], [18, 24], [26, 12], [-12, 10], [12, 10]]) this.bigTree(g, x, z, 5 + (Math.abs(x) % 3), (Math.abs(x) / 2) % 4 | 0);
+    this.board(g, 'NHÀ THỜ ĐỨC BÀ', '#b5563c', 10, 1.3, -14, 2.4, 24); g.add(cyl(.08, 2, M.pole, -14, 1, 24));
+  }
+  /* Dinh Độc Lập: tòa nhà trắng dài, rèm hoa đá, cột cờ, đài phun nước, hai xe tăng, hàng rào */
+  addPalace(seg) {
+    const g = this.goalGroup(seg);
+    const white = mat(0xfafafa, .85);
+    const main = box(56, 12, 22, white, 0, 6, -16); main.castShadow = true; main.receiveShadow = true; g.add(main);
+    g.add(box(58, .8, 24, M.stone, 0, 12.4, -16));
+    for (let x = -26; x <= 26; x += 1.6) g.add(box(.5, 9, .5, white, x, 7.2, -4.6)); // rèm hoa đá
+    g.add(box(50, 2.3, .2, M.window, 0, 1.5, -4.95));
+    g.add(box(16, .5, 7, white, 0, 3.4, -1.5)); for (const x of [-6, 6]) g.add(cyl(.35, 3.2, white, x, 1.6, 1.5));
+    // trực thăng trên sân thượng
+    g.add(box(1.4, 1.2, 3.4, M.olive, 9, 13.4, -17)); g.add(box(.5, .5, 3, M.olive, 9, 13.7, -20)); g.add(box(7, .12, .35, M.dark, 9, 14.3, -17)); g.add(cyl(.12, .6, M.dark, 9, 14, -17));
+    // cột cờ
+    g.add(cyl(.12, 15, M.pole, 0, 7.5, 7)); g.add(box(3.2, 2.1, .06, M.red, 1.7, 14, 7)); const star = new THREE.Mesh(new THREE.CircleGeometry(.5, 5), M.yellow); star.position.set(1.7, 14, 7.04); g.add(star);
+    // sân cỏ, đài phun nước
+    this.plaza(g, 72, 32, 0, 14, false); this.plaza(g, 7, 30, 0, 14);
+    const basin = cyl(5.5, .6, M.stone, 0, .3, 16); basin.scale.z = 3.8; g.add(basin); const wat = cyl(5, .5, M.water, 0, .38, 16); wat.scale.z = 3.3; g.add(wat);
+    g.add(cyl(.15, 1.6, M.white, 0, .9, 16)); g.add(sph(.7, M.white, 0, 1.8, 16));
+    // hai xe tăng
+    for (const x of [-20, 20]) {
+      g.add(box(3.4, 1.2, 6, M.olive, x, .95, 20)); g.add(box(2, .9, 2.4, M.olive, x, 2, 20)); for (const dx of [-1.75, 1.75]) g.add(box(.7, 1, 6.2, M.dark, x + dx, .5, 20));
+      const barrel = cyl(.12, 3.6, M.dark, x, 2.1, 23); barrel.rotation.x = Math.PI / 2; g.add(barrel);
+    }
+    // hàng rào + cổng
+    for (let x = -34; x <= 34; x += 1.5) { if (Math.abs(x) < 5.5) continue; g.add(cyl(.06, 2.2, M.pole, x, 1.1, 28)); }
+    for (const side of [-1, 1]) g.add(box(29, .1, .1, M.pole, side * 20, 2.1, 28));
+    for (const x of [-6, 6]) g.add(box(1.3, 3.4, 1.3, M.stone, x, 1.7, 28));
+    this.board(g, 'DINH ĐỘC LẬP', '#5c6bc0', 11, 1.2, 0, 3.6, 28, 84);
+    for (const [x, z] of [[-32, 8], [-32, 22], [32, 8], [32, 22]]) this.bigTree(g, x, z, 6, 2);
+  }
+  /* Thảo Cầm Viên: cổng vòm xanh, hàng rào, quầy vé, nhiều cây và thú */
+  addZoo(seg) {
+    const g = this.goalGroup(seg);
+    this.plaza(g, 60, 20, 0, 16);
+    for (const x of [-7, 7]) { const p = box(2.2, 7, 2.2, mat(0xd7ccc8), x, 3.5, 4); p.castShadow = true; g.add(p); }
+    g.add(box(18, 1.8, 2.2, M.green, 0, 7.5, 4));
+    this.board(g, 'THẢO CẦM VIÊN', '#2e7d32', 16, 1.3, 0, 7.5, 5.2, 90);
+    for (const side of [-1, 1]) { for (let x = 8.5; x <= 34; x += 1.4) g.add(cyl(.06, 2.2, M.pole, side * x, 1.1, 4)); for (const y of [2.1, 1.2]) g.add(box(26, .1, .1, M.pole, side * 21.5, y, 4)); }
+    // quầy vé
+    g.add(box(3.2, 2.6, 2.6, mat(0xffcc80), -12, 1.3, 9)); g.add(box(3.8, .3, 3.2, M.tile, -12, 2.75, 9)); this.board(g, 'VÉ', '#ef6c00', 2.2, .7, -12, 2.2, 10.35, 90);
+    // bên trong: cỏ, cây, thú
+    this.plaza(g, 80, 44, 0, -18, false);
+    const trees = [[-30, -6, 6, 0], [-20, -18, 8, 1], [-8, -26, 7, 2], [6, -30, 9, 3], [20, -24, 7, 0], [30, -10, 6, 1], [34, -28, 8, 2], [-34, -24, 9, 3], [0, -12, 5, 1], [14, -8, 6, 2]];
+    for (const [x, z, h, l] of trees) this.bigTree(g, x, z, h, l);
+    const animals = [['🦒', 7, -24, -8], ['🐘', 6, -10, -14], ['🦁', 4, 8, -8], ['🦓', 4, 20, -14], ['🦛', 4.5, 28, -20], ['🐒', 3, -2, -20], ['🦜', 2.5, 12, -22], ['🐊', 3, -18, -4]];
+    for (const [em, size, x, z] of animals) { const sp = emojiBillboard(em, size); sp.position.x = x; sp.position.z = z; g.add(sp); }
+    for (const x of [-16, 16]) g.add(box(.3, .3, 20, M.stone, x, .2, -14)); // lối đi
+  }
+  /* Bến Nhà Rồng: nhà vàng mái ngói hai con rồng chầu mặt trăng, kè sông, tàu */
+  addWharf(seg) {
+    const g = this.goalGroup(seg);
+    const cx = 6; // nhà lệch sang phải, bờ sông (bên trái) sát kè
+    this.plaza(g, 30, 22, cx, 15);
+    const main = box(30, 10, 16, M.ochre, cx, 5, -12); main.castShadow = true; main.receiveShadow = true; g.add(main);
+    g.add(box(31, .8, 17, M.tile, cx, 10.4, -12));
+    const top = new THREE.Mesh(new THREE.ConeGeometry(1, 1, 4), M.tile); top.rotation.y = Math.PI / 4; top.scale.set(31 / 2 * Math.SQRT2, 4, 17 / 2 * Math.SQRT2); top.position.set(cx, 12.8, -12); g.add(top);
+    // hai con rồng chầu mặt trăng trên nóc
+    g.add(sph(.8, mat(0xfff59d, .4), cx, 15.6, -12));
+    for (const side of [-1, 1]) {
+      for (let i = 0; i < 6; i++) { const t = i / 5; g.add(sph(.62 - i * .07, M.green, cx + side * (2 + i * 1.3), 14.8 + Math.sin(t * Math.PI) * 1.1, -12)); }
+      g.add(sph(.75, M.green, cx + side * 1.9, 15.3, -12)); g.add(box(.5, .15, .15, M.red, cx + side * 1.1, 15.3, -12)); g.add(sph(.14, M.white, cx + side * 1.7, 15.6, -11.5));
+    }
+    // cửa vòm hai tầng, cột trắng
+    for (let i = 0; i < 7; i++) { const x = cx - 12 + i * 4; for (const y of [2.5, 7]) { g.add(box(1.6, 2.4, .1, M.window, x, y, -3.95)); const arc = new THREE.Mesh(new THREE.CircleGeometry(.95, 16), M.white); arc.position.set(x, y + 1.3, -3.98); g.add(arc); } if (i < 6) g.add(box(.5, 9.4, .25, M.white, x + 2, 4.7, -3.9)); }
+    g.add(box(2.2, 3.6, .3, mat(0x4e342e), cx, 1.8, -3.85));
+    this.board(g, 'BẾN NHÀ RỒNG', '#ef6c00', 12, 1.3, cx, 9.3, -3.8);
+    g.add(cyl(.1, 7, M.pole, cx, 17.5, -12)); g.add(box(2.4, 1.6, .05, M.red, cx + 1.3, 20.2, -12));
+    // kè và tàu bên sông (bên trái, x âm)
+    g.add(box(1.2, .7, 60, M.stone, -9, .35, 0));
+    for (let z = -26; z <= 28; z += 5) g.add(cyl(.05, 1.1, M.pole, -8.4, .55, z)); g.add(box(.08, .08, 56, M.pole, -8.4, 1.1, 1));
+    const ship = new THREE.Group(); ship.add(box(18, 3, 5.5, mat(0x37474f), 0, 1.5, 0)); ship.add(box(7, 3.2, 4.5, M.white, -3, 4.6, 0)); ship.add(cyl(.55, 2.6, M.red, -3, 7.5, 0)); ship.add(box(3, .3, 5.6, M.white, 7, 3.1, 0)); ship.position.set(-26, .1, 2); ship.rotation.y = .2; g.add(ship);
+    for (const [x, z] of [[-3, 24], [24, 24], [26, 8]]) this.bigTree(g, x, z, 5, 1);
   }
   addLandmark(place, e) {
     if (e.card === 'opera') {
@@ -505,6 +697,29 @@ export class World {
       // bậc thềm
       for (let i = 0; i < 4; i++) g.add(box(16 + i * 2, .3, 1.2 + i * .8, M.white, 0, .15 + (3 - i) * .3, 1.2 + i * .3));
       place(g, e.x, 9.5);
+      g.rotation.y += Math.PI / 2;
+    } else if (e.card === 'buudien') {
+      const g = new THREE.Group();
+      const main = box(26, 11, 14, M.ochre, 0, 5.5, -8); main.castShadow = true; g.add(main);
+      g.add(box(27, .6, 15, M.tile, 0, 11.3, -8));
+      g.add(box(8, 2.4, 1, M.ochre, 0, 12.4, -1.4)); const ped = new THREE.Mesh(new THREE.ConeGeometry(1, 1, 4), M.tile); ped.rotation.y = Math.PI / 4; ped.scale.set(8 / 2 * Math.SQRT2, 1.4, 1.2); ped.position.set(0, 14.3, -1.4); g.add(ped);
+      for (let i = 0; i < 7; i++) { const x = -12 + i * 4; for (const y of [2.6, 7.4]) { if (i === 3 && y < 3) continue; g.add(box(1.8, 2.6, .1, mat(0x2e7d32, .7), x, y, -.95)); const arc = new THREE.Mesh(new THREE.CircleGeometry(1.05, 16), M.white); arc.position.set(x, y + 1.4, -.98); g.add(arc); } if (i < 6) g.add(box(.6, 10.4, .25, M.white, x + 2, 5.2, -.9)); }
+      g.add(box(3.2, 4.6, .3, mat(0x1b5e20), 0, 2.3, -.85));
+      const clock = new THREE.Mesh(new THREE.CircleGeometry(1.5, 32), new THREE.MeshStandardMaterial({ map: clockTexture(), roughness: .5 })); clock.position.set(0, 12.5, -.85); g.add(clock);
+      this.board(g, 'BƯU ĐIỆN THÀNH PHỐ', '#1b5e20', 13, 1.1, 0, 10.3, -.85, 72);
+      for (let i = 0; i < 3; i++) g.add(box(18 + i * 2, .25, .8 + i * .5, M.white, 0, .125 + (2 - i) * .25, -.3 + i * .25));
+      g.add(cyl(.08, 5, M.pole, -9, 2.5, 1)); g.add(box(1.6, 1.05, .05, M.red, -8.2, 4.6, 1));
+      place(g, e.x, 9.5);
+      g.rotation.y += Math.PI / 2;
+    } else if (e.card === 'tranhungdao') {
+      const g = new THREE.Group();
+      const pl = new THREE.Mesh(new THREE.CircleGeometry(7, 28), new THREE.MeshStandardMaterial({ map: plazaTexture(), roughness: 1 })); pl.rotation.x = -Math.PI / 2; pl.position.y = .01; g.add(pl);
+      g.add(box(4.4, 1, 4.4, M.stone, 0, .5, 0)); g.add(box(2.8, 5.2, 2.8, M.stone, 0, 3.6, 0));
+      g.add(cyl(.85, 3.4, M.bronze, 0, 7.9, 0)); g.add(sph(.55, M.bronze, 0, 10.1, 0)); g.add(cyl(.6, .5, M.bronze, 0, 10.7, 0));
+      const arm = box(.32, .32, 2.4, M.bronze, 0, 9.2, 1.4); arm.rotation.x = -.5; g.add(arm); // tay chỉ về phía trước (ra sông)
+      g.add(box(1.2, .2, .2, M.bronze, 0, 8.4, .4));
+      for (const a of [0, 1, 2, 3]) { const x = Math.cos(a * Math.PI / 2 + .4) * 5.2, z = Math.sin(a * Math.PI / 2 + .4) * 5.2; g.add(cyl(.05, 4, M.pole, x, 2, z)); g.add(box(.9, .6, .04, M.red, x + .45, 3.6, z)); }
+      place(g, e.x, 10.5);
       g.rotation.y += Math.PI / 2;
     }
     e.obj = {};
@@ -532,8 +747,7 @@ export class World {
     const tower = box(9, 17, 9, wall, 0, 8.5, 2); tower.castShadow = true; g.add(tower);
     g.add(box(9.6, .8, 9.6, roofM, 0, 17.3, 2));
     const top = new THREE.Mesh(new THREE.ConeGeometry(6.2, 3.6, 4), roofM); top.rotation.y = Math.PI / 4; top.position.set(0, 19.5, 2); g.add(top);
-    const clockTex = canvasTex(256, 256, (c) => { c.fillStyle = '#fff'; c.beginPath(); c.arc(128, 128, 120, 0, 7); c.fill(); c.strokeStyle = '#222'; c.lineWidth = 8; c.beginPath(); c.arc(128, 128, 112, 0, 7); c.stroke(); for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; c.beginPath(); c.moveTo(128 + 95 * Math.cos(a), 128 + 95 * Math.sin(a)); c.lineTo(128 + 108 * Math.cos(a), 128 + 108 * Math.sin(a)); c.stroke(); } c.lineWidth = 10; c.beginPath(); c.moveTo(128, 128); c.lineTo(128, 60); c.moveTo(128, 128); c.lineTo(185, 128); c.stroke(); }, 'clock');
-    const clock = new THREE.Mesh(new THREE.CircleGeometry(2.6, 32), new THREE.MeshStandardMaterial({ map: clockTex, roughness: .5 })); clock.position.set(0, 13, 6.55); g.add(clock);
+    const clock = new THREE.Mesh(new THREE.CircleGeometry(2.6, 32), new THREE.MeshStandardMaterial({ map: clockTexture(), roughness: .5 })); clock.position.set(0, 13, 6.55); g.add(clock);
     // cổng vòm vào chợ
     for (const x of [-3, 0, 3]) { const a = box(2.2, 4.2, .6, new THREE.MeshStandardMaterial({ color: 0x4e342e, roughness: .9 }), x, 2.1, 6.4); g.add(a); }
     const sign = new THREE.Mesh(new THREE.BoxGeometry(14, 1.6, .1), [wall, wall, wall, wall, new THREE.MeshStandardMaterial({ map: textBoardTexture('CHỢ BẾN THÀNH', { bg: '#b23a2b', w: 1024, h: 120, size: 84 }), roughness: .5 }), wall]); sign.position.set(0, 7.8, 6.6); g.add(sign);
@@ -549,8 +763,15 @@ export class World {
   }
 
   /* ngã tư ở cuối phố: ô vuông mặt đường, đường cắt ngang, lề và nhà dọc đường ngang, đèn tín hiệu */
-  buildIntersection(seg, arc, r, nextVariant, nextName) {
-    const Cx = arc.cross, dir = seg.dir, right = seg.right;
+  buildIntersection(seg, arc, r, nextVariant, nextName, st = {}, nextSt = null) {
+    const Cx = arc.cross, dir = seg.dir, right = seg.right, sign = arc.sign; // sign: +1 rẽ phải, -1 rẽ trái
+    const nextGaps = nextSt ? gapsOf(nextSt) : [];
+    // nhánh ngã tư trùng với đường kế (sideL === sign): u là khoảng cách từ tâm ngã tư, s của đường kế = u - R
+    const skipRow = (sideF, sideL) => {
+      if (sideL === sign) return !!nextSt && nextSt.river === -sign * sideF; // phía sông của đường kế
+      return sideF === -1 && st.river === -sign; // nhánh giả đi vào sông của đường này
+    };
+    const inNextGap = (sideL, u, w) => sideL === sign && nextGaps.some(([g0, g1]) => u - 8 + w > g0 && u - 8 < g1);
     const rt = roadTexture(); rt.wrapS = rt.wrapT = THREE.RepeatWrapping; rt.repeat.set(1, 30);
     const cross = new THREE.Mesh(new THREE.PlaneGeometry(10, 180), new THREE.MeshStandardMaterial({ map: rt, roughness: .95 })); cross.rotation.x = -Math.PI / 2; cross.receiveShadow = true;
     const cg = new THREE.Group(); cg.add(cross); cg.position.copy(Cx).setY(.004); cg.lookAt(cg.position.clone().add(right)); this.statics.add(cg);
@@ -564,8 +785,9 @@ export class World {
         g.position.copy(Cx).addScaledVector(dir, sideF * 6.5).addScaledVector(right, sideL * 47); g.position.y = .075; g.lookAt(g.position.clone().add(right)); this.statics.add(g);
         // nhà dọc đường ngang
         let s = 5;
-        while (s < 86) {
+        while (s < 86 && !skipRow(sideF, sideL)) {
           const w = r.int(4, 7) + r() * 1.5, floors = r.int(2, 5), h = floors * 3.4 + 2, depth = 12 + r() * 4;
+          if (inNextGap(sideL, s, w)) { s += 1; continue; }
           const fv = nextVariant() % 6;
           const front = new THREE.MeshStandardMaterial({ map: facadeTexture(floors, fv + floors), roughness: .85, emissiveMap: facadeTexture(floors, fv + floors), emissive: 0xffffff, emissiveIntensity: 0 }); this.facadeMats.push(front);
           const side = new THREE.MeshStandardMaterial({ map: sideWallTexture(fv), roughness: .9 });
@@ -576,7 +798,7 @@ export class World {
           bg.lookAt(bg.position.clone().addScaledVector(dir, -sideF)); this.statics.add(bg);
           s += w;
         }
-        if (sideF === 1) for (let s2 = 12; s2 < 80; s2 += 16) { const t = new THREE.Group(); const h = 3.5 + r() * 2; const tr = cyl(.14, h, M.trunk, 0, h / 2, 0); t.add(tr); const c = new THREE.Mesh(G.leaf, r.pick(M.leaf)); c.scale.set(1.8, 1.5, 1.8); c.position.y = h + .5; c.castShadow = true; t.add(c); t.position.copy(Cx).addScaledVector(dir, 6.9).addScaledVector(right, sideL * s2); this.statics.add(t); }
+        if (sideF === 1) for (let s2 = 12; s2 < 80; s2 += 16) { if (inNextGap(sideL, s2, 1)) continue; const t = new THREE.Group(); const h = 3.5 + r() * 2; const tr = cyl(.14, h, M.trunk, 0, h / 2, 0); t.add(tr); const c = new THREE.Mesh(G.leaf, r.pick(M.leaf)); c.scale.set(1.8, 1.5, 1.8); c.position.y = h + .5; c.castShadow = true; t.add(c); t.position.copy(Cx).addScaledVector(dir, 6.9).addScaledVector(right, sideL * s2); this.statics.add(t); }
       }
     }
     // biển tên đường mới ở góc ngã tư

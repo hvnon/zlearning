@@ -70,7 +70,8 @@ Dữ liệu lưu trong `localStorage` (key `vo-on-toan-v1`) và IndexedDB `vo-on
 Game 3D riêng cho 2 bé, nằm ở thư mục `saigon/` và chạy tại https://hvnon.github.io/zlearning/saigon/ (cũng là PWA cài được, chạy offline). Bé đạp xe từ nhà qua các con đường thật của Quận 1, Quận 3 tới một địa danh, vừa đi vừa:
 - **Học luật giao thông:** dừng đèn đỏ trước vạch, nhường người đi bộ, đi sát lề phải, lách xe hàng rong, nhường xe cứu thương, đi chậm gần trường học, giơ tay trước khi rẽ. Sai luật mất 1 trong 3 ❤️, chú công an giải thích; hết tim thì đạp lại từ đầu đường.
 - **Mua bán ở hàng quán:** bánh mì, nước mía, trái cây. Bé chọn hàng, tự tính tổng tiền, đưa tiền và tính tiền thối (lớp 2: cộng trừ; lớp 4: thêm nhân và so giá combo). Cuối chuyến giúp dì bán hàng tính tiền cho khách.
-- **Lịch sử tên đường:** qua mỗi đường hiện thẻ kể chuyện về yếu nhân (Võ Thị Sáu, Hai Bà Trưng, Lê Lợi, Pasteur) và địa danh (Nhà hát Thành phố, chợ Bến Thành), cuối chuyến có đố vui. Thẻ vào bộ sưu tập.
+- **Lịch sử tên đường:** qua mỗi đường hiện thẻ kể chuyện về yếu nhân (Võ Thị Sáu, Hai Bà Trưng, Lê Lợi, Pasteur, Nguyễn Du, Nguyễn Thị Minh Khai, Nguyễn Bỉnh Khiêm, Tôn Đức Thắng, Nguyễn Tất Thành, khởi nghĩa Nam Kỳ) và địa danh (Nhà hát Thành phố, chợ Bến Thành, Bưu điện, Nhà thờ Đức Bà, Dinh Độc Lập, trường Lê Quý Đôn, Thảo Cầm Viên, tượng Trần Hưng Đạo, Bến Nhà Rồng), cuối chuyến có đố vui. 19 thẻ vào bộ sưu tập.
+- **Bản đồ con dấu:** 5 nơi đến quanh nhà; tới nơi nào được đóng dấu nơi đó, bấm vào nơi trên bản đồ để đi. Đủ 5 dấu được danh hiệu Nhà thám hiểm Sài Gòn và 50 xu. Cuối mỗi chuyến có một người nhờ bé tính tiền (dì bán trái cây, chú bán vé, cô bán thức ăn cho thú...).
 - Phần thưởng: xu (tiền thừa + điểm), sao theo số lỗi, "bằng lái xe đạp" khi đi đúng luật suốt chuyến, tủ thời trang 👗 (tóc, mặt, trang phục, mũ, ba lô, màu xe, giỏ, cờ, tua rua; vài món đặc biệt mua bằng xu).
 - Hai góc nhìn: sau lưng xe (3D) và bản đồ nhìn từ trên cao (nút 🗺️ khi đang đi). Có chế độ "đồ họa nhẹ" cho máy yếu. Mỗi chuyến ngẫu nhiên trời sáng, hoàng hôn hoặc chập tối.
 
@@ -83,4 +84,14 @@ Game 3D riêng cho 2 bé, nằm ở thư mục `saigon/` và chạy tại https:
 | `saigon/vendor/three.module.min.js` | three.js r170 (MIT) |
 | `saigon/sw.js`, `saigon/manifest.webmanifest`, `saigon/icons/` | PWA |
 
-Tuyến hiện có: Nhà (Võ Thị Sáu) → Hai Bà Trưng → Lê Lợi (qua Nhà hát Thành phố, ngã tư Pasteur) → Chợ Bến Thành. Các tuyến khác (Nhà thờ Đức Bà, Dinh Độc Lập, Thảo Cầm Viên, Bến Nhà Rồng) để sẵn chỗ trong `data.js`.
+5 tuyến, đều xuất phát từ nhà ở đường Võ Thị Sáu (`ROUTES` trong `data.js`, mỗi tuyến có `goalCard` để `world.js` dựng mô hình nơi đến và `helper` là người nhờ tính tiền cuối chuyến):
+
+| Tuyến | Đường đi | Khoảng |
+|---|---|---|
+| 🕰️ Chợ Bến Thành | Võ Thị Sáu → Hai Bà Trưng → Lê Lợi (Nhà hát Thành phố, ngã tư Pasteur) | 1 km |
+| 🏛️ Dinh Độc Lập | Võ Thị Sáu → Nam Kỳ Khởi Nghĩa (ngã tư Nguyễn Thị Minh Khai, trường Lê Quý Đôn) | 650 m |
+| ⛪ Nhà thờ Đức Bà | Võ Thị Sáu → Pasteur → Nguyễn Du (ngã tư Nam Kỳ Khởi Nghĩa, Bưu điện Thành phố) | 900 m |
+| 🦒 Thảo Cầm Viên | Võ Thị Sáu → Hai Bà Trưng → Nguyễn Thị Minh Khai (ngã tư Nguyễn Bỉnh Khiêm) | 1 km |
+| 🐉 Bến Nhà Rồng | Võ Thị Sáu → Hai Bà Trưng → Tôn Đức Thắng (tượng Trần Hưng Đạo, bờ sông) → cầu Khánh Hội → Nguyễn Tất Thành | 1,3 km |
+
+Đường đi được rút gọn cho vừa một chuyến chơi 5–8 phút, không đúng tỉ lệ thật.
