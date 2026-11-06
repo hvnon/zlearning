@@ -752,10 +752,13 @@ async function finishTrip() {
   const gotLicense = stars === 3 && !p.license; if (gotLicense) p.license = true;
   p.trips.push({ date: todayStr(), route: G.route.id, stars, violations: G.violations, rules: G.rules, math: G.math, quiz: G.quiz, coins, secs });
   save();
+  // album sticker chung (zzz.js): chuyến 3 sao được 1 sticker mỗi ngày; cuối tuần ví nhận gấp đôi
+  const stk = (window.ZZZ && stars === 3) ? ZZZ.earnSticker(p.id, 'bike') : null, boost = !!(window.ZZZ && ZZZ.weekendBoost());
   confetti();
   openModal(`<div class="stars-big">${'⭐'.repeat(stars)}${'☆'.repeat(3 - stars)}</div><h2 style="text-align:center">${stars === 3 ? 'Tuyệt vời! Đi đúng luật suốt chuyến!' : stars === 2 ? 'Giỏi lắm! Chỉ vài lỗi nhỏ.' : 'Về tới đích rồi! Lần sau cẩn thận hơn nhé.'}</h2>
-    <div class="result"><div class="cell"><b>${G.violations}</b><span>lỗi giao thông</span></div><div class="cell"><b>${G.math[0]}/${G.math[1]}</b><span>bài toán đúng</span></div><div class="cell"><b>${G.quiz[0]}/${G.quiz[1]}</b><span>câu đố đúng</span></div><div class="cell"><b>🪙 ${coins}</b><span>xu nhận được</span></div></div>
+    <div class="result"><div class="cell"><b>${G.violations}</b><span>lỗi giao thông</span></div><div class="cell"><b>${G.math[0]}/${G.math[1]}</b><span>bài toán đúng</span></div><div class="cell"><b>${G.quiz[0]}/${G.quiz[1]}</b><span>câu đố đúng</span></div><div class="cell"><b>🪙 ${boost ? coins * 2 : coins}</b><span>xu nhận được${boost ? ' (×2 cuối tuần)' : ''}</span></div></div>
     ${gotLicense ? '<div class="cop"><div class="face">🪪</div><div class="say"><b>Bằng lái xe đạp!</b> Con đã đi đúng luật suốt chuyến, chú công an tặng con bằng lái xe đạp nè.</div></div>' : ''}
+    ${stk ? `<div class="cop"><div class="face">${stk.em}</div><div class="say"><b>Sticker mới: ${esc(stk.name)}!</b> Chuyến đi 3 sao được một sticker vào album cả nhà (xem ở trang chủ zzzlearning).</div></div>` : ''}
     <p class="muted" style="margin:0;text-align:center">Thẻ đã sưu tập: ${(G.tripCards || []).concat(G.route.goalCard).map(id => CARDS[id].emoji).join(' ')} · ${Math.round(secs / 60)} phút</p>
     <div class="actions"><button class="btn ghost" id="againBtn" type="button">Đạp lại</button><button class="btn primary" id="okBtn" type="button">Về trang chính</button></div>`);
   $('okBtn').onclick = () => { closeModal(); exitToHome(); };

@@ -101,6 +101,21 @@ label.filebtn input{display:none}
   </section>
 
   <section class="panel">
+    <h2>Hũ cả nhà và thưởng chung</h2>
+    <p class="note">Đặt một mục tiêu cho cả nhà, hai bé góp xu từ ví của mình vào hũ ở trang chủ. Đủ xu thì bạn thực hiện ngoài đời và bấm "Đã thực hiện", xu dư giữ lại cho mục tiêu sau.</p>
+    <div id="famBox"></div>
+    <div class="row"><input type="text" id="fgTitle" placeholder="Ví dụ: Cả nhà đi Đầm Sen" style="flex:2 1 220px"><input type="text" id="fgEm" placeholder="Icon" maxlength="2" style="flex:0 0 70px"><input type="number" id="fgCost" inputmode="numeric" min="1" placeholder="Số xu" style="flex:0 0 100px"><button class="btn" id="fgSet" type="button">Đặt mục tiêu</button></div>
+    <div class="chips" id="fgSug"></div>
+    <div class="msg" id="fgMsg" aria-live="polite"></div>
+    <label class="row" style="gap:8px"><input type="checkbox" id="wkX2"> 🎉 Cuối tuần (thứ Bảy, Chủ nhật) xu kiếm được trong app nhân đôi</label>
+    <h3>Bé tặng xu cho nhau</h3>
+    <div class="list" id="giftList"></div>
+    <h3>Album sticker chung</h3>
+    <p class="note">Bé được 1 sticker khi làm đủ toán của việc hôm nay và 1 sticker khi đạp xe được 3 sao (mỗi ngày tối đa 2). Bé xem album ở trang chủ.</p>
+    <div class="chips" id="stkRow"></div>
+  </section>
+
+  <section class="panel">
     <h2>7 ngày qua</h2>
     <div class="kids" id="week"></div>
   </section>
@@ -232,6 +247,27 @@ label.filebtn input{display:none}
     });
   }
 
+  /* ---- hũ cả nhà, tặng xu, sticker, cuối tuần ---- */
+  const FSUG = [['🎡', 'Cả nhà đi Đầm Sen', 300], ['🍕', 'Tiệc pizza cuối tuần', 200], ['🎬', 'Đi xem phim', 250], ['🏖️', 'Đi biển', 500], ['🧸', 'Mua đồ chơi chung', 400]];
+  function renderFamily() {
+    const f = ZZZ.family(), g = f.goal, names = Object.fromEntries(kids().map(k => [k.id, k.name]));
+    $('famBox').innerHTML = (g ? `<div class="kid"><div class="row" style="justify-content:space-between"><span class="nm">${esc(g.em)} ${esc(g.title)}</span><span class="chip amber">🪙 ${f.jar}/${g.target} xu</span></div>
+        <div class="note">Góp: ${Object.keys(f.contrib).length ? Object.entries(f.contrib).map(([pid, n]) => `${esc(names[pid] || pid)} ${n}`).join(' · ') : 'chưa bé nào góp'}</div>
+        <div class="row">${f.jar >= g.target ? '<button class="btn primary" id="fgDone" type="button">Đã thực hiện 🎉</button>' : '<span class="chip">Chưa đủ xu</span>'}<button class="btn ghost" id="fgClear" type="button">Bỏ mục tiêu</button></div></div>`
+      : `<p class="note">Chưa có mục tiêu chung.${f.jar ? ` Trong hũ còn ${f.jar} xu.` : ''}</p>`)
+      + (f.history.length ? `<div class="list">${f.history.slice(0, 5).map(h => `<div><span>${esc(h.em)} ${esc(h.title)} · ${h.target} xu</span><span class="chip green">Đã làm ${new Date(h.doneTs).toLocaleDateString('vi-VN')}</span></div>`).join('')}</div>` : '');
+    $('fgSug').innerHTML = 'Gợi ý: ' + FSUG.map(([em, t, c]) => `<button type="button" class="chip" data-fsug="${em}|${esc(t)}|${c}" style="border:0;cursor:pointer">${em} ${esc(t)} · ${c}</button>`).join('');
+    document.querySelectorAll('[data-fsug]').forEach(b => b.onclick = () => { const [em, t, c] = b.dataset.fsug.split('|'); $('fgEm').value = em; $('fgTitle').value = t; $('fgCost').value = c; });
+    const done = $('fgDone'); if (done) done.onclick = () => { const d = ZZZ.completeGoal(); $('fgMsg').textContent = d ? `Đã xong "${d.title}". Đặt mục tiêu mới nhé!` : ''; renderFamily(); };
+    const clr = $('fgClear'); if (clr) clr.onclick = () => { if (confirm('Bỏ mục tiêu này? Xu trong hũ vẫn giữ lại.')) { ZZZ.clearGoal(); renderFamily(); } };
+    $('wkX2').checked = ZZZ.settings().weekendX2 !== false;
+    const gifts = ZZZ.gifts().slice(0, 10);
+    $('giftList').innerHTML = gifts.length ? gifts.map(x => `<div><span>💝 <b>${esc(names[x.from] || x.from)}</b> tặng <b>${esc(names[x.to] || x.to)}</b> ${x.n} xu</span><span class="note" style="display:inline">${new Date(x.ts).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}</span></div>`).join('') : '<p class="note">Chưa có lần tặng nào. Bé bấm "💝 Tặng xu" ở trang chủ.</p>';
+    $('stkRow').innerHTML = kids().map(k => `<span class="chip">${esc(k.name)}: ${ZZZ.stickers(k.id).length}/${ZZZ.STICKERS.length}</span>`).join('');
+  }
+  $('fgSet').onclick = () => { const t = $('fgTitle').value.trim(), c = parseInt($('fgCost').value, 10), em = $('fgEm').value.trim(); if (!t || !(c > 0)) { $('fgMsg').textContent = 'Cần tên mục tiêu và số xu lớn hơn 0.'; return; } ZZZ.setGoal(t, em, c); $('fgTitle').value = ''; $('fgCost').value = ''; $('fgEm').value = ''; $('fgMsg').textContent = 'Đã đặt mục tiêu, hai bé thấy hũ ở trang chủ.'; renderFamily(); };
+  $('wkX2').onchange = () => { ZZZ.setSetting('weekendX2', $('wkX2').checked); };
+
   /* ---- mã của bố mẹ ---- */
   function renderPin() {
     const has = ZZZ.hasPin();
@@ -326,7 +362,8 @@ label.filebtn input{display:none}
       if (s.goalSet) lines.push(`📅 Xong việc hôm nay: ${s.goalDays}/7 ngày`);
       if (k.tp) lines.push(`🔥 Chuỗi ${+k.tp.streak || 0} ngày · ✨ ${+k.tp.xp || 0} XP`);
       if (s.redeemed.length) lines.push(`🎁 Đã đổi: ${s.redeemed.map(r => r.title).join(', ')}`);
-      lines.slice(0, 3).forEach((l, j) => g.fillText(fitText(g, l, iw), ix, y + j * 32));
+      const nst = ZZZ.stickers(k.id).length; if (nst) lines.push(`📒 Album: ${nst}/${ZZZ.STICKERS.length} sticker`);
+      lines.slice(0, 4).forEach((l, j) => g.fillText(fitText(g, l, iw), ix, y + j * 32));
     });
     g.fillStyle = C.mut; g.font = FB(17); g.textAlign = 'center'; g.fillText(`Tạo ngày ${new Date().toLocaleDateString('vi-VN')} · zzzlearning`, W / 2, H - 42); g.textAlign = 'left';
     return c;
@@ -380,7 +417,7 @@ label.filebtn input{display:none}
   const stamp = () => dayKey(Date.now());
   $('dlAll').onclick = async () => {
     const evs = await toanEvents();
-    const data = { app: 'zzzlearning', v: 1, exported: new Date().toISOString(), zzz: { wallet: load(ZZZ.KEYS.wallet), kids: load(ZZZ.KEYS.kids), rewards: load(ZZZ.KEYS.rewards), plan: load(ZZZ.KEYS.plan), today: load(ZZZ.KEYS.today), pin: load(ZZZ.KEYS.pin) }, toan: { state: toan(), events: evs }, saigon: { state: saigon() } };
+    const data = { app: 'zzzlearning', v: 1, exported: new Date().toISOString(), zzz: { wallet: load(ZZZ.KEYS.wallet), kids: load(ZZZ.KEYS.kids), rewards: load(ZZZ.KEYS.rewards), plan: load(ZZZ.KEYS.plan), today: load(ZZZ.KEYS.today), pin: load(ZZZ.KEYS.pin), family: load(ZZZ.KEYS.family), gifts: load(ZZZ.KEYS.gifts), stickers: load(ZZZ.KEYS.stickers), settings: load(ZZZ.KEYS.settings) }, toan: { state: toan(), events: evs }, saigon: { state: saigon() } };
     await saveFile(`zzzlearning-${stamp()}.json`, JSON.stringify(data), 'application/json');
     $('bkMsg').textContent = `Đã tạo file sao lưu (${evs.length} dòng nhật ký toán).`;
   };
@@ -389,7 +426,7 @@ label.filebtn input{display:none}
     try {
       const o = JSON.parse(await f.text());
       if (o && o.app === 'zzzlearning' && o.zzz) {
-        for (const [k, v] of [[ZZZ.KEYS.wallet, o.zzz.wallet], [ZZZ.KEYS.kids, o.zzz.kids], [ZZZ.KEYS.rewards, o.zzz.rewards], [ZZZ.KEYS.plan, o.zzz.plan], [ZZZ.KEYS.today, o.zzz.today], [ZZZ.KEYS.pin, o.zzz.pin]]) { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); }
+        for (const [k, v] of [[ZZZ.KEYS.wallet, o.zzz.wallet], [ZZZ.KEYS.kids, o.zzz.kids], [ZZZ.KEYS.rewards, o.zzz.rewards], [ZZZ.KEYS.plan, o.zzz.plan], [ZZZ.KEYS.today, o.zzz.today], [ZZZ.KEYS.pin, o.zzz.pin], [ZZZ.KEYS.family, o.zzz.family], [ZZZ.KEYS.gifts, o.zzz.gifts], [ZZZ.KEYS.stickers, o.zzz.stickers], [ZZZ.KEYS.settings, o.zzz.settings]]) { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); }
         if (o.toan && o.toan.state && o.toan.state.profiles) { localStorage.setItem(ZZZ.APP_KEYS.toan, JSON.stringify(o.toan.state)); await putToanKV('state', o.toan.state); if (Array.isArray(o.toan.events)) await replaceToanEvents(o.toan.events); }
         if (o.saigon && o.saigon.state && o.saigon.state.profiles) localStorage.setItem(ZZZ.APP_KEYS.saigon, JSON.stringify(o.saigon.state));
       } else if (o && (o.app === 'vo-on-toan' || (o.state && o.state.profiles) || (o.profiles && o.profiles[0] && o.profiles[0].skills))) { // file sao lưu riêng của Vở Ôn Toán
@@ -408,7 +445,7 @@ label.filebtn input{display:none}
     $('bkMsg').textContent = `Đã xuất ${rows.length} câu trả lời.`;
   };
 
-  function renderAll() { renderKids(); renderPlans(); renderWeek(); renderRewards(); renderLog(); renderPin(); }
+  function renderAll() { renderKids(); renderPlans(); renderFamily(); renderWeek(); renderRewards(); renderLog(); renderPin(); }
   const wrap = document.querySelector('.wrap');
   if (new URLSearchParams(location.search).get('pin') === 'xoa' && ZZZ.hasPin() && confirm('Xóa mã của bố mẹ? Trang phụ huynh sẽ mở tự do cho tới khi đặt mã mới.')) { ZZZ.setPin(null); history.replaceState(null, '', location.pathname); }
   wrap.style.visibility = ZZZ.pinOk() ? '' : 'hidden';
