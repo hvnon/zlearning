@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Phụ huynh · zzzlearning</title>
+<meta name="description" content="Trang phụ huynh chung của zzzlearning: hồ sơ bé, tổng quan tuần, ví xu, phiếu thưởng, sao lưu.">
+<meta name="theme-color" content="#4a2f91">
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="../icons/icon-192.png">
+<link rel="apple-touch-icon" href="../icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="zzzlearning">
+<link rel="stylesheet" href="../fonts/fonts.css">
+<style>
+/* Trang phụ huynh chung: đọc dữ liệu của cả 2 app con (localStorage + IndexedDB cùng tên miền), sửa những thứ dùng chung. */
+:root{
+  --paper:#fbfaf6; --card:#ffffff; --line:#e3e0ee; --text:#25213a; --muted:#6b6784;
+  --ink:#4a2f91; --ink-soft:#ece6fa; --sky:#1b6fb3; --sky-soft:#e1effa; --amber:#b36b00; --amber-soft:#fdf0d6; --green:#1d8a55; --green-soft:#ddf3e7; --red:#d2382f;
+  --shadow:0 10px 30px rgba(40,30,90,.08);
+  --f-display:"Baloo 2","Be Vietnam Pro",system-ui,sans-serif;
+  --f-body:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#17152a; --card:#1f1c36; --line:#332f55; --text:#ece9f8; --muted:#a29dc0;
+  --ink:#b9a6ff; --ink-soft:#2b2550; --sky:#6fb4f0; --sky-soft:#1c2f44; --amber:#f1b54a; --amber-soft:#3a2c12; --green:#5fd39a; --green-soft:#16362a; --red:#ff7a6e;
+  --shadow:0 10px 30px rgba(0,0,0,.35); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#17152a; --card:#1f1c36; --line:#332f55; --text:#ece9f8; --muted:#a29dc0;
+  --ink:#b9a6ff; --ink-soft:#2b2550; --sky:#6fb4f0; --sky-soft:#1c2f44; --amber:#f1b54a; --amber-soft:#3a2c12; --green:#5fd39a; --green-soft:#16362a; --red:#ff7a6e;
+  --shadow:0 10px 30px rgba(0,0,0,.35); color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--text);font-family:var(--f-body);font-size:16px;line-height:1.5}
+.wrap{max-width:900px;margin:0 auto;padding:22px 16px 40px;display:flex;flex-direction:column;gap:18px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+h1{font-family:var(--f-display);font-weight:800;font-size:30px;line-height:1;margin:0;color:var(--ink)}
+h1 small{display:block;font-family:var(--f-body);font-weight:500;font-size:12px;color:var(--muted);letter-spacing:.6px;text-transform:uppercase;margin-top:6px}
+h2{font-family:var(--f-display);font-weight:800;font-size:21px;margin:0;color:var(--text)}
+h3{font-family:var(--f-display);font-weight:700;font-size:17px;margin:0;color:var(--ink)}
+.panel{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.note{color:var(--muted);font-size:14px;margin:0}
+.btn{border:2px solid var(--ink);background:var(--card);color:var(--ink);border-radius:12px;padding:8px 14px;font-weight:700;font-family:var(--f-display);font-size:16px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;line-height:1.2}
+.btn.primary{background:var(--ink);color:#fff}
+.btn.ghost{border-color:var(--line);color:var(--text)}
+.btn.danger{border-color:var(--red);color:var(--red)}
+.btn:disabled{opacity:.5;cursor:default}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.primary{color:#17152a}}
+:root[data-theme="dark"] .btn.primary{color:#17152a}
+input[type=text],input[type=number]{font:inherit;color:var(--text);background:var(--paper);border:2px solid var(--line);border-radius:12px;padding:8px 12px;min-width:0}
+input:focus{outline:2px solid var(--ink);outline-offset:1px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{background:var(--ink-soft);color:var(--text);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:600;white-space:nowrap}
+.chip.amber{background:var(--amber-soft)}.chip.green{background:var(--green-soft)}.chip.sky{background:var(--sky-soft)}
+.kids{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:640px){.kids{grid-template-columns:1fr}}
+.kid{border:2px solid var(--line);border-radius:16px;padding:14px;display:flex;flex-direction:column;gap:10px;background:var(--paper)}
+.kid .nm{font-family:var(--f-display);font-weight:800;font-size:20px;color:var(--ink)}
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px;text-align:center}
+.stat b{display:block;font-family:var(--f-display);font-size:22px;line-height:1.1}
+.stat span{font-size:12px;color:var(--muted)}
+.bars{display:flex;gap:4px;align-items:flex-end;height:40px}
+.bars i{flex:1;background:var(--ink);border-radius:4px 4px 0 0;min-height:3px;opacity:.85}
+.bars i.sky{background:var(--sky)}
+.days{display:flex;gap:4px}.days span{flex:1;text-align:center;font-size:11px;color:var(--muted)}
+.list>div{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.list>div:last-child{border-bottom:0}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.scroll{overflow:auto;-webkit-overflow-scrolling:touch}
+.ok{color:var(--green);font-weight:700}.bad{color:var(--red);font-weight:700}
+.msg{min-height:1.4em;font-size:14px;color:var(--green)}
+label.filebtn input{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Trang phụ huynh<small>zzzlearning · chung cho Vở Ôn Toán và Đạp Xe Sài Gòn</small></h1>
+    <div class="row"><a class="btn ghost" href="../">🏠 Trang chủ</a></div>
+  </header>
+
+  <section class="panel">
+    <h2>Hồ sơ bé</h2>
+    <p class="note">Tên đổi ở đây dùng cho cả hai app. Ví xu là ví chung: bé kiếm xu ở app nào cũng cộng vào đây, đổi thưởng hay mua đồ ở tủ thời trang đều trừ ở đây.</p>
+    <div class="kids" id="kids"></div>
+  </section>
+
+  <section class="panel">
+    <h2>7 ngày qua</h2>
+    <div class="kids" id="week"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Phần thưởng ngoài đời</h2>
+    <p class="note">Bạn đặt phần thưởng kèm giá xu. Bé đổi ở trang chủ zzzlearning hoặc trong Vở Ôn Toán, rồi bạn thực hiện ngoài đời và bấm "Đã thưởng".</p>
+    <div class="row"><input type="text" id="rwTitle" placeholder="Ví dụ: 30 phút xem hoạt hình" style="flex:2 1 220px"><input type="text" id="rwEm" placeholder="Icon" maxlength="2" style="flex:0 0 70px"><input type="number" id="rwCost" inputmode="numeric" min="1" placeholder="Giá xu" style="flex:0 0 100px"><button class="btn" id="rwAdd" type="button">Thêm</button></div>
+    <div class="chips" id="rwSug"></div>
+    <div class="msg" id="rwMsg" aria-live="polite"></div>
+    <div class="list" id="rwList"></div>
+    <h3>Phiếu bé đã đổi</h3>
+    <div class="list" id="rdList"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Nhật ký gần đây</h2>
+    <div class="row" id="logTabs" role="group" aria-label="Chọn bé"></div>
+    <div class="scroll" id="logToan"></div>
+    <div class="scroll" id="logSaigon"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Sao lưu tất cả</h2>
+    <p class="note">Một file gồm ví xu, tên bé, phần thưởng, toàn bộ tiến độ và nhật ký của cả hai app. Nên tải định kỳ hoặc khi chuyển sang máy khác. Mở file sao lưu sẽ thay toàn bộ dữ liệu hiện có.</p>
+    <div class="row">
+      <button class="btn" id="dlAll" type="button">Tải file sao lưu</button>
+      <label class="btn filebtn">Mở file sao lưu<input type="file" id="fileIn" accept=".json,application/json"></label>
+      <button class="btn ghost" id="dlCsv" type="button">Xuất nhật ký toán (CSV)</button>
+    </div>
+    <div class="msg" id="bkMsg" aria-live="polite"></div>
+  </section>
+</div>
+<script src="../zzz.js"></script>
+<script>
+(function () {
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const load = (k) => { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } };
+  const toan = () => { const s = load(ZZZ.APP_KEYS.toan); return s && Array.isArray(s.profiles) ? s : null; };
+  const saigon = () => { const s = load(ZZZ.APP_KEYS.saigon); return s && Array.isArray(s.profiles) ? s : null; };
+  const DAY = 86400000;
+  const dayKey = (d) => { const x = new Date(d); return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`; };
+  const last7 = () => { const out = []; for (let i = 6; i >= 0; i--) out.push(dayKey(Date.now() - i * DAY)); return out; };
+  const WD = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+
+  /* Bé: gộp tên chung + hồ sơ của 2 app */
+  function kids() {
+    const t = toan(), s = saigon(); const ids = new Set([...(t ? t.profiles : []), ...(s ? s.profiles : []), ...ZZZ.kids()].map(p => p.id));
+    if (!ids.size) ['k2', 'k4'].forEach(id => ids.add(id));
+    return [...ids].map(id => {
+      const z = ZZZ.kids().find(x => x.id === id) || {}, tp = t && t.profiles.find(x => x.id === id), sp = s && s.profiles.find(x => x.id === id);
+      return { id, name: z.name || (tp && tp.name) || (sp && sp.name) || id, grade: z.grade || (tp && tp.grade) || (sp && sp.grade) || '', tp, sp };
+    });
+  }
+  const gradeLabel = (g) => g === 'g2' ? 'Lớp 2' : g === 'g4' ? 'Lớp 4' : g;
+
+  /* ---- IndexedDB của Vở Ôn Toán (chỉ đọc nhật ký; tạo đúng cấu trúc nếu chưa có để app không hỏng) ---- */
+  function openToanDB() {
+    return new Promise((res, rej) => {
+      if (!window.indexedDB) return rej(new Error('no-idb'));
+      const r = indexedDB.open('vo-on-toan', 1);
+      r.onupgradeneeded = () => { const d = r.result; if (!d.objectStoreNames.contains('events')) { const ev = d.createObjectStore('events', { keyPath: 'id', autoIncrement: true }); ev.createIndex('pid', 'pid'); } if (!d.objectStoreNames.contains('kv')) d.createObjectStore('kv'); };
+      r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); r.onblocked = () => rej(new Error('blocked'));
+    });
+  }
+  async function toanEvents() {
+    try { const d = await openToanDB(); return await new Promise((res, rej) => { const t = d.transaction('events', 'readonly'); const q = t.objectStore('events').getAll(); q.onsuccess = () => res(q.result || []); q.onerror = () => rej(q.error); }); } catch (e) { return []; }
+  }
+  async function replaceToanEvents(evs) {
+    try { const d = await openToanDB(); await new Promise((res, rej) => { const t = d.transaction('events', 'readwrite'); const s = t.objectStore('events'); s.clear(); for (const e of evs) { const x = { ...e }; delete x.id; s.add(x); } t.oncomplete = res; t.onerror = () => rej(t.error); }); } catch (e) { }
+  }
+  async function putToanKV(k, v) {
+    try { const d = await openToanDB(); await new Promise((res, rej) => { const t = d.transaction('kv', 'readwrite'); t.objectStore('kv').put(JSON.parse(JSON.stringify(v)), k); t.oncomplete = res; t.onerror = () => rej(t.error); }); } catch (e) { }
+  }
+  const plain = (h) => String(h ?? '').replace(/<span class="frac"><span>([^<]*)<\/span><span>([^<]*)<\/span><\/span>/g, ' $1/$2 ').replace(/<br\s*\/?>/g, ' ').replace(/<[^>]+>/g, '').replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
+
+  let events = [];
+
+  /* ---- hồ sơ + ví ---- */
+  function renderKids() {
+    $('kids').innerHTML = kids().map(k => `<div class="kid">
+      <div class="row" style="justify-content:space-between"><span class="nm">${esc(k.name)}</span><span class="chip">${esc(gradeLabel(k.grade))}</span></div>
+      <div class="row"><input type="text" data-name="${k.id}" value="${esc(k.name)}" maxlength="20" aria-label="Tên bé" style="flex:1 1 140px"><button class="btn" type="button" data-savename="${k.id}">Lưu tên</button></div>
+      <div class="chips"><span class="chip amber">🪙 ${ZZZ.coins(k.id)} xu trong ví</span>${k.tp ? `<span class="chip">🔥 ${+k.tp.streak || 0} ngày</span><span class="chip">✨ ${+k.tp.xp || 0} XP</span>` : ''}${k.sp ? `<span class="chip sky">🚲 ${(k.sp.trips || []).length} chuyến</span>${k.sp.license ? '<span class="chip sky">🪪 Bằng lái</span>' : ''}` : ''}</div>
+      <div class="row"><input type="number" data-gift="${k.id}" inputmode="numeric" placeholder="Số xu" style="flex:0 1 110px"><button class="btn ghost" type="button" data-giftadd="${k.id}">Tặng xu</button><button class="btn ghost" type="button" data-giftsub="${k.id}">Trừ xu</button></div>
+      <div class="msg" id="km-${k.id}"></div>
+    </div>`).join('');
+    document.querySelectorAll('[data-savename]').forEach(b => b.onclick = () => { const v = document.querySelector(`[data-name="${b.dataset.savename}"]`).value.trim(); if (!v) return; ZZZ.setKid(b.dataset.savename, { name: v }); renderAll(); $('km-' + b.dataset.savename).textContent = 'Đã lưu tên cho cả hai app.'; });
+    const gift = (id, sign) => { const inp = document.querySelector(`[data-gift="${id}"]`); const n = Math.round(+inp.value); if (!(n > 0)) { $('km-' + id).textContent = 'Nhập số xu lớn hơn 0.'; return; } ZZZ.addCoins(id, sign * n); renderAll(); $('km-' + id).textContent = sign > 0 ? `Đã tặng ${n} xu.` : `Đã trừ ${n} xu.`; };
+    document.querySelectorAll('[data-giftadd]').forEach(b => b.onclick = () => gift(b.dataset.giftadd, 1));
+    document.querySelectorAll('[data-giftsub]').forEach(b => b.onclick = () => gift(b.dataset.giftsub, -1));
+  }
+
+  /* ---- 7 ngày ---- */
+  function renderWeek() {
+    const days = last7(), from = Date.now() - 7 * DAY;
+    $('week').innerHTML = kids().map(k => {
+      const ans = events.filter(e => e.pid === k.id && e.t === 'answer' && e.ts >= from);
+      const fin = events.filter(e => e.pid === k.id && e.t === 'finish' && e.ts >= from);
+      const ok = ans.filter(e => e.ok).length, mins = Math.round(ans.reduce((a, e) => a + (+e.secs || 0), 0) / 60);
+      const perDayT = days.map(d => ans.filter(e => dayKey(e.ts) === d).length);
+      const trips = ((k.sp && k.sp.trips) || []).filter(t => t.date >= days[0]);
+      const perDayS = days.map(d => trips.filter(t => t.date === d).length);
+      const viol = trips.reduce((a, t) => a + (+t.violations || 0), 0), m0 = trips.reduce((a, t) => a + ((t.math || [0, 0])[0]), 0), m1 = trips.reduce((a, t) => a + ((t.math || [0, 0])[1]), 0), tmins = Math.round(trips.reduce((a, t) => a + (+t.secs || 0), 0) / 60);
+      const maxT = Math.max(1, ...perDayT), maxS = Math.max(1, ...perDayS);
+      const studiedToday = perDayT[6] > 0 || perDayS[6] > 0;
+      return `<div class="kid">
+        <div class="row" style="justify-content:space-between"><span class="nm">${esc(k.name)}</span><span class="chip ${studiedToday ? 'green' : ''}">${studiedToday ? 'Hôm nay đã học ✓' : 'Hôm nay chưa học'}</span></div>
+        <h3>📘 Vở Ôn Toán</h3>
+        <div class="stat"><div><b>${ans.length}</b><span>câu đã làm</span></div><div><b>${ans.length ? Math.round(ok / ans.length * 100) + '%' : '–'}</b><span>làm đúng</span></div><div><b>${mins}</b><span>phút · ${fin.length} buổi</span></div></div>
+        <div class="bars" title="Số câu mỗi ngày">${perDayT.map(n => `<i style="height:${Math.max(6, n / maxT * 100)}%;opacity:${n ? .85 : .15}"></i>`).join('')}</div>
+        <div class="days">${days.map(d => `<span>${WD[new Date(d + 'T12:00').getDay()]}</span>`).join('')}</div>
+        <h3 style="color:var(--sky)">🚲 Đạp Xe Sài Gòn</h3>
+        <div class="stat"><div><b>${trips.length}</b><span>chuyến</span></div><div><b>${viol}</b><span>lỗi giao thông</span></div><div><b>${m1 ? m0 + '/' + m1 : '–'}</b><span>toán đúng · ${tmins} phút</span></div></div>
+        <div class="bars" title="Số chuyến mỗi ngày">${perDayS.map(n => `<i class="sky" style="height:${Math.max(6, n / maxS * 100)}%;opacity:${n ? .85 : .15}"></i>`).join('')}</div>
+        <div class="days">${days.map(d => `<span>${WD[new Date(d + 'T12:00').getDay()]}</span>`).join('')}</div>
+      </div>`;
+    }).join('');
+  }
+
+  /* ---- phần thưởng ---- */
+  const SUG = [['📺', '30 phút hoạt hình', 300], ['🍦', 'Đi ăn kem', 800], ['🍝', 'Chọn món bữa tối', 500], ['🎮', '20 phút chơi game', 400], ['🏊', 'Đi bơi cuối tuần', 1000]];
+  function renderRewards() {
+    const r = ZZZ.rewards(), names = Object.fromEntries(kids().map(k => [k.id, k.name]));
+    $('rwSug').innerHTML = 'Gợi ý: ' + SUG.map(([em, t, c]) => `<button type="button" class="chip" data-sug="${em}|${esc(t)}|${c}" style="border:0;cursor:pointer">${em} ${esc(t)} · ${c}</button>`).join('');
+    $('rwList').innerHTML = r.items.map(x => `<div><span>${x.em || '🎁'} ${esc(x.title)} · <b>${x.cost} xu</b></span><button class="btn ghost" type="button" data-del="${x.id}">Xóa</button></div>`).join('') || '<p class="note">Chưa có phần thưởng nào.</p>';
+    const red = r.redeemed.slice().sort((a, b) => (a.done - b.done) || (b.ts - a.ts)).slice(0, 30);
+    $('rdList').innerHTML = red.map(x => `<div><span>${x.em || '🎁'} <b>${esc(names[x.pid] || x.pid)}</b> đổi ${esc(x.title)} <span class="note" style="display:inline">· ${new Date(x.ts).toLocaleDateString('vi-VN')} · ${x.cost} xu</span></span>${x.done ? '<span class="chip green">Đã thưởng</span>' : `<button class="btn primary" type="button" data-done="${x.pid}:${x.ts}">Đã thưởng</button>`}</div>`).join('') || '<p class="note">Chưa có phiếu nào.</p>';
+    document.querySelectorAll('[data-sug]').forEach(b => b.onclick = () => { const [em, t, c] = b.dataset.sug.split('|'); $('rwEm').value = em; $('rwTitle').value = t; $('rwCost').value = c; });
+    document.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { ZZZ.removeReward(b.dataset.del); renderRewards(); });
+    document.querySelectorAll('[data-done]').forEach(b => b.onclick = () => { const [pid, ts] = b.dataset.done.split(':'); ZZZ.markDone(+ts, pid); renderRewards(); });
+  }
+  $('rwAdd').onclick = () => { const t = $('rwTitle').value.trim(), c = parseInt($('rwCost').value, 10), em = $('rwEm').value.trim(); if (!t || !(c > 0)) { $('rwMsg').textContent = 'Cần tên phần thưởng và giá xu lớn hơn 0.'; return; } ZZZ.addReward(t, c, em); $('rwTitle').value = ''; $('rwCost').value = ''; $('rwEm').value = ''; $('rwMsg').textContent = 'Đã thêm phần thưởng.'; renderRewards(); };
+
+  /* ---- nhật ký ---- */
+  let logPid = null;
+  function renderLog() {
+    const ks = kids(); if (!logPid) logPid = ks[0] && ks[0].id;
+    $('logTabs').innerHTML = ks.map(k => `<button class="btn ${k.id === logPid ? 'primary' : 'ghost'}" type="button" data-log="${k.id}">${esc(k.name)}</button>`).join('');
+    document.querySelectorAll('[data-log]').forEach(b => b.onclick = () => { logPid = b.dataset.log; renderLog(); });
+    const k = ks.find(x => x.id === logPid) || {};
+    const ans = events.filter(e => e.pid === logPid && e.t === 'answer').sort((a, b) => b.ts - a.ts).slice(0, 15);
+    $('logToan').innerHTML = `<h3 style="margin-bottom:6px">📘 Toán · 15 câu gần nhất</h3>` + (ans.length ? `<table><thead><tr><th>Lúc</th><th>Câu hỏi</th><th>Bé trả lời</th><th>Đáp án</th><th>Giây</th></tr></thead><tbody>${ans.map(e => `<tr><td>${new Date(e.ts).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })}</td><td>${esc(plain(e.q))}</td><td class="${e.ok ? 'ok' : 'bad'}">${esc(plain(e.input))}${e.hint ? ' 💡' : ''}</td><td>${esc(plain(e.ans))}</td><td>${e.secs ?? ''}</td></tr>`).join('')}</tbody></table>` : '<p class="note">Chưa có câu nào.</p>');
+    const trips = ((k.sp && k.sp.trips) || []).slice(-10).reverse();
+    $('logSaigon').innerHTML = `<h3 style="margin:12px 0 6px;color:var(--sky)">🚲 Đạp xe · 10 chuyến gần nhất</h3>` + (trips.length ? `<table><thead><tr><th>Ngày</th><th>Sao</th><th>Lỗi giao thông</th><th>Toán</th><th>Câu đố</th><th>Xu</th><th>Phút</th></tr></thead><tbody>${trips.map(t => `<tr><td>${esc(t.date)}</td><td>${'⭐'.repeat(+t.stars || 0)}</td><td>${t.violations}</td><td>${(t.math || [0, 0]).join('/')}</td><td>${(t.quiz || [0, 0]).join('/')}</td><td>${t.coins}</td><td>${Math.round((+t.secs || 0) / 60)}</td></tr>`).join('')}</tbody></table>` : '<p class="note">Chưa có chuyến nào.</p>');
+  }
+
+  /* ---- sao lưu ---- */
+  async function saveFile(name, text, type) {
+    const blob = new Blob([text], { type });
+    try { const file = new File([blob], name, { type }); if (navigator.canShare && navigator.canShare({ files: [file] }) && matchMedia('(pointer:coarse)').matches) { await navigator.share({ files: [file], title: name }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+  const stamp = () => dayKey(Date.now());
+  $('dlAll').onclick = async () => {
+    const evs = await toanEvents();
+    const data = { app: 'zzzlearning', v: 1, exported: new Date().toISOString(), zzz: { wallet: load(ZZZ.KEYS.wallet), kids: load(ZZZ.KEYS.kids), rewards: load(ZZZ.KEYS.rewards) }, toan: { state: toan(), events: evs }, saigon: { state: saigon() } };
+    await saveFile(`zzzlearning-${stamp()}.json`, JSON.stringify(data), 'application/json');
+    $('bkMsg').textContent = `Đã tạo file sao lưu (${evs.length} dòng nhật ký toán).`;
+  };
+  $('fileIn').onchange = async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    try {
+      const o = JSON.parse(await f.text());
+      if (o && o.app === 'zzzlearning' && o.zzz) {
+        for (const [k, v] of [[ZZZ.KEYS.wallet, o.zzz.wallet], [ZZZ.KEYS.kids, o.zzz.kids], [ZZZ.KEYS.rewards, o.zzz.rewards]]) { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); }
+        if (o.toan && o.toan.state && o.toan.state.profiles) { localStorage.setItem(ZZZ.APP_KEYS.toan, JSON.stringify(o.toan.state)); await putToanKV('state', o.toan.state); if (Array.isArray(o.toan.events)) await replaceToanEvents(o.toan.events); }
+        if (o.saigon && o.saigon.state && o.saigon.state.profiles) localStorage.setItem(ZZZ.APP_KEYS.saigon, JSON.stringify(o.saigon.state));
+      } else if (o && (o.app === 'vo-on-toan' || (o.state && o.state.profiles) || (o.profiles && o.profiles[0] && o.profiles[0].skills))) { // file sao lưu riêng của Vở Ôn Toán
+        const st = o.state || o; localStorage.setItem(ZZZ.APP_KEYS.toan, JSON.stringify(st)); await putToanKV('state', st); if (Array.isArray(o.events)) await replaceToanEvents(o.events);
+      } else if (o && o.profiles && o.profiles[0] && o.profiles[0].trips) { // file sao lưu riêng của Đạp Xe Sài Gòn
+        localStorage.setItem(ZZZ.APP_KEYS.saigon, JSON.stringify(o));
+      } else throw 0;
+      $('bkMsg').textContent = 'Đã khôi phục dữ liệu từ file.'; events = await toanEvents(); renderAll();
+    } catch (err) { $('bkMsg').textContent = 'File không đúng định dạng sao lưu.'; }
+    e.target.value = '';
+  };
+  $('dlCsv').onclick = async () => {
+    const names = Object.fromEntries(kids().map(k => [k.id, k.name])); const q = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const rows = events.filter(e => e.t === 'answer').map(e => [new Date(e.ts).toLocaleString('vi-VN'), names[e.pid] || e.pid, e.skill, plain(e.q), plain(e.input), plain(e.ans), e.ok ? 'Đúng' : 'Sai', e.secs, e.hint ? 'Có' : '', e.retry ? 'Có' : ''].map(q).join(','));
+    await saveFile('zzzlearning-nhat-ky-toan.csv', '﻿' + [['Thời gian', 'Bé', 'Kỹ năng', 'Câu hỏi', 'Bé trả lời', 'Đáp án', 'Đúng', 'Số giây', 'Xem gợi ý', 'Làm lại'].map(q).join(','), ...rows].join('\r\n'), 'text/csv');
+    $('bkMsg').textContent = `Đã xuất ${rows.length} câu trả lời.`;
+  };
+
+  function renderAll() { renderKids(); renderWeek(); renderRewards(); renderLog(); }
+  (async () => { renderAll(); events = await toanEvents(); renderWeek(); renderLog(); })();
+  if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) window.addEventListener('load', () => navigator.serviceWorker.register('../sw.js').catch(() => {}));
+})();
+</script>
+</body>
+</html>

@@ -4,12 +4,16 @@ Góc học của 2 bé (lớp 2 và lớp 4): một trang chủ **zzzlearning** 
 
 | Thư mục | App |
 |---|---|
-| `/` (`index.html`, `sw.js`, `manifest.webmanifest`, `icons/`) | Trang chủ zzzlearning: 2 thẻ vào app con, hiện nhanh tiến độ mỗi bé |
+| `/` (`index.html`, `sw.js`, `manifest.webmanifest`, `icons/`) | Trang chủ zzzlearning: ví xu của từng bé + nút Đổi thưởng, 2 thẻ vào app con, tiến độ nhanh |
+| `phuhuynh/` | Trang phụ huynh chung: hồ sơ bé (tên dùng cho cả 2 app), tổng quan 7 ngày (toán + xe), tặng/trừ xu, phần thưởng ngoài đời và phiếu đã đổi, nhật ký gần đây, sao lưu/khôi phục **một file** cho tất cả, xuất CSV nhật ký toán |
+| `zzz.js` | Lớp dữ liệu dùng chung (script thường, cả 2 app và trang chủ đều nạp): ví xu `zzz-wallet`, tên bé `zzz-kids`, phần thưởng `zzz-rewards` trong `localStorage` |
 | `toan/` | Vở Ôn Toán |
 | `saigon/` | Đạp Xe Sài Gòn |
 | `fonts/` | Font Baloo 2 và Be Vietnam Pro tự host, dùng chung cho cả 3 |
 
-Mỗi app con có manifest và service worker riêng (phạm vi thư mục của nó) nên cài riêng từng app cũng được; cài trang chủ thì vào được cả hai. Dữ liệu lưu trong `localStorage`/IndexedDB theo tên miền nên dùng chung giữa trang chủ và app con.
+- **Ví xu chung:** bé kiếm xu ở app nào cũng cộng vào một ví; đổi phiếu thưởng (ở trang chủ hoặc trong Vở Ôn Toán) hay mua đồ ở tủ thời trang (Đạp Xe Sài Gòn) đều trừ từ ví đó. Lần đầu chạy bản này, xu đang có của mỗi bé ở 2 app được cộng lại. Trong code, `p.coins` của mỗi app được gắn (getter/setter) vào ví chung bằng `ZZZ.bindCoins`.
+- **Mở từ trang chủ** (link có `?hub=1`): nút Phụ huynh trong app con dẫn ra `phuhuynh/`. **Cài lẻ** từng app (mở thẳng `toan/` hay `saigon/`): app vẫn dùng trang phụ huynh riêng của nó như trước, nhưng ví xu, tên bé và phần thưởng vẫn là dữ liệu chung.
+- Mỗi app con có manifest và service worker riêng (phạm vi thư mục của nó) nên cài riêng từng app cũng được; cài trang chủ thì vào được cả hai. Dữ liệu lưu trong `localStorage`/IndexedDB theo tên miền nên dùng chung giữa trang chủ và app con.
 
 # Vở Ôn Toán (`toan/`)
 
@@ -20,7 +24,7 @@ App ôn toán cho 2 bé (lớp 2 và lớp 4). Là web app tĩnh (PWA): cài đ�
 - Thú cưng: bé chọn và đặt tên (rồng, mèo, thỏ, rô-bốt), mỗi câu đúng là 1 hạt, tiến hóa qua 4 hình dạng (0/30/100/250 hạt), buồn nếu bỏ học từ 2 ngày. Tủ đồ để mặc mũ, đồ chơi mở được từ rương.
 - Trận đánh trùm: trùm có thanh máu bằng số câu, bé có 3 tim, sai là mất tim, hết tim là thua.
 - Rương thưởng: qua trạm hoặc thêm sao được rương (xu + 1 món đồ, độ hiếm thường/hiếm/cực hiếm), trùm cho rương to (2 món). Đồ trùng đổi thành xu.
-- Xu và phiếu thưởng ngoài đời: bố mẹ đặt phần thưởng kèm giá xu ở trang phụ huynh, bé tự đổi trong app, bố mẹ bấm "Đã thưởng" khi thực hiện.
+- Xu và phiếu thưởng ngoài đời: bố mẹ đặt phần thưởng kèm giá xu ở trang phụ huynh (chung với zzzlearning), bé tự đổi trong app, bố mẹ bấm "Đã thưởng" khi thực hiện. Xu là ví chung với Đạp Xe Sài Gòn.
 - Nhiệm vụ ngày: mỗi ngày 3 nhiệm vụ ngẫu nhiên (đúng N câu, qua trạm, đúng liên tiếp, học dưới 2 phút...), làm đủ 3 thì nhận xu + 1 bùa chuỗi. Bùa chuỗi (giữ tối đa 2) tự dùng khi bé bỏ 1 ngày để không mất chuỗi ngày học.
 - Đổi dạng chơi: ngoài bàn phím số còn có bắn bóng bay (chọn đáp án trong 4 bóng bay) và đua thời gian (thanh thời gian chạy, hết giờ tính sai, trả lời nhanh được thêm XP ⚡). Trạm trùm và lần đầu qua trạm vẫn dùng bàn phím.
 - Ma số: câu bé làm sai biến thành "ma số", 2–3 ngày sau hiện lại ở bảng ma để bé bắt; bắt đủ 10 ma được rương.
@@ -41,7 +45,7 @@ App ôn toán cho 2 bé (lớp 2 và lớp 4). Là web app tĩnh (PWA): cài đ�
 | `toan/sw.js` | Service worker, lưu app vào máy để chạy offline |
 | `fonts/` | Font Baloo 2 và Be Vietnam Pro tự host (không cần Google Fonts), ở thư mục gốc |
 | `toan/icons/` | Icon app |
-| `.github/workflows/pages.yml` | Tự deploy lên GitHub Pages mỗi lần push (gom `index.html`, `sw.js`, `manifest`, `fonts`, `icons`, `toan`, `saigon`) |
+| `.github/workflows/pages.yml` | Tự deploy lên GitHub Pages mỗi lần push (gom `index.html`, `sw.js`, `zzz.js`, `manifest`, `fonts`, `icons`, `phuhuynh`, `toan`, `saigon`) |
 
 Thêm file mới vào app thì thêm vào `ASSETS` trong `sw.js` và tăng `VERSION`.
 

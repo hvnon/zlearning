@@ -2,12 +2,12 @@
    Hai app con (toan/, saigon/) có service worker riêng với phạm vi hẹp hơn nên tự lo file của mình;
    request vào app con mà chưa có sw riêng thì cho đi mạng bình thường.
    Thêm file cho trang chủ thì thêm vào ASSETS và tăng VERSION. */
-const VERSION = 'v1';
+const VERSION = 'v2';
 const CACHE = 'zzzlearning-' + VERSION;
 const FONTS = ['Baloo2-500', 'Baloo2-700', 'Baloo2-800', 'BeVietnamPro-400', 'BeVietnamPro-500', 'BeVietnamPro-600']
   .flatMap(f => ['latin', 'latin-ext', 'vietnamese'].map(r => `./fonts/${f}-${r}.woff2`));
 const ASSETS = [
-  './', './index.html', './manifest.webmanifest', './fonts/fonts.css', ...FONTS,
+  './', './index.html', './zzz.js', './phuhuynh/index.html', './manifest.webmanifest', './fonts/fonts.css', ...FONTS,
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png',
   './toan/icons/icon-192.png', './saigon/icons/icon-192.png'
 ];
@@ -20,6 +20,7 @@ self.addEventListener('install', e => {
 
 self.addEventListener('activate', e => {
   // Xóa bản cũ của trang chủ và cache của Vở Ôn Toán thời còn nằm ở thư mục gốc (v1..v5); toan/sw.js giờ dùng cache riêng.
+  // (BASE = thư mục của trang chủ, ví dụ /zlearning/)
   e.waitUntil(caches.keys()
     .then(keys => Promise.all(keys.filter(k => (k.startsWith('zzzlearning-') && k !== CACHE) || /^vo-on-toan-v[1-5]$/.test(k)).map(k => caches.delete(k))))
     .then(() => self.clients.claim()));
@@ -30,9 +31,11 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   const url = new URL(req.url);
   if (url.origin !== location.origin) return;
-  const isHome = req.mode === 'navigate' && (url.pathname === BASE || url.pathname === BASE + 'index.html');
-  if (!isHome && !ASSET_PATHS.has(url.pathname)) return; // của app con: đi mạng, sw của app con sẽ lo khi đã cài
-  const key = isHome ? './index.html' : req;
+  // trang của trang chủ (/, /phuhuynh/): cache theo file index.html của thư mục đó; file khác của app con thì bỏ qua
+  let key = null;
+  if (req.mode === 'navigate') { const p = url.pathname.endsWith('/') ? url.pathname + 'index.html' : url.pathname; if (ASSET_PATHS.has(p) && !/\/(toan|saigon)\//.test(p)) key = new Request(new URL(p, location.href).href); }
+  else if (ASSET_PATHS.has(url.pathname)) key = req;
+  if (!key) return; // của app con: đi mạng, sw của app con sẽ lo khi đã cài
   e.respondWith((async () => {
     const cache = await caches.open(CACHE);
     const cached = await cache.match(key, { ignoreSearch: true });
