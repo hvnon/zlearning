@@ -21,11 +21,12 @@ function freshState() {
 let state;
 try { state = JSON.parse(localStorage.getItem(KEY)) || freshState(); } catch (e) { state = freshState(); }
 // nâng cấp dữ liệu cũ (bản đầu chỉ có màu khung, áo, mũ)
-for (const p of state.profiles) {
+function upgradeState() { for (const p of state.profiles) {
   if (!p.avatar) { p.avatar = { ...AVATAR_DEFAULT, outfitColor: (p.bike && p.bike.shirt) || AVATAR_DEFAULT.outfitColor, helmetColor: (p.bike && p.bike.helmet) || AVATAR_DEFAULT.helmetColor }; }
   p.bike = { ...BIKE_DEFAULT, ...(p.bike || {}) }; delete p.bike.shirt; delete p.bike.helmet;
   p.owned = p.owned || [];
-}
+} }
+upgradeState();
 function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { } }
 const prof = (id) => state.profiles.find(p => p.id === id);
 /* ví xu và tên bé dùng chung với zzzlearning (../zzz.js): p.coins đọc/ghi thẳng vào ví chung. Gọi lại sau khi thay state. */
@@ -886,4 +887,9 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) relea
 
 /* ================= khởi động ================= */
 renderHome();
+/* đồng bộ nhiều máy (../sync.js): đang đạp xe thì chưa thay dữ liệu; xong chuyến mới đọc lại */
+if (window.ZZZSync) ZZZSync.register({
+  busy: () => !!G,
+  reload: (changed) => { if (G || !changed.includes(KEY)) return; try { const s = JSON.parse(localStorage.getItem(KEY)); if (s && Array.isArray(s.profiles)) state = s; } catch (e) { } upgradeState(); syncZZZ(); renderHome(); }
+});
 if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) { window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => { })); }

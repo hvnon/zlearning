@@ -1,14 +1,14 @@
 /* Service worker của Shipper Nhí Sài Gòn: lưu toàn bộ game vào máy để chạy offline.
    Có mạng thì vẫn mở ngay từ bản đã lưu và tải bản mới ở nền; lần mở sau dùng bản mới.
    Thêm file mới thì nhớ thêm vào ASSETS và tăng VERSION. Font dùng chung với Vở Ôn Toán ở ../fonts/. */
-const VERSION = 'v8';
+const VERSION = 'v9';
 const CACHE = 'dap-xe-sai-gon-' + VERSION;
 const FONTS = ['Baloo2-500', 'Baloo2-700', 'Baloo2-800', 'BeVietnamPro-400', 'BeVietnamPro-500', 'BeVietnamPro-600']
   .flatMap(f => ['latin', 'latin-ext', 'vietnamese'].map(r => `../fonts/${f}-${r}.woff2`));
 const ASSETS = [
   './', './index.html', './manifest.webmanifest', './data.js', './game.js', './world.js', './vendor/three.module.min.js',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png',
-  '../zzz.js', '../fonts/fonts.css', ...FONTS
+  '../zzz.js', '../sync.js', '../fonts/fonts.css', ...FONTS
 ];
 
 self.addEventListener('install', e => {

@@ -157,6 +157,13 @@ label.filebtn input{display:none}
     <div class="msg" id="pinMsg" aria-live="polite"></div>
   </section>
 
+  <section class="panel" id="syncPanel">
+    <h2>☁️ Đồng bộ nhiều máy</h2>
+    <p class="note">Bật đồng bộ thì xu, tiến độ, phần thưởng, việc hôm nay và nhật ký của hai bé giống nhau trên mọi máy trong nhà: học trên iPad rồi chơi tiếp trên điện thoại vẫn đúng. Mất mạng vẫn chơi bình thường, có mạng lại máy tự gửi.</p>
+    <div id="syncBox"></div>
+    <div class="msg" id="syncMsg" aria-live="polite"></div>
+  </section>
+
   <section class="panel">
     <h2>Sao lưu tất cả</h2>
     <p class="note">Một file gồm ví xu, tên bé, phần thưởng, toàn bộ tiến độ và nhật ký của cả hai app. Nên tải định kỳ hoặc khi chuyển sang máy khác. Mở file sao lưu sẽ thay toàn bộ dữ liệu hiện có.</p>
@@ -169,6 +176,7 @@ label.filebtn input{display:none}
   </section>
 </div>
 <script src="../zzz.js"></script>
+<script src="../sync.js"></script>
 <script>
 (function () {
   const $ = (id) => document.getElementById(id);
@@ -445,7 +453,61 @@ label.filebtn input{display:none}
     $('bkMsg').textContent = `Đã xuất ${rows.length} câu trả lời.`;
   };
 
-  function renderAll() { renderKids(); renderPlans(); renderFamily(); renderWeek(); renderRewards(); renderLog(); renderPin(); }
+  /* ---- đồng bộ nhiều máy (../sync.js) ---- */
+  const SY = window.ZZZSync;
+  const syncErr = (e) => ({ config: 'Chưa cài Firebase cho zzzlearning.', code: 'Mã gia đình gồm 16 chữ và số, ví dụ ABCD-EFGH-JKMN-PQRS.', empty: 'Không tìm thấy gia đình với mã này. Kiểm tra lại mã trên máy kia.', denied: 'Firebase từ chối. Kiểm tra lại quy tắc bảo mật Firestore.', offline: 'Máy đang mất mạng.', network: 'Không kết nối được tới Firebase. Kiểm tra mạng rồi thử lại.' })[String(e && e.message || e)] || ('Lỗi đồng bộ: ' + (e && e.message || e));
+  const agoText = (ts) => { if (!ts) return 'chưa đồng bộ'; const m = Math.round((Date.now() - ts) / 60000); return m < 1 ? 'vừa xong' : m < 60 ? `${m} phút trước` : m < 1440 ? `${Math.round(m / 60)} giờ trước` : new Date(ts).toLocaleDateString('vi-VN'); };
+  let joinPrefill = ''; try { joinPrefill = new URLSearchParams(location.search).get('gd') || ''; } catch (e) { }
+  function renderSync() {
+    if (!SY) { $('syncPanel').hidden = true; return; }
+    const s = SY.state(), box = $('syncBox');
+    if (!s.configured) {
+      box.innerHTML = `<p class="note">Cần một project Firebase (miễn phí) của gia đình. Dán Project ID và Web API key ở Firebase Console > Project settings.</p>
+        <div class="row"><input type="text" id="syPid" placeholder="Project ID, ví dụ zzzlearning-nha-minh" autocomplete="off" style="flex:2 1 220px"><input type="text" id="syKey" placeholder="Web API key" autocomplete="off" style="flex:2 1 220px"><button class="btn" id="syCfg" type="button">Lưu</button></div>`;
+      $('syCfg').onclick = () => { const pid = $('syPid').value.trim(); if (!/^[a-z0-9-]{4,40}$/.test(pid)) { $('syncMsg').textContent = 'Project ID chỉ gồm chữ thường, số và dấu gạch ngang.'; return; } SY.setConfig({ projectId: pid, apiKey: $('syKey').value.trim() }); $('syncMsg').textContent = 'Đã lưu. Giờ tạo gia đình hoặc nhập mã.'; renderSync(); };
+      return;
+    }
+    const nameRow = `<div class="row"><label for="syName" style="font-weight:600">Tên máy này</label><input type="text" id="syName" maxlength="40" value="${esc(s.name)}" style="flex:1 1 180px"><button class="btn ghost" id="syNameOk" type="button">Lưu tên</button></div>`;
+    if (!s.on) {
+      box.innerHTML = nameRow + (s.fam ? `<div class="row"><button class="btn primary" id="syResume" type="button">Bật lại đồng bộ (mã ${esc(s.code)})</button></div>` : '') +
+        `<h3>Máy đầu tiên</h3><p class="note">Làm trên máy đang có nhiều dữ liệu của hai bé nhất. Dữ liệu trên máy này sẽ thành dữ liệu chung của cả nhà.</p>
+        <div class="row"><button class="btn${s.fam || joinPrefill ? '' : ' primary'}" id="syCreate" type="button">Tạo mã gia đình mới</button></div>
+        <h3>Các máy khác</h3><p class="note">Nhập mã gia đình đã tạo ở máy đầu tiên. Dữ liệu cũ trên máy này sẽ được thay bằng dữ liệu chung của cả nhà (máy vẫn cất lại một bản cũ). Trên iPad hay iPhone, nếu đã thêm app ra màn hình chính thì nhập mã ngay trong app đó, vì Safari và app ngoài màn hình chính giữ dữ liệu riêng.</p>
+        <div class="row"><input type="text" id="syCode" placeholder="ABCD-EFGH-JKMN-PQRS" autocomplete="off" autocapitalize="characters" spellcheck="false" value="${esc(joinPrefill ? SY.prettyCode(joinPrefill) : '')}" style="flex:1 1 220px;font-family:ui-monospace,monospace;letter-spacing:1px"><button class="btn${joinPrefill ? ' primary' : ''}" id="syJoin" type="button">Vào gia đình</button></div>`;
+      if (s.fam) $('syResume').onclick = async () => { $('syncMsg').textContent = 'Đang bật lại...'; try { await SY.resume(); $('syncMsg').textContent = 'Đã bật lại đồng bộ.'; } catch (e) { $('syncMsg').textContent = syncErr(e); } refreshAfterSync(); };
+      $('syCreate').onclick = async () => {
+        if (s.fam && !confirm('Tạo mã mới thì máy này rời gia đình cũ. Các máy khác phải nhập mã mới. Tiếp tục?')) return;
+        $('syncMsg').textContent = 'Đang tạo...'; try { const code = await SY.create(); $('syncMsg').textContent = `Đã tạo mã gia đình ${code}. Nhập mã này trên các máy khác.`; } catch (e) { $('syncMsg').textContent = syncErr(e); } renderSync();
+      };
+      $('syJoin').onclick = async () => {
+        const code = $('syCode').value; if (!SY.validCode(code)) { $('syncMsg').textContent = syncErr('code'); return; }
+        if (!confirm('Dữ liệu trên máy này sẽ được thay bằng dữ liệu chung của cả nhà. Tiếp tục?')) return;
+        $('syncMsg').textContent = 'Đang tải dữ liệu của cả nhà...';
+        try { await SY.join(code); joinPrefill = ''; try { history.replaceState(null, '', location.pathname); } catch (e) { } $('syncMsg').textContent = 'Đã vào gia đình. Máy này giờ dùng chung dữ liệu với các máy khác.'; } catch (e) { $('syncMsg').textContent = syncErr(e); }
+        refreshAfterSync();
+      };
+    } else {
+      const link = `${location.origin}${location.pathname}?gd=${s.fam}`;
+      const others = s.peers.filter(p => p.dev !== s.dev);
+      box.innerHTML = `<div class="row" style="align-items:center"><span>Mã gia đình</span><b style="font-family:ui-monospace,monospace;font-size:20px;letter-spacing:2px">${esc(s.code)}</b><button class="btn ghost" id="syCopy" type="button">Sao chép</button><button class="btn ghost" id="syShare" type="button">Gửi link</button></div>
+        <p class="note">Giữ mã này như mật khẩu: ai có mã là xem và sửa được dữ liệu của hai bé. Nhập mã ở trang Phụ huynh trên máy khác để vào chung.</p>
+        <div class="list"><div><span>📱 <b>${esc(s.name)}</b> (máy này)</span><span class="note" style="display:inline">${s.err ? esc(syncErr(s.err)) : agoText(s.last)}</span></div>${others.map(p => `<div><span>📱 ${esc(p.name || p.dev)}</span><span class="note" style="display:inline">gửi lần cuối ${agoText(p.ts)}</span></div>`).join('') || '<p class="note">Chưa có máy nào khác. Nhập mã trên máy thứ hai để bắt đầu.</p>'}</div>
+        <div class="row"><button class="btn primary" id="syNow" type="button">Đồng bộ ngay</button><button class="btn ghost" id="syOff" type="button">Tắt trên máy này</button></div>` + nameRow;
+      $('syCopy').onclick = () => { const t = s.code; (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => $('syncMsg').textContent = 'Đã sao chép mã.').catch(() => $('syncMsg').textContent = 'Mã: ' + t); };
+      $('syShare').onclick = async () => { try { if (navigator.share) { await navigator.share({ title: 'zzzlearning: mã gia đình', text: `Mã gia đình zzzlearning: ${s.code}`, url: link }); return; } } catch (e) { if (e && e.name === 'AbortError') return; } try { await navigator.clipboard.writeText(link); $('syncMsg').textContent = 'Đã sao chép link.'; } catch (e) { $('syncMsg').textContent = link; } };
+      $('syNow').onclick = async () => { $('syncMsg').textContent = 'Đang đồng bộ...'; const r = await SY.syncNow(); $('syncMsg').textContent = r.ok ? (r.changed.length || r.added ? 'Đã đồng bộ, có dữ liệu mới từ máy khác.' : 'Đã đồng bộ, mọi máy đã giống nhau.') : syncErr(r.err); refreshAfterSync(); };
+      $('syOff').onclick = () => { if (!confirm('Tắt đồng bộ trên máy này? Dữ liệu vẫn giữ trên máy, các máy khác không bị ảnh hưởng. Bật lại bằng cùng mã.')) return; SY.leave(); $('syncMsg').textContent = 'Đã tắt đồng bộ trên máy này.'; renderSync(); };
+    }
+    $('syNameOk').onclick = () => { SY.setName($('syName').value); $('syncMsg').textContent = 'Đã lưu tên máy.'; renderSync(); };
+  }
+  async function refreshAfterSync() { events = await toanEvents(); renderAll(); }
+  window.addEventListener('zzz-sync', async (e) => {
+    const typing = document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
+    if (e.detail && e.detail.status === 'ok' && ((e.detail.changed && e.detail.changed.length) || e.detail.added) && !typing && wrap.style.visibility !== 'hidden') { await refreshAfterSync(); return; }
+    if (!typing) renderSync();
+  });
+
+  function renderAll() { renderSync(); renderKids(); renderPlans(); renderFamily(); renderWeek(); renderRewards(); renderLog(); renderPin(); }
   const wrap = document.querySelector('.wrap');
   if (new URLSearchParams(location.search).get('pin') === 'xoa' && ZZZ.hasPin() && confirm('Xóa mã của bố mẹ? Trang phụ huynh sẽ mở tự do cho tới khi đặt mã mới.')) { ZZZ.setPin(null); history.replaceState(null, '', location.pathname); }
   wrap.style.visibility = ZZZ.pinOk() ? '' : 'hidden';

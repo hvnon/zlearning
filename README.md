@@ -7,6 +7,7 @@ Góc học của 2 bé (lớp 2 và lớp 4): một trang chủ **zzzlearning** 
 | `/` (`index.html`, `sw.js`, `manifest.webmanifest`, `icons/`) | Trang chủ zzzlearning: ví xu của từng bé + nút Đổi thưởng + 💝 Tặng xu cho nhau, việc hôm nay, 🏺 hũ cả nhà (góp xu cho mục tiêu chung), 📒 album sticker, 2 thẻ vào app con, tiến độ nhanh |
 | `phuhuynh/` | Trang phụ huynh chung (khóa bằng **mã 4 số của bố mẹ**): hồ sơ bé (tên dùng cho cả 2 app), **việc hôm nay** (mục tiêu toán mỗi ngày, bắt làm toán xong mới được đạp xe, giới hạn phút chơi game xe), tổng quan 7 ngày (toán + xe), **báo cáo tuần thành một ảnh** để lưu/gửi, tặng/trừ xu, phần thưởng ngoài đời và phiếu đã đổi, nhật ký gần đây, sao lưu/khôi phục **một file** cho tất cả, xuất CSV nhật ký toán |
 | `zzz.js` | Lớp dữ liệu dùng chung (script thường, cả 2 app và trang chủ đều nạp): ví xu `zzz-wallet`, tên bé `zzz-kids`, phần thưởng `zzz-rewards`, mã bố mẹ `zzz-pin`, việc hôm nay `zzz-plan` + tiến độ `zzz-today`, hũ cả nhà `zzz-family`, tặng xu `zzz-gifts`, album sticker `zzz-stickers`, cài đặt `zzz-settings` trong `localStorage`; hộp nhập mã dùng chung `ZZZ.gate()` |
+| `sync.js` | Đồng bộ nhiều máy qua Firestore (Firebase, gói miễn phí), nạp ngay sau `zzz.js` ở cả 4 trang; tắt thì không gọi mạng. Xem mục **Đồng bộ nhiều máy** bên dưới |
 | `toan/` | Vở Ôn Toán |
 | `saigon/` | Shipper Nhí Sài Gòn |
 | `fonts/` | Font Baloo 2 và Be Vietnam Pro tự host, dùng chung cho cả 3 |
@@ -17,6 +18,36 @@ Góc học của 2 bé (lớp 2 và lớp 4): một trang chủ **zzzlearning** 
 - **Việc hôm nay:** bố mẹ đặt cho từng bé số câu toán mỗi ngày (lần đầu trong ngày làm đủ được +5 xu vào ví chung), có thể bắt làm toán xong mới được lên xe trong Shipper Nhí Sài Gòn và giới hạn số phút chơi game xe mỗi ngày. Vở Ôn Toán ghi mỗi câu trả lời qua `ZZZ.logToday`, game xe cộng dồn giây chơi; trang chủ hiện tiến độ, game xe tự chặn khi chưa đủ toán / hết phút. Tiến độ theo ngày giữ 35 ngày để làm báo cáo.
 - **Hũ cả nhà:** bố mẹ đặt một mục tiêu chung (ví dụ "Cả nhà đi Đầm Sen = 300 xu") ở trang phụ huynh; hai bé góp xu từ ví của mình ở trang chủ; đủ xu thì bố mẹ bấm "Đã thực hiện" (xu dư giữ lại). **Tặng xu cho nhau:** nút 💝 ở trang chủ, bấm hai lần để chắc, trang phụ huynh có nhật ký. **Album sticker chung** (24 sticker, 3 trang): mỗi ngày bé được tối đa 1 sticker khi làm đủ toán của việc hôm nay và 1 sticker khi đạp xe được 3 sao, xem album ở trang chủ. **Cuối tuần nhân đôi xu** (thứ Bảy, Chủ nhật, bố mẹ tắt được): chỉ xu kiếm trong app (qua `p.coins`) được nhân đôi, tặng xu hay bố mẹ cho xu thì không.
 - Mỗi app con có manifest và service worker riêng (phạm vi thư mục của nó) nên cài riêng từng app cũng được; cài trang chủ thì vào được cả hai. Dữ liệu lưu trong `localStorage`/IndexedDB theo tên miền nên dùng chung giữa trang chủ và app con.
+
+## Đồng bộ nhiều máy
+
+Bé dùng nhiều máy (iPad, điện thoại...) thì bật ở trang Phụ huynh > ☁️ Đồng bộ nhiều máy: máy có nhiều dữ liệu nhất bấm **Tạo mã gia đình mới** (16 ký tự), các máy khác nhập mã đó (hoặc mở link `phuhuynh/?gd=MÃ`) và bấm **Vào gia đình**. Máy vào sau bỏ dữ liệu cũ của nó (cất một bản trong `zzz-sync-prejoin`) và lấy dữ liệu chung. Trên iPad/iPhone, app thêm ra màn hình chính và Safari giữ dữ liệu riêng, nên nhập mã ngay trong app đã cài.
+
+Cách chạy (`sync.js`, chỉ dùng `fetch` tới Firestore REST, không SDK, không đăng nhập):
+- Mỗi máy chỉ ghi tài liệu của riêng nó: `families/{mã}/devices/{máy}` (toàn bộ dữ liệu `zzz-*` và state của 2 app, kèm phần đếm và giờ sửa) và `families/{mã}/ev/{máy}_{tháng}_{phần}` (nhật ký từng câu trả lời của Vở Ôn Toán do máy đó tạo). Hai máy không bao giờ ghi đè lên nhau.
+- Mỗi máy đọc tài liệu của các máy khác rồi tự gộp: **số đếm** (ví xu, số câu/giây/phút của việc hôm nay, xu trong hũ cả nhà) là tổng phần cộng/trừ của từng máy, nên hai máy cùng cộng xu lúc mất mạng vẫn đủ; **phần sửa cả cụm** (tên bé, việc hôm nay, mã bố mẹ, cài đặt, danh sách phần thưởng, mục tiêu hũ, hồ sơ từng bé trong mỗi app) lấy bản sửa sau cùng; **phần chỉ thêm vào** (phiếu đã đổi, tặng xu, sticker, thẻ/con dấu/chuyến xe/đồ đã mua, sao) gộp hết; thẻ FSRS của từng kỹ năng lấy thẻ có lần ôn mới nhất; nhật ký toán gộp, không trùng.
+- Giờ sửa và phần đếm được ghi tự động khi app gọi `localStorage.setItem` (sync.js bọc hàm này), nên code app không phải đổi cách lưu. App đăng ký `ZZZSync.register({ busy, reload })`: đang làm bài / đang đạp xe thì chưa thay dữ liệu của app, xong lượt mới đọc lại.
+- Kéo về khi mở app, khi quay lại app, khi có mạng lại và mỗi 90 giây; app lưu gì thì 6 đến 15 giây sau đẩy lên. Gói miễn phí (50.000 lượt đọc, 20.000 lượt ghi mỗi ngày) dư cho một nhà.
+- Hạn chế: nếu cùng một bé chơi cùng một app trên hai máy cùng lúc mà cả hai mất mạng, hồ sơ của bé trong app đó lấy bản sửa sau cùng (xp, thú cưng...), còn xu, thẻ kỹ năng, thẻ, chuyến xe và nhật ký vẫn gộp đủ.
+
+**Cài Firebase (một lần):** tạo project ở https://console.firebase.google.com (không cần Google Analytics) > Build > Firestore Database > Create database (production mode, vùng `asia-southeast1`) > tab Rules dán quy tắc dưới rồi Publish > Project settings > General > Add app (Web, `</>`) để lấy `projectId` và `apiKey`, điền vào hằng `FIREBASE` đầu `sync.js` (hoặc dán ở trang Phụ huynh khi chưa điền). Mã gia đình là chìa khóa: không ai liệt kê được các gia đình, chỉ máy có mã mới đọc/ghi được.
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function fam(f) { return f.matches('^[A-HJKMNP-Z2-9]{16}$'); }
+    match /families/{f}/devices/{d} {
+      allow get, list, delete: if fam(f);
+      allow create, update: if fam(f) && request.resource.data.d is string && request.resource.data.d.size() < 1000000;
+    }
+    match /families/{f}/ev/{d} {
+      allow get, list, delete: if fam(f);
+      allow create, update: if fam(f) && request.resource.data.d is string && request.resource.data.d.size() < 1000000;
+    }
+  }
+}
+```
 
 # Vở Ôn Toán (`toan/`)
 
