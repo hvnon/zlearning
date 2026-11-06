@@ -5,14 +5,16 @@ Góc học của 2 bé (lớp 2 và lớp 4): một trang chủ **zzzlearning** 
 | Thư mục | App |
 |---|---|
 | `/` (`index.html`, `sw.js`, `manifest.webmanifest`, `icons/`) | Trang chủ zzzlearning: ví xu của từng bé + nút Đổi thưởng, 2 thẻ vào app con, tiến độ nhanh |
-| `phuhuynh/` | Trang phụ huynh chung: hồ sơ bé (tên dùng cho cả 2 app), tổng quan 7 ngày (toán + xe), tặng/trừ xu, phần thưởng ngoài đời và phiếu đã đổi, nhật ký gần đây, sao lưu/khôi phục **một file** cho tất cả, xuất CSV nhật ký toán |
-| `zzz.js` | Lớp dữ liệu dùng chung (script thường, cả 2 app và trang chủ đều nạp): ví xu `zzz-wallet`, tên bé `zzz-kids`, phần thưởng `zzz-rewards` trong `localStorage` |
+| `phuhuynh/` | Trang phụ huynh chung (khóa bằng **mã 4 số của bố mẹ**): hồ sơ bé (tên dùng cho cả 2 app), **việc hôm nay** (mục tiêu toán mỗi ngày, bắt làm toán xong mới được đạp xe, giới hạn phút chơi game xe), tổng quan 7 ngày (toán + xe), **báo cáo tuần thành một ảnh** để lưu/gửi, tặng/trừ xu, phần thưởng ngoài đời và phiếu đã đổi, nhật ký gần đây, sao lưu/khôi phục **một file** cho tất cả, xuất CSV nhật ký toán |
+| `zzz.js` | Lớp dữ liệu dùng chung (script thường, cả 2 app và trang chủ đều nạp): ví xu `zzz-wallet`, tên bé `zzz-kids`, phần thưởng `zzz-rewards`, mã bố mẹ `zzz-pin`, việc hôm nay `zzz-plan` + tiến độ `zzz-today` trong `localStorage`; hộp nhập mã dùng chung `ZZZ.gate()` |
 | `toan/` | Vở Ôn Toán |
 | `saigon/` | Đạp Xe Sài Gòn |
 | `fonts/` | Font Baloo 2 và Be Vietnam Pro tự host, dùng chung cho cả 3 |
 
 - **Ví xu chung:** bé kiếm xu ở app nào cũng cộng vào một ví; đổi phiếu thưởng (ở trang chủ hoặc trong Vở Ôn Toán) hay mua đồ ở tủ thời trang (Đạp Xe Sài Gòn) đều trừ từ ví đó. Lần đầu chạy bản này, xu đang có của mỗi bé ở 2 app được cộng lại. Trong code, `p.coins` của mỗi app được gắn (getter/setter) vào ví chung bằng `ZZZ.bindCoins`.
 - **Mở từ trang chủ** (link có `?hub=1`): nút Phụ huynh trong app con dẫn ra `phuhuynh/`. **Cài lẻ** từng app (mở thẳng `toan/` hay `saigon/`): app vẫn dùng trang phụ huynh riêng của nó như trước, nhưng ví xu, tên bé và phần thưởng vẫn là dữ liệu chung.
+- **Mã của bố mẹ:** đặt ở trang phụ huynh chung (4 số, lưu dạng băm). Có mã rồi thì trang phụ huynh chung và góc phụ huynh riêng của từng app đều hỏi mã; nhập đúng một lần thì nhớ tới khi đóng app (sessionStorage). Quên mã: mở `phuhuynh/?pin=xoa` rồi xác nhận để xóa mã.
+- **Việc hôm nay:** bố mẹ đặt cho từng bé số câu toán mỗi ngày (lần đầu trong ngày làm đủ được +5 xu vào ví chung), có thể bắt làm toán xong mới được lên xe trong Đạp Xe Sài Gòn và giới hạn số phút chơi game xe mỗi ngày. Vở Ôn Toán ghi mỗi câu trả lời qua `ZZZ.logToday`, game xe cộng dồn giây chơi; trang chủ hiện tiến độ, game xe tự chặn khi chưa đủ toán / hết phút. Tiến độ theo ngày giữ 35 ngày để làm báo cáo.
 - Mỗi app con có manifest và service worker riêng (phạm vi thư mục của nó) nên cài riêng từng app cũng được; cài trang chủ thì vào được cả hai. Dữ liệu lưu trong `localStorage`/IndexedDB theo tên miền nên dùng chung giữa trang chủ và app con.
 
 # Vở Ôn Toán (`toan/`)

@@ -418,7 +418,7 @@ const DB={_db:null,
   delPid(pid){return this.run('events','readwrite',s=>{const r=s.index('pid').openKeyCursor(IDBKeyRange.only(pid));r.onsuccess=()=>{const c=r.result;if(c){s.delete(c.primaryKey);c.continue()}}}).catch(()=>{})}
 };
 const plain=h=>String(h).replace(/<span class="frac"><span>([^<]*)<\/span><span>([^<]*)<\/span><\/span>/g,' $1/$2 ').replace(/<br\s*\/?>/g,' ').replace(/<div class="fig">[\s\S]*?<\/svg><\/div>/g,' [hình] ').replace(/<div class="note"[\s\S]*?<\/div>/g,'').replace(/<[^>]+>/g,'').replace(/&nbsp;/g,' ').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&amp;/g,'&').replace(/\s+/g,' ').trim();
-function logEv(ev){DB.add({ts:Date.now(),day:today(),...ev})}
+function logEv(ev){DB.add({ts:Date.now(),day:today(),...ev});if(window.ZZZ&&ev.t==='answer')ZZZ.logToday(ev.pid,{answers:1,ok:ev.ok?1:0,secs:+ev.secs||0})}
 (async()=>{ // nếu localStorage trống mà IndexedDB còn bản sao thì khôi phục
   let had=false;try{had=!!localStorage.getItem(KEY)}catch(e){}
   if(!had){const s=await DB.getKV('state');if(s&&s.profiles){state=s;syncZZZ();try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){};render()}}
@@ -593,7 +593,7 @@ function makeSess(p,chosen,qs,mode,extra={}){
 const app=document.getElementById('app');
 let view={name:'home'};let sess=null;
 document.getElementById('brand').onclick=()=>{sess=null;go({name:'home'})};
-document.getElementById('parentBtn').onclick=()=>{if(window.ZZZ&&ZZZ.fromHub()){location.href='../phuhuynh/';return}sess=null;go({name:'parent',pid:view.pid||state.profiles[0].id})};
+document.getElementById('parentBtn').onclick=()=>{if(window.ZZZ&&ZZZ.fromHub()){location.href='../phuhuynh/';return}const open=()=>{sess=null;go({name:'parent',pid:view.pid||state.profiles[0].id})};if(window.ZZZ)ZZZ.gate(open);else open()};
 function go(v){view=v;render();window.scrollTo(0,0)}
 const soundBtn=document.getElementById('soundBtn');
 function paintSound(){soundBtn.textContent=state.sound===false?'🔇':'🔊'}
@@ -634,6 +634,9 @@ function renderChoosePet(p){
   document.getElementById('adopt').onclick=()=>{const name=document.getElementById('petName').value.trim()||PETS[kind].name;p.pet={kind,name,food:0,wear:{},since:Date.now()};save();logEv({t:'adopt',pid:p.id,kind,name});SFX.win();confetti(80);delete view.kind;delete view.pname;renderKid()};
 }
 
+/* Việc hôm nay do bố mẹ đặt ở trang phụ huynh chung (zzz.js); không đặt thì không hiện gì */
+function todayHTML(p){if(!window.ZZZ)return'';const st=ZZZ.status(p.id);if(!st.plan||!(st.plan.math>0))return'';const t=st.today;
+  return `<div class="row" style="justify-content:space-between;gap:6px"><b>📅 Việc hôm nay</b><span class="chip ${st.mathDone?'green':'amber'}">${st.mathDone?`Xong ${st.plan.math} câu toán ✓ +${ZZZ.DAILY_BONUS} xu`:`${Math.min(t.answers,st.plan.math)}/${st.plan.math} câu toán`}</span></div>`}
 function renderKid(){
   const p=prof(view.pid);if(!p.pet){renderChoosePet(p);return}
   const d=dueCount(p);const pet=p.pet,pst=stageOf(pet.food),mood=petMood(p),line=pick(PET_LINES[mood]),nextFood=FOOD_STAGES[pst+1];
@@ -660,6 +663,7 @@ function renderKid(){
         <div class="foodbar"><i style="width:${foodPct(pet.food)}%"></i></div>
         <div class="note">${nextFood?`${pet.food}/${nextFood} hạt để tiến hóa`:'Đã tiến hóa tối đa!'} · mỗi câu đúng là 1 hạt</div>
       </div></div>
+      ${todayHTML(p)}
       <div class="row"><button class="btn small" id="wardrobeBtn" type="button" aria-expanded="${!!view.wardrobe}">👕 Tủ đồ (${p.items.length})</button></div>
       ${view.wardrobe?`<div class="stack" style="gap:8px">${[['hat','Mũ'],['acc','Đồ chơi']].map(([slot,lab])=>{const own=ITEMS.filter(i=>i.slot===slot&&p.items.includes(i.id));return `<div><div class="note" style="margin-bottom:4px">${lab}</div><div class="wardrobe"><button type="button" data-wear="${slot}:" aria-pressed="${!pet.wear?.[slot]}" aria-label="Không dùng">🚫</button>${own.map(i=>`<button type="button" class="${RCLS[i.r]}" data-wear="${slot}:${i.id}" aria-pressed="${pet.wear?.[slot]===i.id}" aria-label="${esc(i.name)}">${i.em}</button>`).join('')}${own.length?'':'<span class="note" style="align-self:center">Mở rương để có đồ</span>'}</div></div>`}).join('')}</div>`:''}
     </div>
@@ -841,6 +845,7 @@ function renderDone(){
       ${v.unlocked?`<div class="chip green" style="font-size:15px;padding:6px 14px">🔓 Mở khóa: ${esc(v.unlocked)}</div>`:''}
     </div>
     ${lvUp?`<div class="levelup">🎉 Lên cấp ${v.lvAfter.L}: ${rankOf(v.lvAfter.L)}!</div>`:''}
+    ${(()=>{if(!window.ZZZ)return'';const st=ZZZ.status(p.id);return st.plan&&st.plan.math>0&&st.mathDone?`<div class="chip green" style="align-self:center;font-size:15px;padding:6px 14px">📅 Xong việc hôm nay ✓ (+${ZZZ.DAILY_BONUS} xu)</div>`:''})()}
     <div class="panel"><div class="lvl"><div class="badge">${v.lvAfter.L}</div><div class="meta"><div class="row" style="justify-content:space-between;gap:6px"><b>+${v.gained} XP</b><span class="note">${v.lvAfter.cur}/${v.lvAfter.need} XP</span></div><div class="xpbar"><i id="xpFill" style="width:${pctFrom}%"></i></div></div></div></div>
     ${v.evolved?`<div class="evolve">✨ ${esc(p.pet.name)} tiến hóa thành ${esc(v.evolved)}!</div>`:''}
     ${p.pet?`<div class="panel"><div class="petcard">${petHTML(p)}<div class="stack" style="flex:1;min-width:0;gap:6px"><div class="row" style="justify-content:space-between;gap:6px"><b>${esc(p.pet.name)} ăn +${v.fed} hạt</b><span class="coin">+${v.coinsGained} 🪙</span></div><div class="foodbar"><i id="foodFill" style="width:${v.evolved?0:foodPct(v.foodBefore)}%"></i></div><div class="note">${FOOD_STAGES[stageOf(p.pet.food)+1]?`${p.pet.food}/${FOOD_STAGES[stageOf(p.pet.food)+1]} hạt để tiến hóa`:'Đã tiến hóa tối đa!'}</div></div></div></div>`:''}

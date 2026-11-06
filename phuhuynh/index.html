@@ -49,7 +49,11 @@ h3{font-family:var(--f-display);font-weight:700;font-size:17px;margin:0;color:va
 .btn:disabled{opacity:.5;cursor:default}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .btn.primary{color:#17152a}}
 :root[data-theme="dark"] .btn.primary{color:#17152a}
-input[type=text],input[type=number]{font:inherit;color:var(--text);background:var(--paper);border:2px solid var(--line);border-radius:12px;padding:8px 12px;min-width:0}
+input[type=text],input[type=number],input[type=password],select{font:inherit;color:var(--text);background:var(--paper);border:2px solid var(--line);border-radius:12px;padding:8px 12px;min-width:0}
+[hidden]{display:none!important}
+label.row{cursor:pointer}
+input[type=checkbox]{width:20px;height:20px;accent-color:var(--ink)}
+.rp{width:100%;max-width:540px;border-radius:14px;border:2px solid var(--line);display:block}
 input:focus{outline:2px solid var(--ink);outline-offset:1px}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
 .chip{background:var(--ink-soft);color:var(--text);border-radius:999px;padding:3px 10px;font-size:13px;font-weight:600;white-space:nowrap}
@@ -91,8 +95,26 @@ label.filebtn input{display:none}
   </section>
 
   <section class="panel">
+    <h2>Việc hôm nay</h2>
+    <p class="note">Đặt mục tiêu mỗi ngày cho từng bé. Trang chủ và hai app hiện tiến độ; lần đầu trong ngày làm đủ số câu toán bé được thêm 5 xu. Có thể bắt làm toán xong mới được đạp xe, và giới hạn số phút chơi game xe mỗi ngày. Để 0 nếu không đặt.</p>
+    <div class="kids" id="plans"></div>
+  </section>
+
+  <section class="panel">
     <h2>7 ngày qua</h2>
     <div class="kids" id="week"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Báo cáo tuần</h2>
+    <p class="note">Gom kết quả của cả hai bé thành một ảnh để lưu lại hoặc gửi cho ông bà, người thân.</p>
+    <div class="row">
+      <select id="rpRange" aria-label="Khoảng thời gian"><option value="last7">7 ngày qua</option><option value="this">Tuần này (từ thứ Hai)</option><option value="prev">Tuần trước</option></select>
+      <button class="btn primary" id="rpMake" type="button">📸 Tạo ảnh</button>
+      <button class="btn" id="rpSave" type="button" hidden>Lưu / chia sẻ ảnh</button>
+    </div>
+    <img class="rp" id="rpImg" alt="Ảnh báo cáo tuần" hidden>
+    <div class="msg" id="rpMsg" aria-live="polite"></div>
   </section>
 
   <section class="panel">
@@ -111,6 +133,13 @@ label.filebtn input{display:none}
     <div class="row" id="logTabs" role="group" aria-label="Chọn bé"></div>
     <div class="scroll" id="logToan"></div>
     <div class="scroll" id="logSaigon"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Mã của bố mẹ</h2>
+    <p class="note" id="pinNote"></p>
+    <div class="row"><input type="password" id="pinIn" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="4 số" autocomplete="off" style="width:110px"><button class="btn" id="pinSet" type="button">Đặt mã</button><button class="btn ghost" id="pinDel" type="button" hidden>Xóa mã</button></div>
+    <div class="msg" id="pinMsg" aria-live="polite"></div>
   </section>
 
   <section class="panel">
@@ -143,7 +172,7 @@ label.filebtn input{display:none}
     if (!ids.size) ['k2', 'k4'].forEach(id => ids.add(id));
     return [...ids].map(id => {
       const z = ZZZ.kids().find(x => x.id === id) || {}, tp = t && t.profiles.find(x => x.id === id), sp = s && s.profiles.find(x => x.id === id);
-      return { id, name: z.name || (tp && tp.name) || (sp && sp.name) || id, grade: z.grade || (tp && tp.grade) || (sp && sp.grade) || '', tp, sp };
+      return { id, name: z.name || (tp && tp.name) || (sp && sp.name) || ({ k2: 'Bé lớp 2', k4: 'Bé lớp 4' })[id] || id, grade: z.grade || (tp && tp.grade) || (sp && sp.grade) || ({ k2: 'g2', k4: 'g4' })[id] || '', tp, sp };
     });
   }
   const gradeLabel = (g) => g === 'g2' ? 'Lớp 2' : g === 'g4' ? 'Lớp 4' : g;
@@ -185,32 +214,134 @@ label.filebtn input{display:none}
     document.querySelectorAll('[data-giftsub]').forEach(b => b.onclick = () => gift(b.dataset.giftsub, -1));
   }
 
+  /* ---- việc hôm nay ---- */
+  function renderPlans() {
+    $('plans').innerHTML = kids().map(k => {
+      const pl = ZZZ.plans()[k.id] || { math: 0, mathFirst: true, rideMin: 0 }, st = ZZZ.status(k.id), t = st.today;
+      return `<div class="kid"><span class="nm">${esc(k.name)}</span>
+        <label class="row" style="justify-content:space-between"><span>📘 Toán mỗi ngày</span><span class="row" style="gap:6px"><input type="number" data-pmath="${k.id}" inputmode="numeric" min="0" max="200" value="${+pl.math || 0}" style="width:84px"> câu</span></label>
+        <label class="row" style="gap:8px"><input type="checkbox" data-pfirst="${k.id}" ${pl.mathFirst !== false ? 'checked' : ''}> Làm toán xong mới được đạp xe</label>
+        <label class="row" style="justify-content:space-between"><span>🚲 Đạp xe tối đa</span><span class="row" style="gap:6px"><input type="number" data-pride="${k.id}" inputmode="numeric" min="0" max="600" value="${+pl.rideMin || 0}" style="width:84px"> phút/ngày</span></label>
+        <div class="row" style="justify-content:space-between"><button class="btn" type="button" data-psave="${k.id}">Lưu</button><span class="chip ${st.plan ? (st.mathDone && st.plan.math > 0 ? 'green' : 'amber') : ''}">Hôm nay: ${t.answers} câu toán · ${Math.floor(t.ride / 60)} phút xe${st.plan && st.plan.math > 0 && st.mathDone ? ' · xong ✓' : ''}</span></div>
+        <div class="msg" id="pm-${k.id}"></div></div>`;
+    }).join('');
+    document.querySelectorAll('[data-psave]').forEach(b => b.onclick = () => {
+      const id = b.dataset.psave, num = (sel, max) => Math.min(max, Math.max(0, Math.round(+document.querySelector(sel).value) || 0));
+      const math = num(`[data-pmath="${id}"]`, 200), rideMin = num(`[data-pride="${id}"]`, 600), mathFirst = document.querySelector(`[data-pfirst="${id}"]`).checked;
+      ZZZ.setPlan(id, { math, mathFirst, rideMin }); renderPlans(); $('pm-' + id).textContent = math || rideMin ? 'Đã lưu. Trang chủ và hai app sẽ hiện mục tiêu này.' : 'Đã bỏ mục tiêu.';
+    });
+  }
+
+  /* ---- mã của bố mẹ ---- */
+  function renderPin() {
+    const has = ZZZ.hasPin();
+    $('pinNote').textContent = has ? 'Đã đặt mã. Mở trang phụ huynh (ở đây hay trong từng app) đều phải nhập mã; nhập đúng một lần thì nhớ tới khi đóng app. Muốn đổi: nhập mã mới rồi bấm Đổi mã.' : 'Chưa có mã: bé nào cũng mở được trang này và tự tặng xu cho mình. Đặt 4 số để khóa lại.';
+    $('pinSet').textContent = has ? 'Đổi mã' : 'Đặt mã'; $('pinDel').hidden = !has;
+  }
+  $('pinSet').onclick = () => { const v = $('pinIn').value.trim(); if (!/^\d{4}$/.test(v)) { $('pinMsg').textContent = 'Mã phải gồm đúng 4 số.'; return; } ZZZ.setPin(v); $('pinIn').value = ''; $('pinMsg').textContent = 'Đã lưu mã.'; renderPin(); };
+  $('pinDel').onclick = () => { ZZZ.setPin(null); $('pinMsg').textContent = 'Đã xóa mã. Trang phụ huynh mở tự do.'; renderPin(); };
+
+  /* ---- thống kê một khoảng ngày (7 ngày qua / tuần) dùng cho cả bảng và ảnh báo cáo ---- */
+  function statsFor(k, days) {
+    const set = new Set(days), hist = ZZZ.history();
+    const ans = events.filter(e => e.pid === k.id && e.t === 'answer' && set.has(dayKey(e.ts)));
+    const fin = events.filter(e => e.pid === k.id && e.t === 'finish' && set.has(dayKey(e.ts)));
+    const trips = ((k.sp && k.sp.trips) || []).filter(t => set.has(t.date));
+    const perDayT = days.map(d => ans.filter(e => dayKey(e.ts) === d).length), perDayS = days.map(d => trips.filter(t => t.date === d).length);
+    const pl = ZZZ.plan(k.id);
+    return { ans, fin, trips, perDayT, perDayS, ok: ans.filter(e => e.ok).length, mins: Math.round(ans.reduce((a, e) => a + (+e.secs || 0), 0) / 60),
+      viol: trips.reduce((a, t) => a + (+t.violations || 0), 0), m0: trips.reduce((a, t) => a + ((t.math || [0, 0])[0]), 0), m1: trips.reduce((a, t) => a + ((t.math || [0, 0])[1]), 0), tmins: Math.round(trips.reduce((a, t) => a + (+t.secs || 0), 0) / 60),
+      studied: days.map((d, j) => perDayT[j] > 0 || perDayS[j] > 0), goalSet: !!(pl && pl.math > 0), goalDays: days.filter(d => hist[d] && hist[d][k.id] && hist[d][k.id].bonus).length,
+      redeemed: ZZZ.rewards().redeemed.filter(x => x.pid === k.id && set.has(dayKey(x.ts))) };
+  }
+
   /* ---- 7 ngày ---- */
   function renderWeek() {
-    const days = last7(), from = Date.now() - 7 * DAY;
+    const days = last7();
     $('week').innerHTML = kids().map(k => {
-      const ans = events.filter(e => e.pid === k.id && e.t === 'answer' && e.ts >= from);
-      const fin = events.filter(e => e.pid === k.id && e.t === 'finish' && e.ts >= from);
-      const ok = ans.filter(e => e.ok).length, mins = Math.round(ans.reduce((a, e) => a + (+e.secs || 0), 0) / 60);
-      const perDayT = days.map(d => ans.filter(e => dayKey(e.ts) === d).length);
-      const trips = ((k.sp && k.sp.trips) || []).filter(t => t.date >= days[0]);
-      const perDayS = days.map(d => trips.filter(t => t.date === d).length);
-      const viol = trips.reduce((a, t) => a + (+t.violations || 0), 0), m0 = trips.reduce((a, t) => a + ((t.math || [0, 0])[0]), 0), m1 = trips.reduce((a, t) => a + ((t.math || [0, 0])[1]), 0), tmins = Math.round(trips.reduce((a, t) => a + (+t.secs || 0), 0) / 60);
-      const maxT = Math.max(1, ...perDayT), maxS = Math.max(1, ...perDayS);
-      const studiedToday = perDayT[6] > 0 || perDayS[6] > 0;
+      const s = statsFor(k, days), maxT = Math.max(1, ...s.perDayT), maxS = Math.max(1, ...s.perDayS), studiedToday = s.studied[6];
       return `<div class="kid">
         <div class="row" style="justify-content:space-between"><span class="nm">${esc(k.name)}</span><span class="chip ${studiedToday ? 'green' : ''}">${studiedToday ? 'Hôm nay đã học ✓' : 'Hôm nay chưa học'}</span></div>
         <h3>📘 Vở Ôn Toán</h3>
-        <div class="stat"><div><b>${ans.length}</b><span>câu đã làm</span></div><div><b>${ans.length ? Math.round(ok / ans.length * 100) + '%' : '–'}</b><span>làm đúng</span></div><div><b>${mins}</b><span>phút · ${fin.length} buổi</span></div></div>
-        <div class="bars" title="Số câu mỗi ngày">${perDayT.map(n => `<i style="height:${Math.max(6, n / maxT * 100)}%;opacity:${n ? .85 : .15}"></i>`).join('')}</div>
+        <div class="stat"><div><b>${s.ans.length}</b><span>câu đã làm</span></div><div><b>${s.ans.length ? Math.round(s.ok / s.ans.length * 100) + '%' : '–'}</b><span>làm đúng</span></div><div><b>${s.mins}</b><span>phút · ${s.fin.length} buổi</span></div></div>
+        <div class="bars" title="Số câu mỗi ngày">${s.perDayT.map(n => `<i style="height:${Math.max(6, n / maxT * 100)}%;opacity:${n ? .85 : .15}"></i>`).join('')}</div>
         <div class="days">${days.map(d => `<span>${WD[new Date(d + 'T12:00').getDay()]}</span>`).join('')}</div>
         <h3 style="color:var(--sky)">🚲 Đạp Xe Sài Gòn</h3>
-        <div class="stat"><div><b>${trips.length}</b><span>chuyến</span></div><div><b>${viol}</b><span>lỗi giao thông</span></div><div><b>${m1 ? m0 + '/' + m1 : '–'}</b><span>toán đúng · ${tmins} phút</span></div></div>
-        <div class="bars" title="Số chuyến mỗi ngày">${perDayS.map(n => `<i class="sky" style="height:${Math.max(6, n / maxS * 100)}%;opacity:${n ? .85 : .15}"></i>`).join('')}</div>
+        <div class="stat"><div><b>${s.trips.length}</b><span>chuyến</span></div><div><b>${s.viol}</b><span>lỗi giao thông</span></div><div><b>${s.m1 ? s.m0 + '/' + s.m1 : '–'}</b><span>toán đúng · ${s.tmins} phút</span></div></div>
+        <div class="bars" title="Số chuyến mỗi ngày">${s.perDayS.map(n => `<i class="sky" style="height:${Math.max(6, n / maxS * 100)}%;opacity:${n ? .85 : .15}"></i>`).join('')}</div>
         <div class="days">${days.map(d => `<span>${WD[new Date(d + 'T12:00').getDay()]}</span>`).join('')}</div>
+        ${s.goalSet ? `<p class="note">📅 Xong việc hôm nay: ${s.goalDays}/7 ngày</p>` : ''}
       </div>`;
     }).join('');
   }
+
+  /* ---- báo cáo tuần: vẽ ảnh 1080×1350 bằng canvas ---- */
+  const fmtDY = (d) => { const [y, m, dd] = d.split('-'); return `${dd}/${m}/${y}`; };
+  function rangeDays(kind) {
+    if (kind === 'last7') return last7();
+    const now = new Date(), dow = (now.getDay() + 6) % 7; // 0 = thứ Hai
+    const mon = new Date(now.getFullYear(), now.getMonth(), now.getDate() - dow - (kind === 'prev' ? 7 : 0));
+    return Array.from({ length: 7 }, (_, i) => dayKey(new Date(mon.getFullYear(), mon.getMonth(), mon.getDate() + i)));
+  }
+  function rr(g, x, y, w, h, r, fill, stroke) {
+    g.beginPath(); if (g.roundRect) g.roundRect(x, y, w, h, r); else g.rect(x, y, w, h);
+    if (fill) { g.fillStyle = fill; g.fill(); } if (stroke) { g.lineWidth = 3; g.strokeStyle = stroke; g.stroke(); }
+  }
+  const fitText = (g, text, maxW) => { let t = String(text); while (t.length > 2 && g.measureText(t).width > maxW) t = t.slice(0, -2) + '…'; return t; };
+  const FD = (s, w = 800) => `${w} ${s}px "Baloo 2","Be Vietnam Pro",system-ui,sans-serif`, FB = (s, w = 500) => `${w} ${s}px "Be Vietnam Pro",system-ui,sans-serif`;
+  const C = { ink: '#4a2f91', sky: '#1b6fb3', mut: '#6b6784', txt: '#25213a', line: '#e3e0ee', green: '#1d8a55', paper: '#fbfaf6' };
+  function block(g, x, y, w, title, col, stats, perDay, days) {
+    g.fillStyle = col; g.font = FD(28); g.textAlign = 'left'; g.fillText(title, x, y);
+    const bw = (w - 12 * (stats.length - 1)) / stats.length;
+    stats.forEach(([v, l], i) => { const bx = x + i * (bw + 12), by = y + 22; rr(g, bx, by, bw, 92, 16, C.paper, C.line); g.fillStyle = C.txt; g.font = FD(34); g.textAlign = 'center'; g.fillText(String(v), bx + bw / 2, by + 50); g.fillStyle = C.mut; g.font = FB(15); g.fillText(l, bx + bw / 2, by + 76); });
+    const max = Math.max(1, ...perDay), bh = 84, by0 = y + 140, cw = w / 7;
+    perDay.forEach((n, j) => { const h = Math.max(6, n / max * bh), bx = x + cw * j + cw * .22; g.globalAlpha = n ? .9 : .18; rr(g, bx, by0 + bh - h, cw * .56, h, 6, col); g.globalAlpha = 1;
+      if (n) { g.fillStyle = C.txt; g.font = FB(15, 600); g.textAlign = 'center'; g.fillText(String(n), bx + cw * .28, by0 + bh - h - 8); }
+      g.fillStyle = C.mut; g.font = FB(15); g.textAlign = 'center'; g.fillText(WD[new Date(days[j] + 'T12:00').getDay()], bx + cw * .28, by0 + bh + 24); });
+    g.textAlign = 'left';
+  }
+  async function drawReport(days) {
+    const ks = kids(), W = 1080, H = 1350, pad = 54, top = 225, colH = 1000;
+    const c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+    try { await Promise.all([FD(58), FD(40), FD(34), FD(28), FB(22), FB(20, 600), FB(15)].map(f => document.fonts.load(f))); } catch (e) { }
+    g.fillStyle = C.paper; g.fillRect(0, 0, W, H);
+    const grad = g.createLinearGradient(0, 0, W, 0); grad.addColorStop(0, C.ink); grad.addColorStop(1, C.sky); g.fillStyle = grad; g.fillRect(0, 0, W, 185);
+    g.fillStyle = '#fff'; g.font = FD(58); g.fillText('zzzlearning · Báo cáo tuần', pad, 90);
+    g.font = FB(26); g.globalAlpha = .92; g.fillText(`${fmtDY(days[0])} – ${fmtDY(days[6])}`, pad, 140); g.globalAlpha = 1;
+    const n = ks.length || 1, gap = 30, colW = (W - pad * 2 - gap * (n - 1)) / n;
+    ks.forEach((k, i) => {
+      const x = pad + i * (colW + gap), s = statsFor(k, days), ix = x + 28, iw = colW - 56; let y = top;
+      rr(g, x, y, colW, colH, 28, '#fff', C.line);
+      g.fillStyle = C.ink; g.font = FD(40); g.fillText(fitText(g, k.name, iw), ix, y + 64);
+      g.fillStyle = C.mut; g.font = FB(22); g.fillText(`${gradeLabel(k.grade)} · 🪙 ${ZZZ.coins(k.id)} xu trong ví`, ix, y + 100);
+      y += 142; g.fillStyle = C.txt; g.font = FB(20, 600); g.fillText('Ngày có học', ix, y); g.textAlign = 'right'; g.fillText(`${s.studied.filter(Boolean).length}/7 ngày`, ix + iw, y); g.textAlign = 'left';
+      const cw = iw / 7;
+      days.forEach((d, j) => { const cx = ix + cw * j + cw / 2, did = s.studied[j]; g.beginPath(); g.arc(cx, y + 40, 16, 0, Math.PI * 2); g.fillStyle = did ? C.green : C.line; g.fill();
+        if (did) { g.fillStyle = '#fff'; g.font = FB(18, 700); g.textAlign = 'center'; g.fillText('✓', cx, y + 47); }
+        g.fillStyle = C.mut; g.font = FB(15); g.textAlign = 'center'; g.fillText(WD[new Date(d + 'T12:00').getDay()], cx, y + 82); g.textAlign = 'left'; });
+      y += 132; block(g, ix, y, iw, '📘 Vở Ôn Toán', C.ink, [[s.ans.length, 'câu đã làm'], [s.ans.length ? Math.round(s.ok / s.ans.length * 100) + '%' : '–', 'làm đúng'], [s.mins, 'phút'], [s.fin.length, 'buổi']], s.perDayT, days);
+      y += 296; block(g, ix, y, iw, '🚲 Đạp Xe Sài Gòn', C.sky, [[s.trips.length, 'chuyến'], [s.viol, 'lỗi giao thông'], [s.m1 ? `${s.m0}/${s.m1}` : '–', 'toán đúng'], [s.tmins, 'phút']], s.perDayS, days);
+      y += 296; g.fillStyle = C.txt; g.font = FB(19, 600);
+      const lines = [];
+      if (s.goalSet) lines.push(`📅 Xong việc hôm nay: ${s.goalDays}/7 ngày`);
+      if (k.tp) lines.push(`🔥 Chuỗi ${+k.tp.streak || 0} ngày · ✨ ${+k.tp.xp || 0} XP`);
+      if (s.redeemed.length) lines.push(`🎁 Đã đổi: ${s.redeemed.map(r => r.title).join(', ')}`);
+      lines.slice(0, 3).forEach((l, j) => g.fillText(fitText(g, l, iw), ix, y + j * 32));
+    });
+    g.fillStyle = C.mut; g.font = FB(17); g.textAlign = 'center'; g.fillText(`Tạo ngày ${new Date().toLocaleDateString('vi-VN')} · zzzlearning`, W / 2, H - 42); g.textAlign = 'left';
+    return c;
+  }
+  let rpBlob = null, rpName = '';
+  $('rpMake').onclick = async () => {
+    $('rpMsg').textContent = 'Đang vẽ…';
+    try {
+      const days = rangeDays($('rpRange').value); const c = await drawReport(days);
+      rpBlob = await new Promise(res => c.toBlob(res, 'image/png')); rpName = `zzzlearning-tuan-${days[0]}.png`;
+      const img = $('rpImg'); if (img.src) URL.revokeObjectURL(img.src); img.src = URL.createObjectURL(rpBlob); img.hidden = false; $('rpSave').hidden = false;
+      $('rpMsg').textContent = 'Xong. Bấm "Lưu / chia sẻ ảnh", hoặc giữ ngón tay trên ảnh để lưu.';
+    } catch (e) { $('rpMsg').textContent = 'Không vẽ được ảnh trên máy này.'; }
+  };
+  $('rpSave').onclick = () => { if (rpBlob) saveBlob(rpName, rpBlob); };
 
   /* ---- phần thưởng ---- */
   const SUG = [['📺', '30 phút hoạt hình', 300], ['🍦', 'Đi ăn kem', 800], ['🍝', 'Chọn món bữa tối', 500], ['🎮', '20 phút chơi game', 400], ['🏊', 'Đi bơi cuối tuần', 1000]];
@@ -240,15 +371,16 @@ label.filebtn input{display:none}
   }
 
   /* ---- sao lưu ---- */
-  async function saveFile(name, text, type) {
-    const blob = new Blob([text], { type });
+  async function saveFile(name, text, type) { return saveBlob(name, new Blob([text], { type })); }
+  async function saveBlob(name, blob) {
+    const type = blob.type;
     try { const file = new File([blob], name, { type }); if (navigator.canShare && navigator.canShare({ files: [file] }) && matchMedia('(pointer:coarse)').matches) { await navigator.share({ files: [file], title: name }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
   }
   const stamp = () => dayKey(Date.now());
   $('dlAll').onclick = async () => {
     const evs = await toanEvents();
-    const data = { app: 'zzzlearning', v: 1, exported: new Date().toISOString(), zzz: { wallet: load(ZZZ.KEYS.wallet), kids: load(ZZZ.KEYS.kids), rewards: load(ZZZ.KEYS.rewards) }, toan: { state: toan(), events: evs }, saigon: { state: saigon() } };
+    const data = { app: 'zzzlearning', v: 1, exported: new Date().toISOString(), zzz: { wallet: load(ZZZ.KEYS.wallet), kids: load(ZZZ.KEYS.kids), rewards: load(ZZZ.KEYS.rewards), plan: load(ZZZ.KEYS.plan), today: load(ZZZ.KEYS.today), pin: load(ZZZ.KEYS.pin) }, toan: { state: toan(), events: evs }, saigon: { state: saigon() } };
     await saveFile(`zzzlearning-${stamp()}.json`, JSON.stringify(data), 'application/json');
     $('bkMsg').textContent = `Đã tạo file sao lưu (${evs.length} dòng nhật ký toán).`;
   };
@@ -257,7 +389,7 @@ label.filebtn input{display:none}
     try {
       const o = JSON.parse(await f.text());
       if (o && o.app === 'zzzlearning' && o.zzz) {
-        for (const [k, v] of [[ZZZ.KEYS.wallet, o.zzz.wallet], [ZZZ.KEYS.kids, o.zzz.kids], [ZZZ.KEYS.rewards, o.zzz.rewards]]) { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); }
+        for (const [k, v] of [[ZZZ.KEYS.wallet, o.zzz.wallet], [ZZZ.KEYS.kids, o.zzz.kids], [ZZZ.KEYS.rewards, o.zzz.rewards], [ZZZ.KEYS.plan, o.zzz.plan], [ZZZ.KEYS.today, o.zzz.today], [ZZZ.KEYS.pin, o.zzz.pin]]) { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); }
         if (o.toan && o.toan.state && o.toan.state.profiles) { localStorage.setItem(ZZZ.APP_KEYS.toan, JSON.stringify(o.toan.state)); await putToanKV('state', o.toan.state); if (Array.isArray(o.toan.events)) await replaceToanEvents(o.toan.events); }
         if (o.saigon && o.saigon.state && o.saigon.state.profiles) localStorage.setItem(ZZZ.APP_KEYS.saigon, JSON.stringify(o.saigon.state));
       } else if (o && (o.app === 'vo-on-toan' || (o.state && o.state.profiles) || (o.profiles && o.profiles[0] && o.profiles[0].skills))) { // file sao lưu riêng của Vở Ôn Toán
@@ -276,8 +408,11 @@ label.filebtn input{display:none}
     $('bkMsg').textContent = `Đã xuất ${rows.length} câu trả lời.`;
   };
 
-  function renderAll() { renderKids(); renderWeek(); renderRewards(); renderLog(); }
-  (async () => { renderAll(); events = await toanEvents(); renderWeek(); renderLog(); })();
+  function renderAll() { renderKids(); renderPlans(); renderWeek(); renderRewards(); renderLog(); renderPin(); }
+  const wrap = document.querySelector('.wrap');
+  if (new URLSearchParams(location.search).get('pin') === 'xoa' && ZZZ.hasPin() && confirm('Xóa mã của bố mẹ? Trang phụ huynh sẽ mở tự do cho tới khi đặt mã mới.')) { ZZZ.setPin(null); history.replaceState(null, '', location.pathname); }
+  wrap.style.visibility = ZZZ.pinOk() ? '' : 'hidden';
+  ZZZ.gate(async () => { wrap.style.visibility = ''; renderAll(); events = await toanEvents(); renderWeek(); renderLog(); }, () => { location.href = '../'; });
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) window.addEventListener('load', () => navigator.serviceWorker.register('../sw.js').catch(() => {}));
 })();
 </script>
