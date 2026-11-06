@@ -8,13 +8,13 @@ Góc học của 2 bé (lớp 2 và lớp 4): một trang chủ **zzzlearning** 
 | `phuhuynh/` | Trang phụ huynh chung (khóa bằng **mã 4 số của bố mẹ**): hồ sơ bé (tên dùng cho cả 2 app), **việc hôm nay** (mục tiêu toán mỗi ngày, bắt làm toán xong mới được đạp xe, giới hạn phút chơi game xe), tổng quan 7 ngày (toán + xe), **báo cáo tuần thành một ảnh** để lưu/gửi, tặng/trừ xu, phần thưởng ngoài đời và phiếu đã đổi, nhật ký gần đây, sao lưu/khôi phục **một file** cho tất cả, xuất CSV nhật ký toán |
 | `zzz.js` | Lớp dữ liệu dùng chung (script thường, cả 2 app và trang chủ đều nạp): ví xu `zzz-wallet`, tên bé `zzz-kids`, phần thưởng `zzz-rewards`, mã bố mẹ `zzz-pin`, việc hôm nay `zzz-plan` + tiến độ `zzz-today`, hũ cả nhà `zzz-family`, tặng xu `zzz-gifts`, album sticker `zzz-stickers`, cài đặt `zzz-settings` trong `localStorage`; hộp nhập mã dùng chung `ZZZ.gate()` |
 | `toan/` | Vở Ôn Toán |
-| `saigon/` | Đạp Xe Sài Gòn |
+| `saigon/` | Shipper Nhí Sài Gòn |
 | `fonts/` | Font Baloo 2 và Be Vietnam Pro tự host, dùng chung cho cả 3 |
 
-- **Ví xu chung:** bé kiếm xu ở app nào cũng cộng vào một ví; đổi phiếu thưởng (ở trang chủ hoặc trong Vở Ôn Toán) hay mua đồ ở tủ thời trang (Đạp Xe Sài Gòn) đều trừ từ ví đó. Lần đầu chạy bản này, xu đang có của mỗi bé ở 2 app được cộng lại. Trong code, `p.coins` của mỗi app được gắn (getter/setter) vào ví chung bằng `ZZZ.bindCoins`.
+- **Ví xu chung:** bé kiếm xu ở app nào cũng cộng vào một ví; đổi phiếu thưởng (ở trang chủ hoặc trong Vở Ôn Toán) hay mua đồ ở tủ thời trang (Shipper Nhí Sài Gòn) đều trừ từ ví đó. Lần đầu chạy bản này, xu đang có của mỗi bé ở 2 app được cộng lại. Trong code, `p.coins` của mỗi app được gắn (getter/setter) vào ví chung bằng `ZZZ.bindCoins`.
 - **Mở từ trang chủ** (link có `?hub=1`): nút Phụ huynh trong app con dẫn ra `phuhuynh/`. **Cài lẻ** từng app (mở thẳng `toan/` hay `saigon/`): app vẫn dùng trang phụ huynh riêng của nó như trước, nhưng ví xu, tên bé và phần thưởng vẫn là dữ liệu chung.
 - **Mã của bố mẹ:** đặt ở trang phụ huynh chung (4 số, lưu dạng băm). Có mã rồi thì trang phụ huynh chung và góc phụ huynh riêng của từng app đều hỏi mã; nhập đúng một lần thì nhớ tới khi đóng app (sessionStorage). Quên mã: mở `phuhuynh/?pin=xoa` rồi xác nhận để xóa mã.
-- **Việc hôm nay:** bố mẹ đặt cho từng bé số câu toán mỗi ngày (lần đầu trong ngày làm đủ được +5 xu vào ví chung), có thể bắt làm toán xong mới được lên xe trong Đạp Xe Sài Gòn và giới hạn số phút chơi game xe mỗi ngày. Vở Ôn Toán ghi mỗi câu trả lời qua `ZZZ.logToday`, game xe cộng dồn giây chơi; trang chủ hiện tiến độ, game xe tự chặn khi chưa đủ toán / hết phút. Tiến độ theo ngày giữ 35 ngày để làm báo cáo.
+- **Việc hôm nay:** bố mẹ đặt cho từng bé số câu toán mỗi ngày (lần đầu trong ngày làm đủ được +5 xu vào ví chung), có thể bắt làm toán xong mới được lên xe trong Shipper Nhí Sài Gòn và giới hạn số phút chơi game xe mỗi ngày. Vở Ôn Toán ghi mỗi câu trả lời qua `ZZZ.logToday`, game xe cộng dồn giây chơi; trang chủ hiện tiến độ, game xe tự chặn khi chưa đủ toán / hết phút. Tiến độ theo ngày giữ 35 ngày để làm báo cáo.
 - **Hũ cả nhà:** bố mẹ đặt một mục tiêu chung (ví dụ "Cả nhà đi Đầm Sen = 300 xu") ở trang phụ huynh; hai bé góp xu từ ví của mình ở trang chủ; đủ xu thì bố mẹ bấm "Đã thực hiện" (xu dư giữ lại). **Tặng xu cho nhau:** nút 💝 ở trang chủ, bấm hai lần để chắc, trang phụ huynh có nhật ký. **Album sticker chung** (24 sticker, 3 trang): mỗi ngày bé được tối đa 1 sticker khi làm đủ toán của việc hôm nay và 1 sticker khi đạp xe được 3 sao, xem album ở trang chủ. **Cuối tuần nhân đôi xu** (thứ Bảy, Chủ nhật, bố mẹ tắt được): chỉ xu kiếm trong app (qua `p.coins`) được nhân đôi, tặng xu hay bố mẹ cho xu thì không.
 - Mỗi app con có manifest và service worker riêng (phạm vi thư mục của nó) nên cài riêng từng app cũng được; cài trang chủ thì vào được cả hai. Dữ liệu lưu trong `localStorage`/IndexedDB theo tên miền nên dùng chung giữa trang chủ và app con.
 
@@ -27,7 +27,7 @@ App ôn toán cho 2 bé (lớp 2 và lớp 4). Là web app tĩnh (PWA): cài đ�
 - Thú cưng: bé chọn và đặt tên (rồng, mèo, thỏ, rô-bốt), mỗi câu đúng là 1 hạt, tiến hóa qua 4 hình dạng (0/30/100/250 hạt), buồn nếu bỏ học từ 2 ngày. Tủ đồ để mặc mũ, đồ chơi mở được từ rương.
 - Trận đánh trùm: trùm có thanh máu bằng số câu, bé có 3 tim, sai là mất tim, hết tim là thua.
 - Rương thưởng: qua trạm hoặc thêm sao được rương (xu + 1 món đồ, độ hiếm thường/hiếm/cực hiếm), trùm cho rương to (2 món). Đồ trùng đổi thành xu.
-- Xu và phiếu thưởng ngoài đời: bố mẹ đặt phần thưởng kèm giá xu ở trang phụ huynh (chung với zzzlearning), bé tự đổi trong app, bố mẹ bấm "Đã thưởng" khi thực hiện. Xu là ví chung với Đạp Xe Sài Gòn.
+- Xu và phiếu thưởng ngoài đời: bố mẹ đặt phần thưởng kèm giá xu ở trang phụ huynh (chung với zzzlearning), bé tự đổi trong app, bố mẹ bấm "Đã thưởng" khi thực hiện. Xu là ví chung với Shipper Nhí Sài Gòn.
 - Nhiệm vụ ngày: mỗi ngày 3 nhiệm vụ ngẫu nhiên (đúng N câu, qua trạm, đúng liên tiếp, học dưới 2 phút...), làm đủ 3 thì nhận xu + 1 bùa chuỗi. Bùa chuỗi (giữ tối đa 2) tự dùng khi bé bỏ 1 ngày để không mất chuỗi ngày học.
 - Đổi dạng chơi: ngoài bàn phím số còn có bắn bóng bay (chọn đáp án trong 4 bóng bay) và đua thời gian (thanh thời gian chạy, hết giờ tính sai, trả lời nhanh được thêm XP ⚡). Trạm trùm và lần đầu qua trạm vẫn dùng bàn phím.
 - Ma số: câu bé làm sai biến thành "ma số", 2–3 ngày sau hiện lại ở bảng ma để bé bắt; bắt đủ 10 ma được rương.
@@ -65,7 +65,9 @@ rồi mở http://localhost:8000 (trang chủ), http://localhost:8000/toan/ ho�
 
 Dữ liệu lưu trong `localStorage` (key `vo-on-toan-v1`) và IndexedDB `vo-on-toan` (bản sao state + nhật ký).
 
-## Đạp Xe Sài Gòn (`saigon/`)
+## Shipper Nhí Sài Gòn (`saigon/`)
+
+Tên cũ là "Đạp Xe Sài Gòn" (đổi 2026-11-06); thư mục `saigon/`, khóa lưu `dap-xe-sai-gon-v1` và tên cache giữ nguyên nên dữ liệu bé không mất.
 
 Game 3D riêng cho 2 bé, nằm ở thư mục `saigon/` và chạy tại https://hvnon.github.io/zlearning/saigon/ (cũng là PWA cài được, chạy offline). Bé đạp xe từ nhà qua các con đường thật của Quận 1, Quận 3 tới một địa danh, vừa đi vừa:
 - **Học luật giao thông:** dừng đèn đỏ trước vạch, nhường người đi bộ, đi sát lề phải, lách xe hàng rong, nhường xe cứu thương, đi chậm gần trường học, giơ tay trước khi rẽ. Sai luật mất 1 trong 3 ❤️, chú công an giải thích; hết tim thì đạp lại từ đầu đường.

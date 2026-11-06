@@ -1,4 +1,4 @@
-/* Dữ liệu game Đạp Xe Sài Gòn: tuyến đường, sự kiện trên đường, hàng quán, thẻ lịch sử, câu đố.
+/* Dữ liệu game Shipper Nhí Sài Gòn: tuyến đường, sự kiện trên đường, hàng quán, thẻ lịch sử, câu đố.
    Bố mẹ muốn sửa nội dung (giá bán, câu chuyện lịch sử, câu đố) thì sửa ở file này. */
 
 /* ================= THẺ LỊCH SỬ =================

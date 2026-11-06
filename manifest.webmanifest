@@ -1,7 +1,7 @@
 {
   "name": "zzzlearning",
   "short_name": "zzzlearning",
-  "description": "Góc học của hai bé: Vở Ôn Toán và game Đạp Xe Sài Gòn, chạy offline.",
+  "description": "Góc học của hai bé: Vở Ôn Toán và game Shipper Nhí Sài Gòn, chạy offline.",
   "id": "./",
   "start_url": "./",
   "scope": "./",
