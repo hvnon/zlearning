@@ -65,6 +65,9 @@ function skyTexture(time = 'morning') {
     g.fillStyle = gr; g.fillRect(0, 0, w, h);
   }, 'sky-' + time);
 }
+function glowTexture() {
+  return canvasTex(128, 128, (g, w, h) => { g.clearRect(0, 0, w, h); const gr = g.createRadialGradient(64, 64, 4, 64, 64, 62); gr.addColorStop(0, 'rgba(255,255,255,.9)'); gr.addColorStop(.4, 'rgba(255,255,255,.35)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, w, h); }, 'glow');
+}
 function cloudTexture() {
   return canvasTex(256, 128, (g, w, h) => {
     g.clearRect(0, 0, w, h);
@@ -260,6 +263,7 @@ export class World {
     for (let i = 0; i < 14; i++) { const c = new THREE.Mesh(cg, cm); const a = i / 14 * Math.PI * 2; c.position.set(Math.cos(a) * 380, 120 + (i % 4) * 25, Math.sin(a) * 380); c.lookAt(0, 90, 0); sky.add(c); }
     this.ground = new THREE.Mesh(new THREE.PlaneGeometry(3000, 3000), M.ground); this.ground.rotation.x = -Math.PI / 2; this.ground.position.y = -.05; this.ground.receiveShadow = true; this.scene.add(this.ground);
     this.statics = new THREE.Group(); this.scene.add(this.statics);
+    this.glows = []; this.facadeMats = [];
     this.actors = new THREE.Group(); this.scene.add(this.actors);
     this.path = new Path();
     this.tmpPose = { pos: new THREE.Vector3(), dir: new THREE.Vector3(), right: new THREE.Vector3() };
@@ -267,7 +271,7 @@ export class World {
 
   clear() {
     for (const grp of [this.statics, this.actors]) { while (grp.children.length) { const c = grp.children.pop(); c.traverse(o => { if (o.geometry && !Object.values(G).includes(o.geometry)) o.geometry.dispose(); }); } }
-    this.path = new Path();
+    this.path = new Path(); this.glows = []; this.facadeMats = [];
   }
 
   /* Dựng toàn bộ tuyến: trả về danh sách đường với vị trí s tuyệt đối của từng sự kiện. */
@@ -335,7 +339,7 @@ export class World {
         const depth = 12 + r() * 4;
         const fv = nextVariant() % 6;
         const mats = [sideWallTexture(fv), sideWallTexture(fv + 1)].map(t => new THREE.MeshStandardMaterial({ map: t, roughness: .9 }));
-        const front = new THREE.MeshStandardMaterial({ map: facadeTexture(floors, fv + floors), roughness: .85 });
+        const front = new THREE.MeshStandardMaterial({ map: facadeTexture(floors, fv + floors), roughness: .85, emissiveMap: facadeTexture(floors, fv + floors), emissive: 0xffffff, emissiveIntensity: 0 }); this.facadeMats.push(front);
         const roof = new THREE.MeshStandardMaterial({ color: r.pick([0x8d6e63, 0x795548, 0xa1887f, 0xb0bec5]), roughness: 1 });
         const b = new THREE.Mesh(new THREE.BoxGeometry(w - .15, h, depth), [mats[0], mats[1], roof, roof, front, mats[0]]);
         b.castShadow = true; b.receiveShadow = true;
@@ -381,8 +385,11 @@ export class World {
   addLamp(place, s, d) {
     const g = new THREE.Group();
     const p = cyl(.08, 7, M.pole, 0, 3.5, 0); g.add(p);
-    const arm = box(.12, .12, 2.2, M.pole, 0, 6.9, 0); arm.position.x = d > 0 ? -1 : 1; arm.rotation.y = Math.PI / 2; g.add(arm);
-    const lamp = box(.5, .2, .3, M.lamp, d > 0 ? -2 : 2, 6.85, 0); g.add(lamp);
+    const side = d > 0 ? 1 : -1; // +X cục bộ là phía đường đối với lề phải
+    const arm = box(.12, .12, 2.2, M.pole, 0, 6.9, 0); arm.position.x = side * 1; arm.rotation.y = Math.PI / 2; g.add(arm);
+    const lamp = box(.5, .2, .3, M.lamp, side * 2, 6.85, 0); g.add(lamp);
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture(), color: 0xffd27a, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: .9 })); glow.position.set(side * 2, 6.6, 0); glow.scale.set(5, 5, 1); glow.visible = false; g.add(glow); this.glows.push(glow);
+    const pool = new THREE.Mesh(new THREE.CircleGeometry(3.2, 20), new THREE.MeshBasicMaterial({ map: glowTexture(), color: 0xffd27a, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, opacity: .45 })); pool.rotation.x = -Math.PI / 2; pool.position.set(side * 2, .02, 0); pool.visible = false; g.add(pool); this.glows.push(pool);
     place(g, s, d);
   }
   addParkedMotos(place, s, d, r) {
@@ -560,7 +567,7 @@ export class World {
         while (s < 86) {
           const w = r.int(4, 7) + r() * 1.5, floors = r.int(2, 5), h = floors * 3.4 + 2, depth = 12 + r() * 4;
           const fv = nextVariant() % 6;
-          const front = new THREE.MeshStandardMaterial({ map: facadeTexture(floors, fv + floors), roughness: .85 });
+          const front = new THREE.MeshStandardMaterial({ map: facadeTexture(floors, fv + floors), roughness: .85, emissiveMap: facadeTexture(floors, fv + floors), emissive: 0xffffff, emissiveIntensity: 0 }); this.facadeMats.push(front);
           const side = new THREE.MeshStandardMaterial({ map: sideWallTexture(fv), roughness: .9 });
           const roof = new THREE.MeshStandardMaterial({ color: r.pick([0x8d6e63, 0x795548, 0xa1887f, 0xb0bec5]), roughness: 1 });
           const b = new THREE.Mesh(new THREE.BoxGeometry(w - .15, h, depth), [side, side, roof, roof, front, side]); b.castShadow = true; b.receiveShadow = true;
@@ -586,9 +593,11 @@ export class World {
     const cfg = {
       morning: { bg: 0xa9d6f5, fog: 0xcfe6f7, sun: [0xfff2d6, 2.2], hemi: [0xcfe8ff, 0x8a7a5a, .95], sunPos: [-40, 70, 30], disc: [-220, 250, -300], discCol: 0xfff6d0, lamp: 0 },
       sunset: { bg: 0xf0b48a, fog: 0xf3c7a4, sun: [0xffb070, 1.9], hemi: [0xf7c9a8, 0x6b5a4a, .8], sunPos: [60, 22, -40], disc: [300, 60, -200], discCol: 0xffcf7a, lamp: 0 },
-      dusk: { bg: 0x2a3a66, fog: 0x3b4a78, sun: [0x8fa4ff, .55], hemi: [0x5a6aa8, 0x2a2a3a, .7], sunPos: [-30, 50, 40], disc: [0, 400, -300], discCol: 0xdde7ff, lamp: 1.8 }
+      dusk: { bg: 0x46598f, fog: 0x56689c, sun: [0xaabcff, 1.15], hemi: [0x8c9ad6, 0x4a4a5a, 1.25], sunPos: [-30, 50, 40], disc: [0, 400, -300], discCol: 0xdde7ff, lamp: 2.4 }
     }[time] || null;
     if (!cfg) return;
+    for (const gl of this.glows) gl.visible = time === 'dusk';
+    for (const m of this.facadeMats) m.emissiveIntensity = time === 'dusk' ? .45 : 0;
     this.scene.background.set(cfg.bg); this.scene.fog.color.set(cfg.fog);
     this.sun.color.set(cfg.sun[0]); this.sun.intensity = cfg.sun[1]; this.sunOffset = cfg.sunPos;
     this.hemi.color.set(cfg.hemi[0]); this.hemi.groundColor.set(cfg.hemi[1]); this.hemi.intensity = cfg.hemi[2];
@@ -689,11 +698,40 @@ export function makeCar(color = 0x1e88e5) {
   return g;
 }
 
-/* ================= xe đạp + bé ================= */
-export function makeBike(colors = {}) {
-  const frameCol = colors.frame || 0xff7043, shirtCol = colors.shirt || 0x29b6f6, helmetCol = colors.helmet || 0xffca28;
+/* ================= xe đạp + bé =================
+   cfg.bike: { frame, rim, basket: 'tre'|'hoa'|'khong', flag, tua }
+   cfg.avatar: { skin, hair: 'ngan'|'dai'|'bim'|'bui', hairColor, face: 'cuoi'|'vui'|'nhay'|'kinh', outfit: 'ao'|'vay'|'aodai'|'hocsinh',
+                 outfitColor, pantsColor, helmet: 'tron'|'meo'|'no', helmetColor, backpack }
+   Trục cục bộ: +Z phía trước, +Y lên, +X là bên TRÁI của bé (nên tay phải nằm ở -X). */
+export const AVATAR_DEFAULT = { skin: 0xf1c27d, hair: 'ngan', hairColor: 0x3e2723, face: 'cuoi', outfit: 'ao', outfitColor: 0x29b6f6, pantsColor: 0x3949ab, helmet: 'tron', helmetColor: 0xffca28, backpack: false };
+export const BIKE_DEFAULT = { frame: 0xff7043, rim: 0xcfd8dc, basket: 'tre', flag: false, tua: false };
+
+function faceTexture(face) {
+  return canvasTex(128, 96, (g, w, h) => {
+    g.clearRect(0, 0, w, h);
+    g.fillStyle = '#2b1d14'; g.strokeStyle = '#2b1d14'; g.lineWidth = 6; g.lineCap = 'round';
+    const eye = (x, kind) => {
+      if (kind === 'dot') { g.beginPath(); g.arc(x, 40, 8, 0, 7); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.arc(x + 3, 37, 2.5, 0, 7); g.fill(); g.fillStyle = '#2b1d14'; }
+      else if (kind === 'happy') { g.beginPath(); g.arc(x, 44, 9, Math.PI, 2 * Math.PI); g.stroke(); }
+      else if (kind === 'wink') { g.beginPath(); g.moveTo(x - 9, 42); g.lineTo(x + 9, 42); g.stroke(); }
+    };
+    if (face === 'vui') { eye(40, 'happy'); eye(88, 'happy'); }
+    else if (face === 'nhay') { eye(40, 'dot'); eye(88, 'wink'); }
+    else { eye(40, 'dot'); eye(88, 'dot'); }
+    // má hồng
+    g.fillStyle = 'rgba(255,120,140,.45)'; g.beginPath(); g.arc(26, 62, 9, 0, 7); g.fill(); g.beginPath(); g.arc(102, 62, 9, 0, 7); g.fill();
+    // miệng
+    g.strokeStyle = '#b3412f'; g.lineWidth = 5; g.beginPath();
+    if (face === 'vui') { g.fillStyle = '#b3412f'; g.arc(64, 66, 11, 0, Math.PI); g.fill(); } else { g.arc(64, 62, 11, .15 * Math.PI, .85 * Math.PI); g.stroke(); }
+    if (face === 'kinh') { g.strokeStyle = '#1a237e'; g.lineWidth = 5; g.beginPath(); g.arc(40, 42, 16, 0, 7); g.stroke(); g.beginPath(); g.arc(88, 42, 16, 0, 7); g.stroke(); g.beginPath(); g.moveTo(56, 42); g.lineTo(72, 42); g.stroke(); }
+  }, 'face-' + face);
+}
+
+export function makeBike(cfg = {}) {
+  const B = Object.assign({}, BIKE_DEFAULT, cfg.bike || {}), A = Object.assign({}, AVATAR_DEFAULT, cfg.avatar || {});
   const g = new THREE.Group();
-  const frameM = new THREE.MeshStandardMaterial({ color: frameCol, roughness: .4, metalness: .3 });
+  const frameM = new THREE.MeshStandardMaterial({ color: B.frame, roughness: .4, metalness: .3 });
+  const rimM = new THREE.MeshStandardMaterial({ color: B.rim, roughness: .3, metalness: .6 });
   const P = {
     rear: new THREE.Vector3(0, .34, -.52), front: new THREE.Vector3(0, .34, .52), crank: new THREE.Vector3(0, .36, -.08),
     seat: new THREE.Vector3(0, .98, -.32), head: new THREE.Vector3(0, .95, .42), headLow: new THREE.Vector3(0, .62, .5)
@@ -702,9 +740,9 @@ export function makeBike(colors = {}) {
   for (const p of [P.rear, P.front]) {
     const wg = new THREE.Group(); wg.position.copy(p);
     const tire = new THREE.Mesh(new THREE.TorusGeometry(.33, .035, 10, 28), M.tire); tire.rotation.y = Math.PI / 2; tire.castShadow = true; wg.add(tire);
-    const rim = new THREE.Mesh(new THREE.TorusGeometry(.29, .012, 6, 28), M.chrome); rim.rotation.y = Math.PI / 2; wg.add(rim);
+    const rim = new THREE.Mesh(new THREE.TorusGeometry(.29, .014, 6, 28), rimM); rim.rotation.y = Math.PI / 2; wg.add(rim);
     for (let i = 0; i < 6; i++) { const sp = cyl(.006, .58, M.chrome); sp.rotation.x = i * Math.PI / 6; wg.add(sp); }
-    wg.add(sph(.04, M.chrome));
+    wg.add(sph(.04, rimM));
     g.add(wg); wheels.push(wg);
   }
   const tubes = [[P.rear, P.crank], [P.crank, P.seat], [P.seat, P.head], [P.crank, P.headLow], [P.rear, P.seat], [P.head, P.front], [P.head, P.headLow]];
@@ -712,26 +750,57 @@ export function makeBike(colors = {}) {
   const bar = box(.52, .03, .03, M.chrome, 0, 1.0, .42); g.add(bar);
   for (const x of [-.26, .26]) g.add(box(.08, .04, .04, M.dark, x, 1.0, .42));
   g.add(box(.2, .06, .3, M.dark, 0, 1.0, -.32));
+  // tua rua ở tay lái
+  if (B.tua) for (const x of [-.3, .3]) for (let i = 0; i < 3; i++) { const t = tube(.006, new THREE.MeshStandardMaterial({ color: [0xff4081, 0x40c4ff, 0xffd740][i] })); placeTube(t, new THREE.Vector3(x, 1.0, .42), new THREE.Vector3(x + (x > 0 ? .04 : -.04) * i, .82 - i * .03, .40 + i * .03)); g.add(t); }
+  // cờ nhỏ sau yên
+  if (B.flag) { const pole = cyl(.008, .7, M.chrome, -.12, 1.3, -.55); g.add(pole); const fl = new THREE.Mesh(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-.12, 1.65, -.55), new THREE.Vector3(-.12, 1.45, -.55), new THREE.Vector3(-.12, 1.55, -.8)]), new THREE.MeshStandardMaterial({ color: 0xff5252, side: THREE.DoubleSide })); fl.geometry.computeVertexNormals(); g.add(fl); }
+  // đèn pha (bật khi trời tối)
+  const lampM = new THREE.MeshStandardMaterial({ color: 0xfff8e1, emissive: 0xfff2b0, emissiveIntensity: 0, roughness: .3 });
+  g.add(sph(.045, lampM, 0, .92, .6));
+  const head = new THREE.SpotLight(0xfff1c8, 0, 36, .55, .5, 1.6); head.position.set(0, .95, .62); const tgt = new THREE.Object3D(); tgt.position.set(0, -.1, 12); g.add(tgt); head.target = tgt; g.add(head);
+  g.userData.setHeadlight = (on) => { head.intensity = on ? 90 : 0; lampM.emissiveIntensity = on ? 2 : 0; };
   // giỏ xe
   const basket = new THREE.Group(); basket.position.set(0, .9, .68);
-  const bm = new THREE.MeshStandardMaterial({ color: 0x8d6e63, roughness: .9, transparent: true, opacity: .9 });
-  basket.add(box(.36, .02, .28, bm, 0, -.11, 0)); basket.add(box(.36, .22, .02, bm, 0, 0, .13)); basket.add(box(.36, .22, .02, bm, 0, 0, -.13)); basket.add(box(.02, .22, .28, bm, -.17, 0, 0)); basket.add(box(.02, .22, .28, bm, .17, 0, 0));
+  if (B.basket !== 'khong') {
+    const bm = new THREE.MeshStandardMaterial({ color: B.basket === 'hoa' ? 0xf8bbd0 : 0x8d6e63, roughness: .9 });
+    basket.add(box(.36, .02, .28, bm, 0, -.11, 0)); basket.add(box(.36, .22, .02, bm, 0, 0, .13)); basket.add(box(.36, .22, .02, bm, 0, 0, -.13)); basket.add(box(.02, .22, .28, bm, -.17, 0, 0)); basket.add(box(.02, .22, .28, bm, .17, 0, 0));
+    if (B.basket === 'hoa') { const cols = [0xff4081, 0xffd740, 0x40c4ff, 0xff6e40, 0xffffff]; for (let i = 0; i < 5; i++) { basket.add(sph(.045, new THREE.MeshStandardMaterial({ color: cols[i] }), -.14 + i * .07, .14, (i % 2 ? .06 : -.06))); } basket.add(cyl(.01, .3, M.leaf[0], 0, .02, 0)); }
+  }
   g.add(basket);
   // bàn đạp + tay quay
   const crank = new THREE.Group(); crank.position.copy(P.crank); g.add(crank);
   const pedalsL = box(.12, .025, .07, M.dark, -.1, -.16, 0), pedalsR = box(.12, .025, .07, M.dark, .1, .16, 0);
   crank.add(tube(.012, M.chrome)); placeTube(crank.children[0], new THREE.Vector3(-.09, .16, 0), new THREE.Vector3(.09, -.16, 0));
   crank.add(pedalsL); crank.add(pedalsR);
-  // bé
-  const shirt = new THREE.MeshStandardMaterial({ color: shirtCol, roughness: .8 }), pants = new THREE.MeshStandardMaterial({ color: 0x3949ab, roughness: .8 });
-  const torso = box(.34, .5, .22, shirt, 0, 1.3, -.1); torso.rotation.x = .38; torso.castShadow = true; g.add(torso);
-  const head = sph(.15, M.skin, 0, 1.7, .02); g.add(head);
-  const helmet = sph(.17, new THREE.MeshStandardMaterial({ color: helmetCol, roughness: .4 }), 0, 1.73, .0); helmet.scale.y = .17 * .75; g.add(helmet);
-  g.add(sph(.03, M.dark, -.06, 1.7, .16)); g.add(sph(.03, M.dark, .06, 1.7, .16));
+  // ===== bé =====
+  const skinM = new THREE.MeshStandardMaterial({ color: A.skin, roughness: .8 });
+  const hairM = new THREE.MeshStandardMaterial({ color: A.hairColor, roughness: .85 });
+  const isHS = A.outfit === 'hocsinh';
+  const topM = new THREE.MeshStandardMaterial({ color: isHS ? 0xffffff : A.outfitColor, roughness: .8 });
+  const legM = A.outfit === 'vay' ? skinM : new THREE.MeshStandardMaterial({ color: A.outfit === 'aodai' ? 0xfafafa : isHS ? 0x1e3a8a : A.pantsColor, roughness: .8 });
+  const torso = box(.34, .5, .22, topM, 0, 1.3, -.1); torso.rotation.x = .38; torso.castShadow = true; g.add(torso);
+  if (A.outfit === 'vay') { const skirt = new THREE.Mesh(new THREE.ConeGeometry(.3, .3, 14, 1, true), new THREE.MeshStandardMaterial({ color: A.pantsColor, roughness: .85, side: THREE.DoubleSide })); skirt.position.set(0, .98, -.2); skirt.rotation.x = .25; g.add(skirt); }
+  if (A.outfit === 'aodai') { for (const z of [-.02, -.36]) { const flap = box(.3, .55, .025, topM, 0, .82, z); flap.rotation.x = z > -.1 ? .35 : -.15; g.add(flap); } }
+  if (isHS) { const scarf = new THREE.Mesh(new THREE.ConeGeometry(.11, .22, 3), new THREE.MeshStandardMaterial({ color: 0xd32f2f, roughness: .8 })); scarf.position.set(0, 1.42, .08); scarf.rotation.x = Math.PI + .3; g.add(scarf); }
+  if (A.backpack) { const bp = box(.28, .3, .13, new THREE.MeshStandardMaterial({ color: 0xff7043, roughness: .8 }), 0, 1.32, -.3); bp.rotation.x = .38; g.add(bp); }
+  const headS = sph(.15, skinM, 0, 1.7, .02); g.add(headS);
+  // mặt
+  const face = new THREE.Mesh(new THREE.PlaneGeometry(.2, .15), new THREE.MeshStandardMaterial({ map: faceTexture(A.face), transparent: true, roughness: .9 })); face.position.set(0, 1.68, .165); g.add(face);
+  // tóc
+  const hairCap = sph(.155, hairM, 0, 1.72, -.01); hairCap.scale.y = .155 * .95; g.add(hairCap);
+  if (A.hair === 'dai') { const back = box(.26, .4, .1, hairM, 0, 1.48, -.14); g.add(back); }
+  if (A.hair === 'bim') { for (const x of [-.17, .17]) { g.add(sph(.06, hairM, x, 1.6, -.02)); const st = tube(.035, hairM); placeTube(st, new THREE.Vector3(x, 1.6, -.02), new THREE.Vector3(x * 1.2, 1.38, -.06)); g.add(st); g.add(sph(.03, new THREE.MeshStandardMaterial({ color: 0xff4081 }), x, 1.62, .04)); } }
+  if (A.hair === 'bui') { g.add(sph(.07, hairM, 0, 1.8, -.15)); }
+  // mũ bảo hiểm
+  const helmetM = new THREE.MeshStandardMaterial({ color: A.helmetColor, roughness: .4 });
+  const helmet = sph(.175, helmetM, 0, 1.74, .0); helmet.scale.y = .175 * .72; g.add(helmet);
+  g.add(box(.2, .02, .1, helmetM, 0, 1.78, .17));
+  if (A.helmet === 'meo') { for (const x of [-.1, .1]) { const ear = new THREE.Mesh(new THREE.ConeGeometry(.05, .1, 8), helmetM); ear.position.set(x, 1.9, -.02); ear.rotation.z = x > 0 ? -.3 : .3; g.add(ear); } }
+  if (A.helmet === 'no') { const bowM = new THREE.MeshStandardMaterial({ color: 0xff4081, roughness: .6 }); g.add(sph(.05, bowM, .1, 1.86, .03)); g.add(sph(.05, bowM, .17, 1.84, .03)); g.add(sph(.025, new THREE.MeshStandardMaterial({ color: 0xffd740 }), .135, 1.86, .06)); }
   const limbs = { arms: [], legs: [] };
   for (const sx of [-1, 1]) {
-    const up = tube(.045, shirt), lo = tube(.04, M.skin); g.add(up); g.add(lo); limbs.arms.push({ sx, up, lo });
-    const th = tube(.06, pants), sh = tube(.055, pants); g.add(th); g.add(sh); limbs.legs.push({ sx, th, sh });
+    const up = tube(.045, topM), lo = tube(.04, skinM); g.add(up); g.add(lo); limbs.arms.push({ sx, up, lo });
+    const th = tube(.06, legM), sh = tube(.055, legM); g.add(th); g.add(sh); limbs.legs.push({ sx, th, sh });
   }
   const V = () => new THREE.Vector3();
   const shoulder = V(), elbow = V(), hand = V(), hip = V(), knee = V(), foot = V(), mid = V(), nrm = V(), delta = V();
@@ -745,13 +814,12 @@ export function makeBike(colors = {}) {
     const ped = speed > .2 ? dist / .33 * .55 : crank.rotation.x; crank.rotation.x = ped;
     for (const { sx, th, sh } of limbs.legs) {
       const a = ped + (sx > 0 ? 0 : Math.PI);
-      // bàn đạp quay quanh trục X của tay quay: bên phải ở +y khi a=0
       foot.set(sx * .11, P.crank.y + .16 * Math.cos(a), P.crank.z + .16 * Math.sin(a));
       hip.set(sx * .1, 1.06, -.22); solveKnee(hip, foot, .43, knee, FWD); placeTube(th, hip, knee); placeTube(sh, knee, foot);
     }
     for (const side of ['L', 'R']) { const t = signal === side ? 1 : 0; signalBlend[side] += (t - signalBlend[side]) * Math.min(1, dt * 8); }
     for (const { sx, up, lo } of limbs.arms) {
-      const b = sx > 0 ? signalBlend.R : signalBlend.L;
+      const b = sx < 0 ? signalBlend.R : signalBlend.L; // +X là bên trái của bé, nên tay phải ở sx = -1
       shoulder.set(sx * .2, 1.5, -.02);
       hand.set(sx * .26, 1.02, .42).lerp(new THREE.Vector3(sx * .9, 1.55, 0), b);
       elbow.set(sx * .27, 1.26, .18).lerp(new THREE.Vector3(sx * .55, 1.52, -.02), b);
