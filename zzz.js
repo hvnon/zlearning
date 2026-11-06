@@ -11,6 +11,7 @@
    - zzz-gifts   : bé tặng xu cho nhau [{ from, to, n, ts }] (giữ 50 lần gần nhất).
    - zzz-stickers: album sticker chung { [pid]: [id] }; danh mục STICKERS ở dưới.
    - zzz-settings: { weekendX2 } cuối tuần (T7, CN) xu kiếm trong app nhân đôi (mặc định bật).
+   Ngoài ra ZZZ.weakSkills(pid) đọc (không ghi) thẻ FSRS trong vo-on-toan-v1 để game xe biết bé hay quên kỹ năng nào.
    File này là script thường (không module) để cả 2 app nạp được. */
 (function () {
   const K = { wallet: 'zzz-wallet', kids: 'zzz-kids', rewards: 'zzz-rewards', pin: 'zzz-pin', plan: 'zzz-plan', today: 'zzz-today', family: 'zzz-family', gifts: 'zzz-gifts', stickers: 'zzz-stickers', settings: 'zzz-settings' };
@@ -222,7 +223,21 @@
     },
     /* ---- mở từ trang chủ? ---- */
     noteHub() { try { if (new URLSearchParams(location.search).get('hub') === '1') sessionStorage.setItem('zzz-hub', '1'); } catch (e) { } },
-    fromHub() { try { return sessionStorage.getItem('zzz-hub') === '1'; } catch (e) { return false; } }
+    fromHub() { try { return sessionStorage.getItem('zzz-hub') === '1'; } catch (e) { return false; } },
+    /* ---- kỹ năng toán bé hay quên (đọc thẻ FSRS của Vở Ôn Toán, không ghi gì) ----
+       Trả về tối đa n kỹ năng đã học, yếu nhất trước: [{ id, r, lapses, overdue }], r = xác suất còn nhớ (0..1).
+       Yếu = còn nhớ dưới 85%, hoặc đã quên từ 2 lần, hoặc quá hạn ôn. Game xe dùng để đố thêm một câu ở tiệm. */
+    weakSkills(pid, n = 3) {
+      const s = readApp(APP_KEYS.toan); const p = s && s.profiles.find(x => x.id === pid);
+      if (!p || !p.skills || typeof p.skills !== 'object') return [];
+      const now = Date.now(), day = Math.floor((now - new Date().getTimezoneOffset() * 60000) / 86400000), out = [];
+      for (const [id, c] of Object.entries(p.skills)) {
+        if (!c || !(c.s > 0)) continue;
+        const t = Math.max(0, (now - (c.last || now)) / 86400000), r = Math.pow(1 + 19 / 81 * t / c.s, -0.5);
+        out.push({ id, r, lapses: c.lapses || 0, overdue: typeof c.due === 'number' ? day - c.due : 0 });
+      }
+      return out.filter(k => k.r < .85 || k.lapses >= 2 || k.overdue > 0).sort((a, b) => a.r - b.r || b.lapses - a.lapses).slice(0, n);
+    }
   };
   window.ZZZ = ZZZ;
 })();
