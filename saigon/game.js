@@ -316,7 +316,7 @@ async function startTrip(routeId) {
   const mission = MISSIONS[p.grade];
   G = {
     p, route, streets, si: 0, s: 0, d: LANE_D[0], lane: 0, v: 0, signal: null, signalT: 0, signaled: null,
-    hearts: 3, violations: 0, rules: [], money: mission.money, mission, bought: {}, shopsVisited: {}, coins: 0, math: [0, 0], quiz: [0, 0],
+    hearts: 3, violations: 0, rules: [], money: mission.money, mission, bought: {}, shopsVisited: {}, coins: 0, math: [0, 0], quiz: [0, 0], reviews: [],
     actors: [], decor: [], laneT: 0, t: 0, startAt: Date.now(), paused: true, finished: false, cardShown: {}, cornerPhase: 0, view: state.view === 'top' ? 'top' : 'chase', time
   };
   spawnDecor();
@@ -633,7 +633,7 @@ function updateDecor(dt) {
 }
 
 /* ---------- mua bán ---------- */
-function askNumber({ kicker, title, prompt, answer, unit = 'nghìn', explain }) {
+function askNumber({ kicker, title, prompt, answer, unit = 'nghìn', explain, maxLen = 4 }) {
   return new Promise(res => {
     let val = '', tries = 0;
     const render = (fb = '', fbCls = '') => {
@@ -644,7 +644,7 @@ function askNumber({ kicker, title, prompt, answer, unit = 'nghìn', explain }) 
         const k = b.dataset.k;
         if (k === 'del') val = val.slice(0, -1);
         else if (k === 'ok') { if (!val) return; check(); return; }
-        else if (val.length < 4) val = (val === '0' ? '' : val) + k;
+        else if (val.length < maxLen) val = (val === '0' ? '' : val) + k;
         $('ansVal').textContent = val || '…';
       });
     };
@@ -659,7 +659,7 @@ function askNumber({ kicker, title, prompt, answer, unit = 'nghìn', explain }) 
         tries++; Audio.bad();
         if (tries < 2) { val = ''; render('Chưa đúng, con tính lại nhé!', 'no'); }
         else {
-          openModal(`<div class="kicker">${esc(kicker || '')}</div><h2>${esc(title)}</h2><div class="ask">${prompt}</div><div class="fb no">Đáp án là <b>${answer} ${esc(unit)}</b>.</div><p style="margin:0">${explain || ''}</p><div class="actions"><button class="btn primary" id="okBtn" type="button">Hiểu rồi</button></div>`);
+          openModal(`<div class="kicker">${esc(kicker || '')}</div><h2>${esc(title)}</h2><div class="ask">${prompt}</div><div class="fb no">Đáp án là <b>${answer}${unit ? ' ' + esc(unit) : ''}</b>.</div><p style="margin:0">${explain || ''}</p><div class="actions"><button class="btn primary" id="okBtn" type="button">Hiểu rồi</button></div>`);
           $('okBtn').onclick = () => res(false);
         }
       }
@@ -745,11 +745,32 @@ async function shopFlow(e) {
   G.money -= total;
   for (const g of lines) { G.bought[g.id] = (G.bought[g.id] || 0) + qty[g.id]; for (let i = 0; i < Math.min(qty[g.id], 2); i++) { const sp = makeItemSprite(g.emoji); sp.position.set((Math.random() - .5) * .22, .12 + bike.userData.basket.children.length * .01, (Math.random() - .5) * .14); bike.userData.basket.add(sp); } }
   e.visited = true; e.done = true;
+  await reviewAsk(sh.seller);
   Audio.fanfare();
   openModal(`<div class="head"><div class="avatar" style="background:#ef6c00">${sh.emoji}</div><div><div class="kicker">${esc(sh.name)}</div><h2>${esc(sh.seller)}: "Cảm ơn con, đi cẩn thận nhé!"</h2></div></div>
     <div class="basket">${lines.map(g => g.emoji.repeat(qty[g.id])).join(' ')}</div>
     <p style="margin:0">Còn lại <b>${moneyFull(G.money)}</b>.</p><div class="actions"><button class="btn primary" id="okBtn" type="button">Đạp tiếp 🚲</button></div>`);
   await waitClick('okBtn'); closeModal(); updateHUD(true);
+}
+
+/* ---------- ôn kỹ năng yếu từ Vở Ôn Toán ----------
+   Người bán đố thêm một câu thuộc kỹ năng bé hay quên nhất (ZZZ.weakSkills đọc thẻ FSRS của app toán,
+   câu hỏi lấy từ REVIEW trong data.js). Tối đa 2 câu mỗi chuyến, mỗi kỹ năng một lần; đúng ngay được 10 xu
+   và được tính là một câu toán của "việc hôm nay". Không có app toán hay bé chưa yếu môn nào thì bỏ qua. */
+async function reviewAsk(who) {
+  if (!window.ZZZ || typeof REVIEW === 'undefined' || G.reviews.length >= 2) return;
+  let weak;
+  try { weak = ZZZ.weakSkills(G.p.id, 6); } catch (e) { return; }
+  const k = weak.find(w => REVIEW[w.id] && !G.reviews.some(x => x.id === w.id));
+  if (!k) return;
+  const def = REVIEW[k.id], q = def.gen(), kicker = `📘 Ôn lại: ${def.name}`, title = `${who}: "Đố con thêm câu này nữa nè!"`;
+  let ok;
+  if (q.choices) {
+    ok = await askChoice({ kicker, title, prompt: q.q, options: q.choices.map(esc), answer: q.choices.indexOf(q.ans), explain: q.ex });
+    G.math[1]++; if (ok) { G.math[0]++; G.coins += 10; }
+  } else ok = await askNumber({ kicker, title, prompt: q.q, answer: q.ans, unit: q.unit || '', explain: q.ex, maxLen: 6 });
+  G.reviews.push({ id: k.id, ok });
+  ZZZ.logToday(G.p.id, { answers: 1, ok: ok ? 1 : 0 });
 }
 
 /* ---------- về đích ---------- */
@@ -778,7 +799,7 @@ async function finishTrip() {
   openModal(`<div class="head"><div class="avatar" style="background:${hp.bg}">${hp.emoji}</div><div><div class="kicker">${esc(hp.where)}</div><h2>${esc(hp.who)}: "${esc(hp.ask)}"</h2></div></div><p style="margin:0">Khách đông quá, con tính tiền giúp ${esc(hpLow)} 2 lượt, mỗi lượt đúng được 10 xu.</p>
     <div class="actions"><button class="btn ghost" id="skipBtn" type="button">Thôi, con mệt rồi</button><button class="btn primary" id="okBtn" type="button">Giúp ${esc(hpLow)}! 💪</button></div>`);
   const help = await new Promise(res => { $('okBtn').onclick = () => res(true); $('skipBtn').onclick = () => res(false); });
-  if (help) await sellFlow();
+  if (help) { await sellFlow(); await reviewAsk(hpTitle); }
   // câu đố
   const hist = shuffle((G.tripCards || []).flatMap(id => CARDS[id].quiz.map(q => ({ ...q, card: id })))).slice(0, 2);
   const traf = shuffle(TRAFFIC_QUIZ).slice(0, 2);
@@ -797,7 +818,7 @@ async function finishTrip() {
   const p = G.p;
   p.coins += coins; p.stars[G.route.id] = Math.max(p.stars[G.route.id] || 0, stars);
   const gotLicense = stars === 3 && !p.license; if (gotLicense) p.license = true;
-  p.trips.push({ date: todayStr(), route: G.route.id, stars, violations: G.violations, rules: G.rules, math: G.math, quiz: G.quiz, coins, secs });
+  p.trips.push({ date: todayStr(), route: G.route.id, stars, violations: G.violations, rules: G.rules, math: G.math, quiz: G.quiz, coins, secs, reviews: G.reviews });
   save();
   // album sticker chung (zzz.js): chuyến 3 sao được 1 sticker mỗi ngày; cuối tuần ví nhận gấp đôi
   const stk = (window.ZZZ && stars === 3) ? ZZZ.earnSticker(p.id, 'bike') : null, boost = !!(window.ZZZ && ZZZ.weekendBoost());
@@ -807,6 +828,7 @@ async function finishTrip() {
     ${gotLicense ? '<div class="cop"><div class="face">🪪</div><div class="say"><b>Bằng lái xe đạp!</b> Con đã đi đúng luật suốt chuyến, chú công an tặng con bằng lái xe đạp nè.</div></div>' : ''}
     ${explorerNew ? '<div class="cop"><div class="face">🏅</div><div class="say"><b>Nhà thám hiểm Sài Gòn!</b> Con đã đạp xe tới đủ 5 nơi trên bản đồ con dấu. Thưởng thêm 50 xu!</div></div>' : ''}
     ${stk ? `<div class="cop"><div class="face">${stk.em}</div><div class="say"><b>Sticker mới: ${esc(stk.name)}!</b> Chuyến đi 3 sao được một sticker vào album cả nhà (xem ở trang chủ zzzlearning).</div></div>` : ''}
+    ${G.reviews.length ? `<p class="muted" style="margin:0;text-align:center">📘 Ôn lại từ Vở Ôn Toán: ${G.reviews.map(r => `${r.ok ? '✓' : '✗'} ${esc(REVIEW[r.id].name)}`).join(' · ')}</p>` : ''}
     <p class="muted" style="margin:0;text-align:center">Thẻ đã sưu tập: ${(G.tripCards || []).concat(G.route.goalCard).map(id => CARDS[id].emoji).join(' ')} · ${Math.round(secs / 60)} phút</p>
     <div class="actions"><button class="btn ghost" id="againBtn" type="button">Đạp lại</button><button class="btn primary" id="okBtn" type="button">Về trang chính</button></div>`);
   $('okBtn').onclick = () => { closeModal(); exitToHome(); };
