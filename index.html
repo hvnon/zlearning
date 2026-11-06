@@ -163,10 +163,11 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
   </nav>
 
   <p class="note" id="installNote" hidden><b>Cài lên màn hình chính</b> để mở nhanh và chạy không cần mạng: iPad / iPhone mở bằng Safari → nút Chia sẻ → <b>Thêm vào MH chính</b>. Android mở bằng Chrome → menu ⋮ → <b>Cài đặt ứng dụng</b>. Có thể cài riêng từng app con bằng cách làm vậy ngay trong app đó.</p>
-  <footer>Dữ liệu của hai bé lưu ngay trên máy này. Sao lưu ở trang Phụ huynh.</footer>
+  <footer id="foot">Dữ liệu của hai bé lưu ngay trên máy này. Sao lưu ở trang Phụ huynh.</footer>
 </div>
 <div class="modal" id="modal" hidden><div class="dialog" id="dialog" role="dialog" aria-modal="true"></div></div>
 <script src="zzz.js"></script>
+<script src="sync.js"></script>
 <script>
 /* Ví xu chung + tiến độ nhanh của từng bé lấy từ dữ liệu 2 app con (cùng localStorage). Thiếu hoặc lỗi thì chỉ ẩn phần đó. */
 (function () {
@@ -289,6 +290,10 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
   if (!standalone) $('installNote').hidden = false;
   window.addEventListener('pageshow', render);
+  /* đồng bộ nhiều máy: có dữ liệu mới từ máy khác thì vẽ lại (khi không mở hộp thoại) */
+  const paintFoot = () => { const s = window.ZZZSync && ZZZSync.state(); if (!s || !s.on) return; const ago = s.last ? Math.max(0, Math.round((Date.now() - s.last) / 60000)) : null; $('foot').textContent = `☁️ Đồng bộ với ${Math.max(0, s.peers.length - 1)} máy khác trong nhà` + (s.err === 'offline' ? ' · đang mất mạng, sẽ gửi khi có mạng' : ago == null ? '' : ago < 1 ? ' · vừa xong' : ` · ${ago} phút trước`); };
+  window.addEventListener('zzz-sync', (e) => { paintFoot(); if (e.detail && e.detail.changed && e.detail.changed.length && $('modal').hidden) render(); });
+  paintFoot();
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 })();
 </script>

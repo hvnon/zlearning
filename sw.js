@@ -2,12 +2,12 @@
    Hai app con (toan/, saigon/) có service worker riêng với phạm vi hẹp hơn nên tự lo file của mình;
    request vào app con mà chưa có sw riêng thì cho đi mạng bình thường.
    Thêm file cho trang chủ thì thêm vào ASSETS và tăng VERSION. */
-const VERSION = 'v7';
+const VERSION = 'v8';
 const CACHE = 'zzzlearning-' + VERSION;
 const FONTS = ['Baloo2-500', 'Baloo2-700', 'Baloo2-800', 'BeVietnamPro-400', 'BeVietnamPro-500', 'BeVietnamPro-600']
   .flatMap(f => ['latin', 'latin-ext', 'vietnamese'].map(r => `./fonts/${f}-${r}.woff2`));
 const ASSETS = [
-  './', './index.html', './zzz.js', './phuhuynh/index.html', './manifest.webmanifest', './fonts/fonts.css', ...FONTS,
+  './', './index.html', './zzz.js', './sync.js', './phuhuynh/index.html', './manifest.webmanifest', './fonts/fonts.css', ...FONTS,
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png',
   './toan/icons/icon-192.png', './saigon/icons/icon-192.png'
 ];

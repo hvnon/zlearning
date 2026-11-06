@@ -270,6 +270,7 @@ textarea{min-height:90px;font-family:ui-monospace,Menlo,monospace;font-size:12px
 </div>
 
 <script src="../zzz.js"></script>
+<script src="../sync.js"></script>
 <script>
 /* ================= utilities ================= */
 const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
@@ -399,6 +400,9 @@ function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}DB
 /* ví xu, tên bé và phiếu thưởng dùng chung với zzzlearning (../zzz.js): p.coins đọc/ghi thẳng vào ví chung */
 function syncZZZ(){if(!window.ZZZ)return;ZZZ.syncKids(state.profiles);ZZZ.bindCoins(state.profiles)}
 if(window.ZZZ)ZZZ.noteHub();
+/* đồng bộ nhiều máy (../sync.js): đang làm bài thì chưa thay dữ liệu; xong lượt mới đọc lại */
+if(window.ZZZSync)ZZZSync.register({busy:()=>typeof view!=='undefined'&&view.name==='session',
+  reload:(changed)=>{if(changed.includes(KEY)){try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.profiles)state=s}catch(e){}syncZZZ();DB.putKV('state',state)}if(view.name!=='session'&&!(document.activeElement&&/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName)))render()}});
 
 /* ================= lưu trữ bền & nhật ký thao tác (IndexedDB) =================
    - 'kv'.state: bản sao của state (phòng khi localStorage bị trình duyệt dọn)

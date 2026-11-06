@@ -25,7 +25,7 @@ jobs:
       - name: Gom file tĩnh của app
         run: |
           mkdir -p _site
-          cp -r index.html manifest.webmanifest sw.js zzz.js .nojekyll fonts icons phuhuynh toan saigon _site/
+          cp -r index.html manifest.webmanifest sw.js zzz.js sync.js .nojekyll fonts icons phuhuynh toan saigon _site/
       - uses: actions/configure-pages@v5
         with:
           enablement: true
