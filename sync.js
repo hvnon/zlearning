@@ -17,7 +17,7 @@
    localStorage riêng của phần này: zzz-sync (mã gia đình, mã máy, tên máy, trạng thái), zzz-sync-own, zzz-sync-mt, zzz-sync-ev, zzz-sync-prejoin. */
 (function () {
   /* Điền project của Firebase ở đây (Project settings > General). Để trống thì bố mẹ nhập ở trang Phụ huynh. */
-  const FIREBASE = { projectId: '', apiKey: '' };
+  const FIREBASE = { projectId: 'zzzlearning-7aefe', apiKey: 'AIzaSyBODIrhFLxjNL1dIxLGWtdwvB59emKusWI' };
 
   const ls = window.localStorage; if (!ls) return;
   const K = { s: 'zzz-sync', own: 'zzz-sync-own', mt: 'zzz-sync-mt', ev: 'zzz-sync-ev', pre: 'zzz-sync-prejoin' };
