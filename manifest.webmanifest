@@ -1,7 +1,7 @@
 {
-  "name": "Vở Ôn Toán",
-  "short_name": "Ôn Toán",
-  "description": "Vở ôn toán cho bé lớp 2 và lớp 4, ôn đúng lúc sắp quên.",
+  "name": "zzzlearning",
+  "short_name": "zzzlearning",
+  "description": "Góc học của hai bé: Vở Ôn Toán và game Đạp Xe Sài Gòn, chạy offline.",
   "id": "./",
   "start_url": "./",
   "scope": "./",
