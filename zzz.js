@@ -6,10 +6,14 @@
    - zzz-hub     : (sessionStorage) "1" khi app con được mở từ trang chủ, để nút Phụ huynh dẫn ra trang chung.
    - zzz-pin     : { h } mã 4 số của bố mẹ (đã băm) khóa trang phụ huynh; mở khóa nhớ trong sessionStorage zzz-pin-ok.
    - zzz-plan    : việc hôm nay bố mẹ đặt { [pid]: { math, mathFirst, rideMin } } (0 = không đặt).
-   - zzz-today   : tiến độ hôm nay { day, kids: { [pid]: { answers, ok, secs, ride, bonus } }, hist: { [day]: kids } } (giữ 35 ngày).
+   - zzz-today   : tiến độ hôm nay { day, kids: { [pid]: { answers, ok, secs, ride, bonus, stk: { math, bike } } }, hist: { [day]: kids } } (giữ 35 ngày).
+   - zzz-family  : hũ cả nhà { goal: { title, em, target, since } | null, jar, contrib: { [pid]: n }, history: [...] }.
+   - zzz-gifts   : bé tặng xu cho nhau [{ from, to, n, ts }] (giữ 50 lần gần nhất).
+   - zzz-stickers: album sticker chung { [pid]: [id] }; danh mục STICKERS ở dưới.
+   - zzz-settings: { weekendX2 } cuối tuần (T7, CN) xu kiếm trong app nhân đôi (mặc định bật).
    File này là script thường (không module) để cả 2 app nạp được. */
 (function () {
-  const K = { wallet: 'zzz-wallet', kids: 'zzz-kids', rewards: 'zzz-rewards', pin: 'zzz-pin', plan: 'zzz-plan', today: 'zzz-today' };
+  const K = { wallet: 'zzz-wallet', kids: 'zzz-kids', rewards: 'zzz-rewards', pin: 'zzz-pin', plan: 'zzz-plan', today: 'zzz-today', family: 'zzz-family', gifts: 'zzz-gifts', stickers: 'zzz-stickers', settings: 'zzz-settings' };
   const APP_KEYS = { toan: 'vo-on-toan-v1', saigon: 'dap-xe-sai-gon-v1' };
   const load = (k, d) => { try { const v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } };
   const store = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { } };
@@ -39,7 +43,8 @@
         const d = Object.getOwnPropertyDescriptor(p, 'coins');
         if (d && d.get) continue;
         if (!(p.id in w)) { w[p.id] = Math.max(0, Math.round(+p.coins) || 0); changed = true; }
-        Object.defineProperty(p, 'coins', { get: () => ZZZ.coins(p.id), set: (v) => ZZZ.setCoins(p.id, v), enumerable: true, configurable: true });
+        // xu app cộng thêm (v > hiện có) vào cuối tuần thì nhân đôi; trừ xu, tặng xu, bố mẹ cho xu thì không
+        Object.defineProperty(p, 'coins', { get: () => ZZZ.coins(p.id), set: (v) => { const cur = ZZZ.coins(p.id), d = (Math.round(+v) || 0) - cur; ZZZ.setCoins(p.id, d > 0 && ZZZ.weekendBoost() ? cur + d * 2 : v); }, enumerable: true, configurable: true });
       }
       if (changed) store(K.wallet, w);
     },
@@ -143,7 +148,7 @@
       }
       return t;
     },
-    today(pid) { return { answers: 0, ok: 0, secs: 0, ride: 0, bonus: false, ...(this.todayData().kids[pid] || {}) }; },
+    today(pid) { return { answers: 0, ok: 0, secs: 0, ride: 0, bonus: false, stk: {}, ...(this.todayData().kids[pid] || {}) }; },
     /* App gọi mỗi câu trả lời (answers/ok/secs) hay mỗi vài giây chơi game xe (ride, giây).
        Lần đầu trong ngày đạt mục tiêu toán thì cộng DAILY_BONUS xu; trả về true đúng lúc đó. */
     logToday(pid, add) {
@@ -151,7 +156,9 @@
       for (const f of ['answers', 'ok', 'secs', 'ride']) if (add && add[f]) k[f] = Math.round((k[f] + (+add[f] || 0)) * 10) / 10;
       let just = false; const pl = this.plan(pid);
       if (pl && pl.math > 0 && k.answers >= pl.math && !k.bonus) { k.bonus = true; just = true; this.addCoins(pid, this.DAILY_BONUS); }
-      store(K.today, t); return just;
+      store(K.today, t);
+      if (just) this.earnSticker(pid, 'math');
+      return just;
     },
     /* Hôm nay bé còn được đạp xe không: why = 'math' (chưa làm đủ toán) | 'time' (hết phút) | null. */
     status(pid) {
@@ -163,6 +170,56 @@
     },
     /* Lịch sử theo ngày (cho báo cáo tuần), gồm cả hôm nay: { [day]: { [pid]: {...} } } */
     history() { const t = this.todayData(); return { ...t.hist, [t.day]: t.kids }; },
+    /* ---- cài đặt chung ---- */
+    settings() { const o = load(K.settings, {}); return o && typeof o === 'object' ? o : {}; },
+    setSetting(k, v) { const o = this.settings(); o[k] = v; store(K.settings, o); },
+    /* Cuối tuần (T7, CN) xu kiếm trong app nhân đôi, bố mẹ tắt được. */
+    weekendBoost() { const d = new Date().getDay(); return this.settings().weekendX2 !== false && (d === 0 || d === 6); },
+    /* ---- hũ cả nhà: cả hai bé góp xu cho một mục tiêu chung ---- */
+    family() { const f = load(K.family, null); const o = f && typeof f === 'object' ? f : {}; return { goal: o.goal || null, jar: Math.max(0, Math.round(+o.jar) || 0), contrib: o.contrib || {}, history: Array.isArray(o.history) ? o.history : [] }; },
+    saveFamily(f) { store(K.family, f); },
+    setGoal(title, em, target) { const f = this.family(); f.goal = { title: String(title).trim(), em: (em || '🎉').trim(), target: Math.max(1, Math.round(+target) || 1), since: Date.now() }; this.saveFamily(f); return f.goal; },
+    clearGoal() { const f = this.family(); f.goal = null; this.saveFamily(f); },
+    /* Bé góp xu từ ví vào hũ. Trả về false nếu không đủ xu hoặc chưa có mục tiêu. */
+    contribute(pid, n) {
+      n = Math.round(+n) || 0; const f = this.family();
+      if (!f.goal || n <= 0 || this.coins(pid) < n) return false;
+      this.addCoins(pid, -n); f.jar += n; f.contrib[pid] = (f.contrib[pid] || 0) + n; this.saveFamily(f); return true;
+    },
+    goalReached() { const f = this.family(); return !!(f.goal && f.jar >= f.goal.target); },
+    /* Bố mẹ bấm "Đã thực hiện": cất vào lịch sử, xu dư giữ lại trong hũ. */
+    completeGoal() {
+      const f = this.family(); if (!f.goal) return null;
+      const done = { ...f.goal, doneTs: Date.now(), contrib: { ...f.contrib } };
+      f.history.unshift(done); f.history = f.history.slice(0, 20); f.jar = Math.max(0, f.jar - f.goal.target); f.goal = null; f.contrib = {};
+      this.saveFamily(f); return done;
+    },
+    /* ---- tặng xu cho nhau ---- */
+    gifts() { const g = load(K.gifts, []); return Array.isArray(g) ? g : []; },
+    gift(from, to, n) {
+      n = Math.round(+n) || 0; if (!from || !to || from === to || n <= 0 || this.coins(from) < n) return false;
+      this.addCoins(from, -n); this.addCoins(to, n);
+      const g = this.gifts(); g.unshift({ from, to, n, ts: Date.now() }); store(K.gifts, g.slice(0, 50)); return true;
+    },
+    /* ---- album sticker chung ---- */
+    STICKERS: [
+      ['cun', '🐶', 'Cún con', 'pet'], ['meo', '🐱', 'Mèo mun', 'pet'], ['tho', '🐰', 'Thỏ trắng', 'pet'], ['cao', '🦊', 'Cáo con', 'pet'], ['gautruc', '🐼', 'Gấu trúc', 'pet'], ['koala', '🐨', 'Koala', 'pet'], ['sutu', '🦁', 'Sư tử con', 'pet'], ['canhcut', '🐧', 'Cánh cụt', 'pet'],
+      ['xedap', '🚲', 'Xe đạp', 'sg'], ['xemay', '🛵', 'Xe máy', 'sg'], ['banhmi', '🥖', 'Bánh mì', 'sg'], ['caphe', '☕', 'Cà phê sữa', 'sg'], ['pho', '🍜', 'Phở', 'sg'], ['cay', '🌳', 'Cây dầu', 'sg'], ['nhatho', '⛪', 'Nhà thờ Đức Bà', 'sg'], ['buudien', '🏛️', 'Bưu điện', 'sg'],
+      ['tenlua', '🚀', 'Tên lửa', 'space'], ['saotho', '🪐', 'Sao Thổ', 'space'], ['trang', '🌙', 'Mặt trăng', 'space'], ['sao', '⭐', 'Ngôi sao', 'space'], ['phihanh', '👩‍🚀', 'Phi hành gia', 'space'], ['diabay', '🛸', 'Đĩa bay', 'space'], ['saochoi', '☄️', 'Sao chổi', 'space'], ['traidat', '🌍', 'Trái đất', 'space']
+    ].map(([id, em, name, page]) => ({ id, em, name, page })),
+    STICKER_PAGES: [['pet', '🐾 Thú cưng'], ['sg', '🏙️ Sài Gòn'], ['space', '🚀 Vũ trụ']],
+    sticker(id) { return this.STICKERS.find(s => s.id === id) || null; },
+    stickers(pid) { const o = load(K.stickers, {}); const a = o && o[pid]; return Array.isArray(a) ? a : []; },
+    /* Mỗi nguồn ('math' xong việc hôm nay, 'bike' chuyến 3 sao) tối đa 1 sticker/ngày; chọn ngẫu nhiên trong số chưa có. Trả về sticker hoặc null. */
+    earnSticker(pid, source) {
+      const t = this.todayData(); const k = t.kids[pid] = { answers: 0, ok: 0, secs: 0, ride: 0, bonus: false, ...(t.kids[pid] || {}) }; k.stk = k.stk || {};
+      if (k.stk[source]) return null;
+      const have = this.stickers(pid), left = this.STICKERS.filter(s => !have.includes(s.id));
+      if (!left.length) return null;
+      const st = left[Math.floor(Math.random() * left.length)];
+      const o = load(K.stickers, {}) || {}; o[pid] = [...have, st.id]; store(K.stickers, o);
+      k.stk[source] = st.id; store(K.today, t); return st;
+    },
     /* ---- mở từ trang chủ? ---- */
     noteHub() { try { if (new URLSearchParams(location.search).get('hub') === '1') sessionStorage.setItem('zzz-hub', '1'); } catch (e) { } },
     fromHub() { try { return sessionStorage.getItem('zzz-hub') === '1'; } catch (e) { return false; } }

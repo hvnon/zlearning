@@ -52,6 +52,33 @@ h1 span{color:var(--sky)}
 .wk .coin{background:var(--amber-soft);border-radius:999px;padding:4px 12px;font-weight:700;white-space:nowrap}
 .wk .gift{border:2px solid var(--ink);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 14px;font-family:var(--f-display);font-weight:700;font-size:15px;cursor:pointer}
 .wk .wait{flex-basis:100%;font-size:13px;color:var(--muted)}
+.wk .gift.alt{border-color:var(--sky);color:var(--sky)}
+.boost{grid-column:1/-1;background:linear-gradient(90deg,var(--sun),#ff8a65);color:#25213a;border-radius:16px;padding:8px 14px;font-family:var(--f-display);font-weight:800;text-align:center}
+/* hũ cả nhà + album sticker */
+.fam{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+.fc{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;box-shadow:var(--shadow)}
+.fc h3{margin:0;font-family:var(--f-display);font-weight:800;font-size:18px;color:var(--ink)}
+.fc .big{font-family:var(--f-display);font-weight:800;font-size:20px}
+.fc .jar{height:14px;border-radius:999px;background:var(--amber-soft);overflow:hidden}
+.fc .jar i{display:block;height:100%;background:var(--sun);border-radius:999px}
+.fc .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.fc .sm{font-size:13px;color:var(--muted)}
+.fc button{border:2px solid var(--ink);background:var(--card);color:var(--ink);border-radius:999px;padding:5px 12px;font-family:var(--f-display);font-weight:700;font-size:14px;cursor:pointer}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs button,.amt button{border:2px solid var(--line);background:var(--card);color:var(--text);border-radius:12px;padding:7px 14px;font-family:var(--f-display);font-weight:700;font-size:15px;cursor:pointer}
+.tabs button[aria-pressed=true],.amt button[aria-pressed=true]{border-color:var(--ink);background:var(--ink-soft)}
+.amt{display:flex;gap:8px;flex-wrap:wrap}
+.amt button:disabled{opacity:.4;cursor:default}
+.album{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.album .st{aspect-ratio:1;border-radius:14px;background:var(--ink-soft);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:30px;line-height:1;gap:4px;padding:4px}
+.album .st span{font-size:10px;color:var(--muted);text-align:center;line-height:1.1}
+.album .st.no{opacity:.35;filter:grayscale(1)}
+.album .st.new{outline:3px solid var(--sun)}
+.album-h{margin:6px 0 0;font-family:var(--f-display);font-weight:800;font-size:15px;color:var(--muted)}
+.dialog .close.primary{background:var(--ink);color:#fff;border-color:var(--ink)}
+.dialog .close:disabled{opacity:.45;cursor:default}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .dialog .close.primary{color:#17152a}}
+:root[data-theme="dark"] .dialog .close.primary{color:#17152a}
 /* việc hôm nay (bố mẹ đặt ở trang phụ huynh) */
 .todo{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
 .todo-h{grid-column:1/-1;font-family:var(--f-display);font-weight:800;font-size:14px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:0 0 -6px 4px}
@@ -65,7 +92,7 @@ h1 span{color:var(--sky)}
 .td .bar.sky{background:var(--sky-soft)}.td .bar.sky i{background:var(--sky)}
 .td .tm{font-size:13px;color:var(--muted)}
 .apps{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-@media (max-width:640px){.apps,.wallet,.todo{grid-template-columns:1fr}h1{font-size:32px}}
+@media (max-width:640px){.apps,.wallet,.todo,.fam{grid-template-columns:1fr}h1{font-size:32px}}
 .app{display:flex;flex-direction:column;gap:12px;background:var(--card);border:2px solid var(--line);border-radius:26px;padding:20px;text-decoration:none;color:inherit;box-shadow:var(--shadow);
   transition:transform .15s,border-color .15s;position:relative;overflow:hidden;min-height:230px;-webkit-tap-highlight-color:transparent}
 .app:active{transform:scale(.98)}
@@ -120,6 +147,7 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
 
   <section class="wallet" id="wallet" aria-label="Ví xu"></section>
   <section class="todo" id="todo" aria-label="Việc hôm nay" hidden></section>
+  <section class="fam" id="fam" aria-label="Hũ cả nhà và album sticker"></section>
 
   <nav class="apps" aria-label="Các app">
     <a class="app toan" href="toan/?hub=1">
@@ -169,10 +197,79 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
   function render() {
     const toan = read(ZZZ.APP_KEYS.toan), sg = read(ZZZ.APP_KEYS.saigon);
     const todo = todoHTML(); $('todo').innerHTML = todo; $('todo').hidden = !todo;
-    $('wallet').innerHTML = kids().map(k => { const pend = ZZZ.pending(k.id); return `<div class="wk"><span class="nm">${esc(k.name)}</span><span class="coin">🪙 ${ZZZ.coins(k.id)} xu</span><button class="gift" type="button" data-redeem="${k.id}">🎁 Đổi thưởng</button>${pend.length ? `<span class="wait">🎟️ Đang chờ bố mẹ: ${pend.map(x => esc(x.title)).join(', ')}</span>` : ''}</div>`; }).join('');
+    const ks = kids();
+    $('wallet').innerHTML = (ZZZ.weekendBoost() ? '<div class="boost">🎉 Cuối tuần: xu kiếm được trong app nhân đôi!</div>' : '') + ks.map(k => { const pend = ZZZ.pending(k.id); return `<div class="wk"><span class="nm">${esc(k.name)}</span><span class="coin">🪙 ${ZZZ.coins(k.id)} xu</span><button class="gift" type="button" data-redeem="${k.id}">🎁 Đổi thưởng</button>${ks.length > 1 ? `<button class="gift alt" type="button" data-gift="${k.id}">💝 Tặng xu</button>` : ''}${pend.length ? `<span class="wait">🎟️ Đang chờ bố mẹ: ${pend.map(x => esc(x.title)).join(', ')}</span>` : ''}</div>`; }).join('');
+    $('fam').innerHTML = famHTML(ks);
     $('kidsToan').innerHTML = toan ? toan.map(p => row(kidName(p), [`🔥 ${+p.streak || 0} ngày`, `✨ ${+p.xp || 0} XP`, `⭐ ${Object.values(p.path || {}).reduce((a, n) => a + (+n.stars || 0), 0)} sao`])).join('') : '';
     $('kidsSaigon').innerHTML = sg ? sg.map(p => row(kidName(p), [`🚲 ${(p.trips || []).length} chuyến`, `⭐ ${Object.values(p.stars || {}).reduce((a, b) => a + b, 0)} sao`, `🃏 ${(p.cards || []).length} thẻ`, lockChip(p.id)].filter(Boolean))).join('') : '';
     document.querySelectorAll('[data-redeem]').forEach(b => b.onclick = () => openShop(b.dataset.redeem));
+    document.querySelectorAll('[data-gift]').forEach(b => b.onclick = () => openGift(b.dataset.gift));
+    document.querySelectorAll('[data-jar]').forEach(b => b.onclick = () => openJar(b.dataset.jar));
+    document.querySelectorAll('[data-album]').forEach(b => b.onclick = () => openAlbum(b.dataset.album));
+  }
+  /* Hũ cả nhà (mục tiêu chung bố mẹ đặt, hai bé góp xu) + album sticker chung */
+  function famHTML(ks) {
+    const f = ZZZ.family(), g = f.goal, total = ZZZ.STICKERS.length;
+    const jar = g ? `<div class="fc"><h3>🏺 Hũ cả nhà</h3>
+      <div class="row" style="justify-content:space-between"><span class="big">${esc(g.em)} ${esc(g.title)}</span><span class="big" style="color:var(--sun)">🪙 ${f.jar}/${g.target}</span></div>
+      <div class="jar"><i style="width:${Math.min(100, f.jar / g.target * 100).toFixed(0)}%"></i></div>
+      ${f.jar >= g.target ? '<div class="sm" style="color:var(--green);font-weight:700">🎉 Đủ xu rồi! Nhắc bố mẹ thực hiện nha.' + '</div>' : `<div class="sm">Còn ${g.target - f.jar} xu nữa · ${ks.map(k => `${esc(k.name)} góp ${f.contrib[k.id] || 0}`).join(' · ')}</div>`}
+      <div class="row">${ks.map(k => `<button type="button" data-jar="${k.id}">${esc(k.name)} góp xu</button>`).join('')}</div></div>`
+      : `<div class="fc"><h3>🏺 Hũ cả nhà</h3><div class="sm">Bố mẹ chưa đặt mục tiêu chung. Vào trang Phụ huynh để đặt, ví dụ "Đi Đầm Sen = 300 xu", rồi hai bé cùng góp xu vào hũ.</div>${f.history.length ? `<div class="sm">Đã làm được: ${f.history.slice(0, 3).map(h => `${esc(h.em)} ${esc(h.title)}`).join(', ')}</div>` : ''}${f.jar ? `<div class="sm">Trong hũ còn 🪙 ${f.jar} xu.</div>` : ''}</div>`;
+    const album = `<div class="fc"><h3>📒 Album sticker</h3>
+      ${ks.map(k => `<div class="row" style="justify-content:space-between"><span><b>${esc(k.name)}</b> <span class="sm">${ZZZ.stickers(k.id).length}/${total} sticker</span></span><button type="button" data-album="${k.id}">Xem album</button></div>`).join('')}
+      <div class="sm">Làm đủ toán của việc hôm nay, hoặc đạp xe được 3 sao, là có sticker mới (mỗi ngày tối đa 2).</div></div>`;
+    return jar + album;
+  }
+  const showModal = () => { $('modal').hidden = false; };
+  const AMOUNTS = [5, 10, 20, 50];
+  /* Bé tặng xu cho bé kia: chọn số xu, bấm hai lần để chắc. */
+  function openGift(from) {
+    const ks = kids(), me = ks.find(k => k.id === from) || { name: from }, others = ks.filter(k => k.id !== from);
+    let to = others[0] && others[0].id, amt = 10, confirm = false, fb = '';
+    const paint = () => {
+      const coins = ZZZ.coins(from), can = !!to && coins >= amt;
+      $('dialog').innerHTML = `<h2>💝 ${esc(me.name)} tặng xu</h2><div><span class="coin" style="background:var(--amber-soft);border-radius:999px;padding:4px 12px;font-weight:700">🪙 ${coins} xu</span></div>
+        ${others.length > 1 ? `<div class="tabs">${others.map(k => `<button type="button" data-to="${k.id}" aria-pressed="${k.id === to}">${esc(k.name)}</button>`).join('')}</div>` : `<p style="margin:0">Tặng cho <b>${esc((others[0] || {}).name || '')}</b></p>`}
+        <div class="amt">${AMOUNTS.map(n => `<button type="button" data-amt="${n}" aria-pressed="${n === amt}" ${coins < n ? 'disabled' : ''}>${n} xu</button>`).join('')}</div>
+        <div class="fb">${fb}</div>
+        <div style="display:flex;gap:8px;justify-content:flex-end"><button class="close" type="button" id="closeBtn">Đóng</button><button class="close primary" type="button" id="goBtn" ${can ? '' : 'disabled'}>${confirm ? 'Chắc chắn tặng!' : `Tặng ${amt} xu`}</button></div>`;
+      $('dialog').querySelectorAll('[data-to]').forEach(b => b.onclick = () => { to = b.dataset.to; confirm = false; paint(); });
+      $('dialog').querySelectorAll('[data-amt]').forEach(b => b.onclick = () => { amt = +b.dataset.amt; confirm = false; paint(); });
+      $('goBtn').onclick = () => { if (!confirm) { confirm = true; paint(); return; } const ok = ZZZ.gift(from, to, amt); confirm = false; fb = ok ? `Đã tặng ${amt} xu cho ${esc((ks.find(k => k.id === to) || {}).name || '')} 💝` : 'Chưa đủ xu.'; paint(); render(); };
+      $('closeBtn').onclick = () => { $('modal').hidden = true; };
+    };
+    paint(); showModal();
+  }
+  /* Góp xu vào hũ cả nhà */
+  function openJar(pid) {
+    const k = kids().find(x => x.id === pid) || { name: pid }; let amt = 10, confirm = false, fb = '';
+    const paint = () => {
+      const f = ZZZ.family(), g = f.goal, coins = ZZZ.coins(pid);
+      if (!g) { $('modal').hidden = true; return; }
+      $('dialog').innerHTML = `<h2>🏺 ${esc(k.name)} góp xu</h2><p style="margin:0">Mục tiêu <b>${esc(g.em)} ${esc(g.title)}</b> · trong hũ 🪙 ${f.jar}/${g.target}</p><div><span class="coin" style="background:var(--amber-soft);border-radius:999px;padding:4px 12px;font-weight:700">Con có 🪙 ${coins} xu</span></div>
+        <div class="amt">${AMOUNTS.map(n => `<button type="button" data-amt="${n}" aria-pressed="${n === amt}" ${coins < n ? 'disabled' : ''}>${n} xu</button>`).join('')}</div>
+        <div class="fb">${fb}</div>
+        <div style="display:flex;gap:8px;justify-content:flex-end"><button class="close" type="button" id="closeBtn">Đóng</button><button class="close primary" type="button" id="goBtn" ${coins >= amt ? '' : 'disabled'}>${confirm ? 'Chắc chắn góp!' : `Góp ${amt} xu`}</button></div>`;
+      $('dialog').querySelectorAll('[data-amt]').forEach(b => b.onclick = () => { amt = +b.dataset.amt; confirm = false; paint(); });
+      $('goBtn').onclick = () => { if (!confirm) { confirm = true; paint(); return; } const ok = ZZZ.contribute(pid, amt); confirm = false; fb = ok ? (ZZZ.goalReached() ? `Đã góp ${amt} xu. Đủ rồi, nhắc bố mẹ nha! 🎉` : `Đã góp ${amt} xu vào hũ 🏺`) : 'Chưa đủ xu.'; paint(); render(); };
+      $('closeBtn').onclick = () => { $('modal').hidden = true; };
+    };
+    paint(); showModal();
+  }
+  /* Album sticker: xem của từng bé, sticker mới hôm nay có viền vàng */
+  function openAlbum(pid) {
+    const ks = kids();
+    const paint = () => {
+      const k = ks.find(x => x.id === pid) || { name: pid }, have = ZZZ.stickers(pid), today = Object.values(ZZZ.today(pid).stk || {});
+      $('dialog').innerHTML = `<h2>📒 Album của ${esc(k.name)} · ${have.length}/${ZZZ.STICKERS.length}</h2>
+        ${ks.length > 1 ? `<div class="tabs">${ks.map(x => `<button type="button" data-kid="${x.id}" aria-pressed="${x.id === pid}">${esc(x.name)}</button>`).join('')}</div>` : ''}
+        ${ZZZ.STICKER_PAGES.map(([pg, label]) => `<p class="album-h">${label}</p><div class="album">${ZZZ.STICKERS.filter(s => s.page === pg).map(s => { const got = have.includes(s.id); return `<div class="st ${got ? (today.includes(s.id) ? 'new' : '') : 'no'}" title="${esc(s.name)}">${got ? s.em : '❔'}<span>${got ? esc(s.name) : '?'}</span></div>`; }).join('')}</div>`).join('')}
+        <button class="close" type="button" id="closeBtn">Đóng</button>`;
+      $('dialog').querySelectorAll('[data-kid]').forEach(b => b.onclick = () => { pid = b.dataset.kid; paint(); });
+      $('closeBtn').onclick = () => { $('modal').hidden = true; };
+    };
+    paint(); showModal();
   }
   /* Đổi thưởng ngay ở trang chủ: bấm "Đổi" hai lần để chắc, trừ xu từ ví chung, phiếu chờ bố mẹ xác nhận ở trang Phụ huynh. */
   function openShop(pid) {
