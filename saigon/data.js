@@ -97,6 +97,207 @@ const CARDS = {
       { q: 'Cửa nào của chợ Bến Thành có tháp đồng hồ?', o: ['Cửa Nam', 'Cửa Bắc', 'Cửa Đông', 'Cửa Tây'], a: 0 },
       { q: 'Chợ Bến Thành khánh thành năm nào?', o: ['1914', '2014', '1800', '1954'], a: 0 }
     ]
+  },
+  /* ---- tuyến Nhà thờ Đức Bà ---- */
+  nguyendu: {
+    id: 'nguyendu', kind: 'street', title: 'Đường Nguyễn Du', who: 'Nguyễn Du (1765 – 1820)', emoji: '📜',
+    color: '#7b5e2a',
+    facts: [
+      'Nguyễn Du là đại thi hào của Việt Nam, quê ở Tiên Điền, Nghi Xuân, Hà Tĩnh.',
+      'Ông viết "Truyện Kiều" dài 3.254 câu thơ lục bát, kể về nàng Kiều tài sắc nhưng gặp nhiều gian truân. Rất nhiều người Việt thuộc lòng những câu Kiều.',
+      'Ông làm quan dưới triều Nguyễn và năm 1813 từng đi sứ sang Trung Quốc.',
+      'Năm 1965, ông được Hội đồng Hòa bình thế giới vinh danh là Danh nhân văn hóa thế giới.',
+      'Đường Nguyễn Du chạy ngang bên Dinh Độc Lập và dẫn tới công viên trước Nhà thờ Đức Bà.'
+    ],
+    quiz: [
+      { q: 'Nguyễn Du là tác giả của tác phẩm nào?', o: ['Truyện Kiều', 'Bình Ngô đại cáo', 'Hịch tướng sĩ', 'Dế Mèn phiêu lưu ký'], a: 0 },
+      { q: 'Nguyễn Du quê ở tỉnh nào?', o: ['Hà Tĩnh', 'Hà Nội', 'Cần Thơ', 'Lâm Đồng'], a: 0 },
+      { q: 'Truyện Kiều được viết bằng thể thơ nào?', o: ['Lục bát', 'Thơ tự do', 'Thơ bốn chữ', 'Văn xuôi'], a: 0 }
+    ]
+  },
+  buudien: {
+    id: 'buudien', kind: 'place', title: 'Bưu điện Thành phố', who: 'Xây từ năm 1886 đến 1891', emoji: '📮',
+    color: '#c08a2e',
+    facts: [
+      'Bưu điện Thành phố nằm ngay cạnh Nhà thờ Đức Bà, do người Pháp xây từ năm 1886 đến 1891.',
+      'Tòa nhà màu vàng với các cửa sổ vòm xanh lá, trên mặt tiền có một chiếc đồng hồ lớn.',
+      'Bên trong là một gian sảnh rộng mái vòm, trên tường vẽ hai bản đồ cổ về Sài Gòn và vùng Nam Bộ xưa.',
+      'Đây vẫn là bưu điện đang hoạt động: bé có thể mua tem, viết bưu thiếp và gửi đi khắp thế giới.'
+    ],
+    quiz: [
+      { q: 'Bưu điện Thành phố nằm cạnh địa danh nào?', o: ['Nhà thờ Đức Bà', 'Chợ Bến Thành', 'Thảo Cầm Viên', 'Bến Nhà Rồng'], a: 0 },
+      { q: 'Ở bưu điện bé có thể làm gì?', o: ['Gửi thư và bưu thiếp', 'Xem thú', 'Mua trái cây', 'Đi tàu'], a: 0 }
+    ]
+  },
+  ducba: {
+    id: 'ducba', kind: 'place', title: 'Nhà thờ Đức Bà', who: 'Xây từ năm 1877 đến 1880', emoji: '⛪',
+    color: '#b5563c',
+    facts: [
+      'Nhà thờ Đức Bà được người Pháp xây từ năm 1877 đến 1880, nằm ở quảng trường Công xã Paris giữa trung tâm Quận 1.',
+      'Toàn bộ gạch đỏ xây nhà thờ được chở từ Pháp sang. Hơn 140 năm rồi mà gạch vẫn đỏ tươi, không cần sơn.',
+      'Hai tháp chuông cao 57,6 m, bên trong có 6 quả chuông lớn. Tháp được xây thêm năm 1895.',
+      'Trước nhà thờ có tượng Đức Mẹ Hòa Bình bằng đá, đặt năm 1959. Tượng làm ở Ý rồi chở về.',
+      'Từ năm 2017 nhà thờ được sửa chữa lớn nên có giàn giáo bao quanh, nhưng vẫn là nơi rất nhiều người đến chụp ảnh.'
+    ],
+    quiz: [
+      { q: 'Nhà thờ Đức Bà được xây bằng gạch chở từ nước nào?', o: ['Pháp', 'Nhật', 'Mỹ', 'Trung Quốc'], a: 0 },
+      { q: 'Nhà thờ Đức Bà có mấy tháp chuông?', o: ['2', '1', '4', '6'], a: 0 },
+      { q: 'Nhà thờ Đức Bà xây xong năm nào?', o: ['1880', '1980', '1500', '2000'], a: 0 }
+    ]
+  },
+  /* ---- tuyến Dinh Độc Lập ---- */
+  nkkn: {
+    id: 'nkkn', kind: 'street', title: 'Đường Nam Kỳ Khởi Nghĩa', who: 'Cuộc khởi nghĩa Nam Kỳ (23/11/1940)', emoji: '🚩',
+    color: '#b3261e',
+    facts: [
+      'Tên đường nhắc tới cuộc khởi nghĩa Nam Kỳ ngày 23 tháng 11 năm 1940, khi người dân nhiều tỉnh miền Nam cùng đứng lên chống thực dân Pháp.',
+      'Trong cuộc khởi nghĩa này, lá cờ đỏ sao vàng lần đầu tiên được giương lên. Sau này lá cờ ấy trở thành Quốc kỳ Việt Nam.',
+      'Cuộc khởi nghĩa không thành công, nhiều người đã hy sinh, nhưng tinh thần dũng cảm ấy được nhớ mãi.',
+      'Trước năm 1975 đường này tên là Công Lý. Đường chạy từ sân bay Tân Sơn Nhất thẳng về trung tâm, ngang qua Dinh Độc Lập.'
+    ],
+    quiz: [
+      { q: 'Cuộc khởi nghĩa Nam Kỳ diễn ra năm nào?', o: ['1940', '1975', '1945', '1954'], a: 0 },
+      { q: 'Lá cờ nào xuất hiện lần đầu trong khởi nghĩa Nam Kỳ?', o: ['Cờ đỏ sao vàng', 'Cờ xanh', 'Cờ trắng', 'Cờ có ngôi sao trắng'], a: 0 }
+    ]
+  },
+  ntmk: {
+    id: 'ntmk', kind: 'street', title: 'Đường Nguyễn Thị Minh Khai', who: 'Nguyễn Thị Minh Khai (1910 – 1941)', emoji: '🌺',
+    color: '#8e24aa',
+    facts: [
+      'Cô Nguyễn Thị Minh Khai sinh năm 1910 ở thành phố Vinh, Nghệ An.',
+      'Từ khi còn là học sinh, cô đã tham gia hoạt động yêu nước, từng đi học và làm việc ở Hồng Kông và nước Nga.',
+      'Về Sài Gòn, cô là Bí thư Thành ủy Sài Gòn – Chợ Lớn, lãnh đạo phong trào chống thực dân Pháp.',
+      'Cô bị bắt năm 1940 và hy sinh năm 1941 ở Hóc Môn khi mới 31 tuổi.',
+      'Đường Nguyễn Thị Minh Khai rất dài, chạy ngang sau Dinh Độc Lập và tới sát Thảo Cầm Viên. Trước năm 1975 tên là Hồng Thập Tự.'
+    ],
+    quiz: [
+      { q: 'Nguyễn Thị Minh Khai sinh ra ở đâu?', o: ['Vinh, Nghệ An', 'Sài Gòn', 'Huế', 'Cần Thơ'], a: 0 },
+      { q: 'Đường Nguyễn Thị Minh Khai đi tới sát địa danh nào?', o: ['Thảo Cầm Viên', 'Sân bay', 'Chợ Bến Thành', 'Bến Nhà Rồng'], a: 0 }
+    ]
+  },
+  lqd: {
+    id: 'lqd', kind: 'place', title: 'Trường Lê Quý Đôn', who: 'Lê Quý Đôn (1726 – 1784) · trường lập năm 1874', emoji: '🏫',
+    sign: 'TRƯỜNG LÊ QUÝ ĐÔN',
+    color: '#1565c0',
+    facts: [
+      'Trường Lê Quý Đôn ở góc đường Nam Kỳ Khởi Nghĩa và Nguyễn Thị Minh Khai, lập năm 1874, là trường trung học xưa nhất Sài Gòn, đã hơn 150 tuổi.',
+      'Trường có những dãy nhà mái ngói, tường vàng và sân rộng đầy cây cổ thụ.',
+      'Trường mang tên Lê Quý Đôn, nhà bác học lớn nhất của Việt Nam thời xưa, quê ở Thái Bình.',
+      'Ông đọc rất nhiều, nhớ rất giỏi và viết sách về đủ thứ: lịch sử, địa lý, thiên văn, cây cỏ. Người ta nói "thiên hạ vô tri vấn Bảng Đôn", nghĩa là không biết gì thì hỏi ông Bảng Đôn.',
+      'Ông đỗ Bảng nhãn năm 1752 khi mới 26 tuổi.'
+    ],
+    quiz: [
+      { q: 'Trường Lê Quý Đôn được lập năm nào?', o: ['1874', '1974', '2004', '1945'], a: 0 },
+      { q: 'Lê Quý Đôn nổi tiếng là gì?', o: ['Nhà bác học', 'Cầu thủ bóng đá', 'Nhà hàng hải', 'Họa sĩ'], a: 0 }
+    ]
+  },
+  dinh: {
+    id: 'dinh', kind: 'place', title: 'Dinh Độc Lập', who: 'Xây từ năm 1962 đến 1966', emoji: '🏛️',
+    color: '#5c6bc0',
+    facts: [
+      'Trên khu đất này xưa là Dinh Norodom của người Pháp, xây từ năm 1868. Năm 1962 dinh cũ bị máy bay ném bom hỏng nặng nên được phá đi xây mới.',
+      'Dinh mới do kiến trúc sư Ngô Viết Thụ thiết kế, xây từ năm 1962 đến 1966. Mặt tiền có "rèm hoa đá" hình những đốt trúc rất đẹp.',
+      'Trưa ngày 30 tháng 4 năm 1975, xe tăng 843 và 390 tiến vào cổng dinh, kết thúc chiến tranh, đất nước thống nhất.',
+      'Nay dinh còn gọi là Hội trường Thống Nhất, mở cửa cho mọi người tham quan. Trong sân có bãi cỏ rộng, đài phun nước và trưng bày hai chiếc xe tăng.',
+      'Trên sân thượng dinh còn có cả một chiếc máy bay trực thăng!'
+    ],
+    quiz: [
+      { q: 'Ai thiết kế Dinh Độc Lập?', o: ['Ngô Viết Thụ', 'Louis Pasteur', 'Nguyễn Du', 'Lê Lợi'], a: 0 },
+      { q: 'Xe tăng tiến vào Dinh Độc Lập vào ngày nào?', o: ['30/4/1975', '2/9/1945', '1/1/2000', '23/11/1940'], a: 0 },
+      { q: 'Dinh Độc Lập ngày nay còn gọi là gì?', o: ['Hội trường Thống Nhất', 'Nhà hát Thành phố', 'Bưu điện Thành phố', 'Chợ Bến Thành'], a: 0 }
+    ]
+  },
+  /* ---- tuyến Thảo Cầm Viên ---- */
+  nbk: {
+    id: 'nbk', kind: 'street', title: 'Đường Nguyễn Bỉnh Khiêm', who: 'Nguyễn Bỉnh Khiêm (1491 – 1585)', emoji: '🔮',
+    color: '#00838f',
+    facts: [
+      'Nguyễn Bỉnh Khiêm quê ở Vĩnh Bảo, Hải Phòng. Ông sống tới 95 tuổi, rất thọ so với người xưa.',
+      'Năm 1535, khi 44 tuổi, ông đi thi và đỗ Trạng nguyên, tức là người đứng đầu cả nước.',
+      'Người ta gọi ông là Trạng Trình vì ông được phong là Trình Quốc công. Ông mở trường dạy học, có rất nhiều học trò giỏi.',
+      'Ông nổi tiếng với những câu "sấm" tiên đoán chuyện tương lai, gọi là Sấm Trạng Trình.',
+      'Cổng chính Thảo Cầm Viên nằm ngay trên đường Nguyễn Bỉnh Khiêm, số 2.'
+    ],
+    quiz: [
+      { q: 'Nguyễn Bỉnh Khiêm còn được gọi là gì?', o: ['Trạng Trình', 'Trạng Quỳnh', 'Ông Táo', 'Thánh Gióng'], a: 0 },
+      { q: 'Nguyễn Bỉnh Khiêm đỗ Trạng nguyên khi bao nhiêu tuổi?', o: ['44 tuổi', '14 tuổi', '80 tuổi', '7 tuổi'], a: 0 }
+    ]
+  },
+  zoo: {
+    id: 'zoo', kind: 'place', title: 'Thảo Cầm Viên', who: 'Mở cửa từ năm 1864', emoji: '🦒',
+    color: '#2e7d32',
+    facts: [
+      'Thảo Cầm Viên Sài Gòn được lập năm 1864, là một trong những vườn thú lâu đời nhất thế giới, đã hơn 160 tuổi.',
+      '"Thảo" là cây cỏ, "cầm" là chim thú. Ở đây có hơn 1.000 con thú như hươu cao cổ, voi, hà mã, hổ, cùng hơn 2.000 cây xanh, nhiều cây cổ thụ trăm tuổi.',
+      'Người đầu tiên trông coi vườn là nhà thực vật học người Pháp Louis Pierre, ông đã trồng rất nhiều cây ở đây.',
+      'Trong khuôn viên còn có Bảo tàng Lịch sử và Đền thờ Vua Hùng.',
+      'Cuối tuần nhiều gia đình tới chơi, cho hươu ăn, xem voi tắm và đi xe điện vòng quanh vườn.'
+    ],
+    quiz: [
+      { q: '"Thảo" trong Thảo Cầm Viên nghĩa là gì?', o: ['Cây cỏ', 'Chim thú', 'Nước', 'Nhà'], a: 0 },
+      { q: 'Thảo Cầm Viên được lập năm nào?', o: ['1864', '1964', '2004', '1700'], a: 0 },
+      { q: 'Trong Thảo Cầm Viên có bảo tàng nào?', o: ['Bảo tàng Lịch sử', 'Bảo tàng Xe đạp', 'Bảo tàng Vũ trụ', 'Bảo tàng Kem'], a: 0 }
+    ]
+  },
+  /* ---- tuyến Bến Nhà Rồng ---- */
+  tdt: {
+    id: 'tdt', kind: 'street', title: 'Đường Tôn Đức Thắng', who: 'Tôn Đức Thắng (1888 – 1980)', emoji: '🔧',
+    color: '#455a64',
+    facts: [
+      'Bác Tôn Đức Thắng sinh năm 1888 ở cù lao Ông Hổ, Long Xuyên, An Giang.',
+      'Thời trẻ bác là thợ máy rất giỏi ở xưởng đóng tàu Ba Son bên sông Sài Gòn, và đã lãnh đạo công nhân Ba Son đình công năm 1925.',
+      'Bác bị thực dân Pháp giam ở nhà tù Côn Đảo gần 17 năm nhưng vẫn kiên cường.',
+      'Sau khi Bác Hồ qua đời, bác Tôn trở thành Chủ tịch nước từ năm 1969 đến 1980. Mọi người thường gọi thân mật là Bác Tôn.',
+      'Đường Tôn Đức Thắng chạy dọc sông Sài Gòn, cạnh bến Bạch Đằng, nhìn qua Thủ Thiêm bên kia sông.'
+    ],
+    quiz: [
+      { q: 'Thời trẻ bác Tôn Đức Thắng làm nghề gì?', o: ['Thợ máy', 'Bác sĩ', 'Thầy giáo', 'Ca sĩ'], a: 0 },
+      { q: 'Đường Tôn Đức Thắng chạy dọc theo gì?', o: ['Sông Sài Gòn', 'Đường ray xe lửa', 'Núi', 'Sân bay'], a: 0 }
+    ]
+  },
+  tranhungdao: {
+    id: 'tranhungdao', kind: 'place', title: 'Tượng Trần Hưng Đạo', who: 'Trần Hưng Đạo (thế kỷ 13) · tượng dựng năm 1967', emoji: '🗡️',
+    color: '#6d4c41',
+    facts: [
+      'Tượng Trần Hưng Đạo đứng ở công trường Mê Linh, bên sông Sài Gòn, ngay đầu đường Hai Bà Trưng. Tượng dựng năm 1967.',
+      'Trần Hưng Đạo tên thật là Trần Quốc Tuấn, vị tướng tài của nhà Trần, sống vào thế kỷ 13.',
+      'Ông chỉ huy quân dân ta hai lần đánh thắng quân Nguyên Mông rất mạnh, năm 1285 và 1288. Trận Bạch Đằng năm 1288 dùng cọc nhọn cắm dưới sông làm đắm tàu giặc.',
+      'Ông viết "Hịch tướng sĩ" để khích lệ binh lính. Tượng ông chỉ tay xuống sông như đang chỉ huy thủy quân.'
+    ],
+    quiz: [
+      { q: 'Trần Hưng Đạo đánh thắng quân xâm lược nào?', o: ['Quân Nguyên Mông', 'Quân Pháp', 'Quân Minh', 'Quân Đông Hán'], a: 0 },
+      { q: 'Trận Bạch Đằng năm 1288 dùng mưu gì?', o: ['Cắm cọc nhọn dưới sông', 'Bắn tên lửa', 'Đào hầm', 'Thả diều'], a: 0 }
+    ]
+  },
+  ntt: {
+    id: 'ntt', kind: 'street', title: 'Đường Nguyễn Tất Thành', who: 'Nguyễn Tất Thành, tên thời trẻ của Bác Hồ', emoji: '🚢',
+    color: '#c62828',
+    facts: [
+      'Nguyễn Tất Thành là tên thời trẻ của Bác Hồ (Chủ tịch Hồ Chí Minh). Bác sinh năm 1890 ở Nghệ An.',
+      'Ngày 5 tháng 6 năm 1911, chàng trai Nguyễn Tất Thành 21 tuổi lên tàu Amiral Latouche-Tréville ở Bến Nhà Rồng, làm phụ bếp với tên Văn Ba, để ra nước ngoài tìm đường cứu nước.',
+      'Bác đi qua rất nhiều nước suốt 30 năm, đến năm 1941 mới trở về Việt Nam.',
+      'Đường Nguyễn Tất Thành ở Quận 4 chạy dọc sông Sài Gòn, bắt đầu từ cầu Khánh Hội, ngay chỗ Bến Nhà Rồng.'
+    ],
+    quiz: [
+      { q: 'Nguyễn Tất Thành là tên thời trẻ của ai?', o: ['Bác Hồ', 'Lê Lợi', 'Tôn Đức Thắng', 'Trần Hưng Đạo'], a: 0 },
+      { q: 'Năm 1911 Nguyễn Tất Thành ra nước ngoài bằng gì?', o: ['Tàu thủy', 'Máy bay', 'Xe đạp', 'Tàu lửa'], a: 0 }
+    ]
+  },
+  nharong: {
+    id: 'nharong', kind: 'place', title: 'Bến Nhà Rồng', who: 'Xây năm 1863', emoji: '🐉',
+    color: '#ef6c00',
+    facts: [
+      'Bến Nhà Rồng nằm ở Quận 4, chỗ rạch Bến Nghé chảy ra sông Sài Gòn, ngay chân cầu Khánh Hội.',
+      'Tòa nhà màu vàng xây năm 1863, là trụ sở của hãng tàu biển Pháp. Trên mái có hai con rồng bằng gốm chầu mặt trăng, nên dân gọi là Nhà Rồng.',
+      'Ngày 5 tháng 6 năm 1911, Bác Hồ (tên là Nguyễn Tất Thành) từ bến này lên tàu ra đi tìm đường cứu nước.',
+      'Từ năm 1979 tòa nhà trở thành Bảo tàng Hồ Chí Minh, trưng bày nhiều hình ảnh, kỷ vật về cuộc đời Bác.',
+      'Đứng ở bến có thể thấy tàu bè qua lại trên sông và những tòa nhà cao của Quận 1 bên kia bờ.'
+    ],
+    quiz: [
+      { q: 'Vì sao gọi là Nhà Rồng?', o: ['Trên mái có hai con rồng', 'Trong nhà nuôi rồng', 'Chủ nhà tên Rồng', 'Nhà hình con rồng'], a: 0 },
+      { q: 'Bến Nhà Rồng ngày nay là gì?', o: ['Bảo tàng Hồ Chí Minh', 'Chợ', 'Trường học', 'Sân bay'], a: 0 },
+      { q: 'Bến Nhà Rồng nằm ở quận nào?', o: ['Quận 4', 'Quận 1', 'Quận 3', 'Quận 7'], a: 0 }
+    ]
   }
 };
 
@@ -168,13 +369,19 @@ const MISSIONS = {
 /* ================= TUYẾN ĐƯỜNG =================
    Mỗi đường: length = chiều dài (mét), events = sự kiện theo vị trí x (mét từ đầu đường).
    Loại sự kiện: light (đèn giao thông), zebra (vạch người đi bộ), shop, obstacle (xe hàng rong đậu lấn lòng đường),
-   moto (xe máy vượt ở làn trái), ambulance (xe cứu thương), school (vùng đi chậm 60 m), landmark (địa danh có thẻ),
+   moto (xe máy vượt ở làn trái), ambulance (xe cứu thương), school (vùng đi chậm 60 m; có card = trường có tên, mở thẻ sau khi qua),
+   landmark (địa danh có thẻ), bridge (lên cầu 80 m, có sông hai bên),
    light có card = ngã tư có biển tên đường cắt ngang (mở thẻ lịch sử sau khi qua).
-   turn: hướng rẽ ở cuối đường ('right'/'left'), next: tên đường kế tiếp. */
+   turn: hướng rẽ ở cuối đường ('right'/'left'), next: tên đường kế tiếp. river: -1 = bờ sông bên trái (1 = bên phải) thay cho dãy nhà.
+   goalCard: thẻ địa danh nơi đến (world.js dựng mô hình theo id này). helper: người nhờ bé tính tiền ở cuối chuyến
+   (items: 2 món cho lớp 2 cộng; multi: lớp 4 nhân n món rồi cộng món thứ hai). */
 const ROUTES = [
   {
     id: 'benthanh', name: 'Nhà → Chợ Bến Thành', from: 'Nhà (đường Võ Thị Sáu)', to: 'Chợ Bến Thành', emoji: '🕰️',
     goalCard: 'benthanh', desc: 'Qua Võ Thị Sáu, Hai Bà Trưng và Lê Lợi tới chợ Bến Thành. Khoảng 1 km.',
+    helper: { who: 'Dì Năm', emoji: '🍊', bg: '#8d6e63', where: 'Trong chợ', ask: 'Giúp dì bán hàng một chút nha!', job: 'bán hàng',
+      items: [{ label: '1 kg cam', emoji: '🍊', price: { g2: 40, g4: 38 } }, { label: '1 nải chuối', emoji: '🍌', price: { g2: 25, g4: 28 } }],
+      multi: { label: 'kg xoài', emoji: '🥭', price: 38, n: 3 } },
     streets: [
       { card: 'vts', length: 320, turn: 'right', next: 'Hai Bà Trưng',
         events: [
@@ -207,8 +414,148 @@ const ROUTES = [
         ] }
     ]
   },
-  { id: 'ducba', name: 'Nhà → Nhà thờ Đức Bà', emoji: '⛪', soon: true },
-  { id: 'dinh', name: 'Nhà → Dinh Độc Lập', emoji: '🏛️', soon: true },
-  { id: 'zoo', name: 'Nhà → Thảo Cầm Viên', emoji: '🦒', soon: true },
-  { id: 'nharong', name: 'Nhà → Bến Nhà Rồng', emoji: '🐉', soon: true }
+  {
+    id: 'dinh', name: 'Nhà → Dinh Độc Lập', from: 'Nhà (đường Võ Thị Sáu)', to: 'Dinh Độc Lập', emoji: '🏛️',
+    goalCard: 'dinh', desc: 'Tuyến ngắn: Võ Thị Sáu rồi rẽ trái vào Nam Kỳ Khởi Nghĩa, qua trường Lê Quý Đôn tới Dinh Độc Lập. Khoảng 650 m.',
+    helper: { who: 'Chú Sáu', emoji: '🎫', bg: '#5c6bc0', where: 'Quầy vé Dinh Độc Lập', ask: 'Giúp chú bán vé một chút nha!', job: 'bán vé',
+      items: [{ label: '1 vé người lớn', emoji: '🎫', price: { g2: 40, g4: 40 } }, { label: '1 vé trẻ em', emoji: '🎟️', price: { g2: 10, g4: 15 } }],
+      multi: { label: 'vé người lớn', emoji: '🎫', price: 40, n: 3, unit: 'vé' } },
+    streets: [
+      { card: 'vts', length: 280, turn: 'left', next: 'Nam Kỳ Khởi Nghĩa',
+        events: [
+          { x: 50, type: 'shop', shop: 'banhmi' },
+          { x: 100, type: 'light' },
+          { x: 150, type: 'obstacle' },
+          { x: 190, type: 'zebra' },
+          { x: 228, type: 'moto' }
+        ] },
+      { card: 'nkkn', length: 370, turn: null,
+        events: [
+          { x: 40, type: 'shop', shop: 'nuocmia' },
+          { x: 90, type: 'light', card: 'ntmk' },
+          { x: 130, type: 'school', card: 'lqd' },
+          { x: 225, type: 'zebra' },
+          { x: 255, type: 'ambulance' },
+          { x: 295, type: 'shop', shop: 'traicay' },
+          { x: 335, type: 'light' }
+        ] }
+    ]
+  },
+  {
+    id: 'ducba', name: 'Nhà → Nhà thờ Đức Bà', from: 'Nhà (đường Võ Thị Sáu)', to: 'Nhà thờ Đức Bà', emoji: '⛪',
+    goalCard: 'ducba', desc: 'Qua Võ Thị Sáu, Pasteur và Nguyễn Du, ngang Bưu điện Thành phố tới Nhà thờ Đức Bà. Khoảng 900 m.',
+    helper: { who: 'Cô Hai', emoji: '🎈', bg: '#c08a2e', where: 'Trước Bưu điện', ask: 'Giúp cô bán bưu thiếp và bong bóng nha!', job: 'bán hàng',
+      items: [{ label: '1 tấm bưu thiếp', emoji: '📮', price: { g2: 15, g4: 15 } }, { label: '1 quả bong bóng', emoji: '🎈', price: { g2: 30, g4: 35 } }],
+      multi: { label: 'tấm bưu thiếp', emoji: '📮', price: 15, n: 4, unit: 'tấm' } },
+    streets: [
+      { card: 'vts', length: 300, turn: 'left', next: 'Pasteur',
+        events: [
+          { x: 55, type: 'shop', shop: 'banhmi' },
+          { x: 110, type: 'light' },
+          { x: 150, type: 'zebra' },
+          { x: 190, type: 'moto' },
+          { x: 225, type: 'obstacle' },
+          { x: 262, type: 'light' }
+        ] },
+      { card: 'pas', length: 320, turn: 'left', next: 'Nguyễn Du',
+        events: [
+          { x: 40, type: 'moto' },
+          { x: 90, type: 'light' },
+          { x: 140, type: 'shop', shop: 'nuocmia' },
+          { x: 185, type: 'zebra' },
+          { x: 220, type: 'ambulance' },
+          { x: 255, type: 'obstacle' },
+          { x: 290, type: 'light' }
+        ] },
+      { card: 'nguyendu', length: 300, turn: null,
+        events: [
+          { x: 60, type: 'light', card: 'nkkn' },
+          { x: 120, type: 'zebra' },
+          { x: 165, type: 'shop', shop: 'traicay' },
+          { x: 215, type: 'landmark', card: 'buudien' },
+          { x: 262, type: 'light' }
+        ] }
+    ]
+  },
+  {
+    id: 'zoo', name: 'Nhà → Thảo Cầm Viên', from: 'Nhà (đường Võ Thị Sáu)', to: 'Thảo Cầm Viên', emoji: '🦒',
+    goalCard: 'zoo', desc: 'Qua Võ Thị Sáu, Hai Bà Trưng và Nguyễn Thị Minh Khai tới Thảo Cầm Viên, nơi có hươu cao cổ và voi. Khoảng 1 km.',
+    helper: { who: 'Cô Lan', emoji: '🥕', bg: '#2e7d32', where: 'Quầy thức ăn cho thú', ask: 'Giúp cô bán thức ăn cho thú nha!', job: 'bán hàng',
+      items: [{ label: '1 bó cà rốt cho hươu', emoji: '🥕', price: { g2: 20, g4: 20 } }, { label: '1 nải chuối cho voi', emoji: '🍌', price: { g2: 25, g4: 28 } }],
+      multi: { label: 'bó cà rốt', emoji: '🥕', price: 20, n: 4, unit: 'bó' } },
+    streets: [
+      { card: 'vts', length: 320, turn: 'right', next: 'Hai Bà Trưng',
+        events: [
+          { x: 55, type: 'shop', shop: 'banhmi' },
+          { x: 110, type: 'light' },
+          { x: 160, type: 'obstacle' },
+          { x: 205, type: 'zebra' },
+          { x: 240, type: 'moto' },
+          { x: 268, type: 'light' }
+        ] },
+      { card: 'hbt', length: 300, turn: 'left', next: 'Nguyễn Thị Minh Khai',
+        events: [
+          { x: 40, type: 'moto' },
+          { x: 85, type: 'shop', shop: 'nuocmia' },
+          { x: 130, type: 'light' },
+          { x: 175, type: 'zebra' },
+          { x: 215, type: 'obstacle' },
+          { x: 258, type: 'light' }
+        ] },
+      { card: 'ntmk', length: 380, turn: null,
+        events: [
+          { x: 50, type: 'light' },
+          { x: 95, type: 'school' },
+          { x: 190, type: 'ambulance' },
+          { x: 230, type: 'shop', shop: 'traicay' },
+          { x: 275, type: 'zebra' },
+          { x: 300, type: 'moto' },
+          { x: 335, type: 'light', card: 'nbk' }
+        ] }
+    ]
+  },
+  {
+    id: 'nharong', name: 'Nhà → Bến Nhà Rồng', from: 'Nhà (đường Võ Thị Sáu)', to: 'Bến Nhà Rồng', emoji: '🐉',
+    goalCard: 'nharong', desc: 'Tuyến xa nhất: Võ Thị Sáu, Hai Bà Trưng, dọc sông Sài Gòn theo Tôn Đức Thắng rồi qua cầu Khánh Hội tới Bến Nhà Rồng. Khoảng 1,3 km.',
+    helper: { who: 'Chú Bảy', emoji: '🍦', bg: '#ef6c00', where: 'Quán kem ở bến tàu', ask: 'Giúp chú bán kem một chút nha!', job: 'bán kem',
+      items: [{ label: '1 cây kem', emoji: '🍦', price: { g2: 15, g4: 15 } }, { label: '1 ly nước mía', emoji: '🥤', price: { g2: 10, g4: 12 } }],
+      multi: { label: 'cây kem', emoji: '🍦', price: 15, n: 4, unit: 'cây' } },
+    streets: [
+      { card: 'vts', length: 300, turn: 'right', next: 'Hai Bà Trưng',
+        events: [
+          { x: 55, type: 'shop', shop: 'banhmi' },
+          { x: 105, type: 'light' },
+          { x: 150, type: 'zebra' },
+          { x: 195, type: 'obstacle' },
+          { x: 235, type: 'moto' },
+          { x: 262, type: 'light' }
+        ] },
+      { card: 'hbt', length: 320, turn: 'right', next: 'Tôn Đức Thắng',
+        events: [
+          { x: 45, type: 'moto' },
+          { x: 80, type: 'school' },
+          { x: 160, type: 'shop', shop: 'nuocmia' },
+          { x: 205, type: 'light' },
+          { x: 245, type: 'ambulance' },
+          { x: 282, type: 'zebra' }
+        ] },
+      { card: 'tdt', length: 320, turn: 'left', next: 'Nguyễn Tất Thành', river: -1,
+        events: [
+          { x: 30, type: 'landmark', card: 'tranhungdao' },
+          { x: 85, type: 'zebra' },
+          { x: 125, type: 'moto' },
+          { x: 170, type: 'obstacle' },
+          { x: 215, type: 'light' },
+          { x: 262, type: 'zebra' }
+        ] },
+      { card: 'ntt', length: 320, turn: null, river: -1,
+        events: [
+          { x: 20, type: 'bridge' },
+          { x: 150, type: 'zebra' },
+          { x: 195, type: 'shop', shop: 'traicay' },
+          { x: 240, type: 'moto' },
+          { x: 280, type: 'light' }
+        ] }
+    ]
+  }
 ];
