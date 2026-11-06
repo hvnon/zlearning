@@ -1,5 +1,5 @@
 /* Đạp Xe Sài Gòn: lối chơi, giao diện, lưu tiến độ. Thế giới 3D nằm trong world.js, dữ liệu trong data.js. */
-import { THREE, World, createRenderer, makeBike, makePedestrian, makeMoto, makeAmbulance, makeCar, makeItemSprite, drawSignCanvas, rng } from './world.js';
+import { THREE, World, createRenderer, makeBike, makePedestrian, makeMoto, makeAmbulance, makeCar, makeItemSprite, drawSignCanvas, rng, AVATAR_DEFAULT, BIKE_DEFAULT } from './world.js';
 
 /* ================= tiện ích ================= */
 const $ = (id) => document.getElementById(id);
@@ -14,12 +14,18 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
 const KEY = 'dap-xe-sai-gon-v1';
 function freshState() {
   return { sound: true, profiles: [
-    { id: 'k2', name: 'Bé lớp 2', grade: 'g2', coins: 0, stars: {}, cards: [], stamps: [], trips: [], license: false, bike: { frame: 0xff7043, shirt: 0x29b6f6, helmet: 0xffca28 } },
-    { id: 'k4', name: 'Bé lớp 4', grade: 'g4', coins: 0, stars: {}, cards: [], stamps: [], trips: [], license: false, bike: { frame: 0x26a69a, shirt: 0xef5350, helmet: 0x7e57c2 } }
+    { id: 'k2', name: 'Bé lớp 2', grade: 'g2', coins: 0, stars: {}, cards: [], stamps: [], trips: [], license: false, bike: { ...BIKE_DEFAULT }, avatar: { ...AVATAR_DEFAULT }, owned: [] },
+    { id: 'k4', name: 'Bé lớp 4', grade: 'g4', coins: 0, stars: {}, cards: [], stamps: [], trips: [], license: false, bike: { ...BIKE_DEFAULT, frame: 0x26a69a }, avatar: { ...AVATAR_DEFAULT, outfitColor: 0xef5350, helmetColor: 0x7e57c2 }, owned: [] }
   ] };
 }
 let state;
 try { state = JSON.parse(localStorage.getItem(KEY)) || freshState(); } catch (e) { state = freshState(); }
+// nâng cấp dữ liệu cũ (bản đầu chỉ có màu khung, áo, mũ)
+for (const p of state.profiles) {
+  if (!p.avatar) { p.avatar = { ...AVATAR_DEFAULT, outfitColor: (p.bike && p.bike.shirt) || AVATAR_DEFAULT.outfitColor, helmetColor: (p.bike && p.bike.helmet) || AVATAR_DEFAULT.helmetColor }; }
+  p.bike = { ...BIKE_DEFAULT, ...(p.bike || {}) }; delete p.bike.shirt; delete p.bike.helmet;
+  p.owned = p.owned || [];
+}
 function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { } }
 const prof = (id) => state.profiles.find(p => p.id === id);
 
@@ -66,7 +72,7 @@ function renderHome() {
           <span class="name">${esc(x.name)}</span>
           <span class="row" style="gap:6px"><span class="chip amber">🪙 ${x.coins}</span><span class="chip">⭐ ${totalStars(x)}</span><span class="chip green">📜 ${x.cards.length}/${allCards.length}</span>${x.license ? '<span class="chip">🪪 Bằng lái</span>' : ''}</span>
           <span class="edit" data-edit="${x.id}" role="button" aria-label="Đổi tên" title="Đổi tên">✏️</span>
-          <span class="edit" style="right:50px" data-paint="${x.id}" role="button" aria-label="Sơn xe" title="Tiệm sơn xe">🎨</span>
+          <span class="edit" style="right:50px" data-paint="${x.id}" role="button" aria-label="Tủ thời trang" title="Tủ thời trang">👗</span>
         </button>`).join('')}</div>
     </section>
     <section class="stack">
@@ -87,10 +93,10 @@ function renderHome() {
       ${p.stamps.length ? `<div class="row"><span class="muted">Tem địa danh:</span>${p.stamps.map(s => `<span class="chip amber">${CARDS[s] ? CARDS[s].emoji + ' ' + esc(CARDS[s].title) : esc(s)}</span>`).join('')}</div>` : ''}
     </section>
     ${showParent ? renderParent() : ''}
-    <p class="muted" style="font-size:13px;margin:0">Cách chơi: giữ nút <b>Đạp</b> để đi, <b>Thắng</b> để dừng. Xe đạp đi <b>sát lề phải</b>; gặp xe hàng rong đậu thì bấm <b>Lách trái</b> rồi về lề. Đèn đỏ dừng trước vạch, nhường người đi bộ, giơ tay trước khi rẽ. Bàn phím: mũi tên ← → đạp/thắng, ↑ ↓ đổi làn, A/D giơ tay, E vào quán, B chuông.</p>`;
+    <p class="muted" style="font-size:13px;margin:0">Bấm 👗 trên thẻ của bé để mở tủ thời trang (tóc, mặt, trang phục, mũ, màu xe...). Cách chơi: giữ nút <b>Đạp</b> để đi, <b>Thắng</b> để dừng. Xe đạp đi <b>sát lề phải</b>; gặp xe hàng rong đậu thì bấm <b>Lách trái</b> rồi về lề. Đèn đỏ dừng trước vạch, nhường người đi bộ, giơ tay trước khi rẽ. Bàn phím: mũi tên ← → đạp/thắng, ↑ ↓ đổi làn, A/D giơ tay, E vào quán, B chuông.</p>`;
   $('homeBody').querySelectorAll('.kid').forEach(b => b.onclick = (ev) => {
     if (ev.target.dataset.edit) { renameKid(ev.target.dataset.edit); return; }
-    if (ev.target.dataset.paint) { paintShop(ev.target.dataset.paint); return; }
+    if (ev.target.dataset.paint) { wardrobe(ev.target.dataset.paint); return; }
     selectedKid = b.dataset.pid; renderHome();
   });
   $('homeBody').querySelectorAll('[data-route]').forEach(b => b.onclick = () => startTrip(b.dataset.route));
@@ -106,31 +112,86 @@ function renameKid(pid) {
   $('okBtn').onclick = () => { const v = $('nameInput').value.trim(); if (v) { p.name = v; save(); } closeModal(); renderHome(); };
   $('nameInput').focus();
 }
-/* Tiệm sơn xe: đổi màu khung xe, áo, mũ bảo hiểm bằng xu kiếm được */
-const PAINT = {
-  frame: { label: 'Khung xe', colors: [0xff7043, 0x26a69a, 0x1e88e5, 0xfdd835, 0xec407a, 0x8d6e63, 0x212121, 0xffffff] },
-  shirt: { label: 'Áo', colors: [0x29b6f6, 0xef5350, 0x66bb6a, 0xffca28, 0xab47bc, 0xff8a65, 0x5c6bc0, 0xffffff] },
-  helmet: { label: 'Mũ bảo hiểm', colors: [0xffca28, 0x7e57c2, 0xef5350, 0x29b6f6, 0x66bb6a, 0xff7043, 0x212121, 0xffffff] }
+/* Tủ thời trang: bé tự chọn tóc, mặt, da, trang phục, mũ, màu xe, giỏ, cờ... có xem trước 3D.
+   Kiểu cơ bản miễn phí; vài món đặc biệt (🔒) mua bằng xu. */
+const COLORS = {
+  skin: [0xffe0bd, 0xf1c27d, 0xe0ac69, 0xc68642, 0x8d5524],
+  hair: [0x3e2723, 0x1b1b1b, 0x6d4c41, 0xd7a86e, 0xb71c1c, 0x7e57c2],
+  cloth: [0x29b6f6, 0xef5350, 0x66bb6a, 0xffca28, 0xab47bc, 0xff8a65, 0x5c6bc0, 0xf48fb1, 0xffffff, 0x263238],
+  helmet: [0xffca28, 0x7e57c2, 0xef5350, 0x29b6f6, 0x66bb6a, 0xff7043, 0xf48fb1, 0xffffff],
+  frame: [0xff7043, 0x26a69a, 0x1e88e5, 0xfdd835, 0xec407a, 0x8d6e63, 0x212121, 0xffffff],
+  rim: [0xcfd8dc, 0xffd740, 0xff4081, 0x40c4ff, 0x69f0ae, 0x212121]
 };
-const PAINT_COST = 15;
-function paintShop(pid) {
-  const p = prof(pid); p.unlocked = p.unlocked || {};
+const PREMIUM_COST = 20;
+const WARDROBE = {
+  avatar: [
+    { key: 'hair', label: 'Kiểu tóc', opts: [['ngan', '✂️ Tóc ngắn'], ['dai', '💇 Tóc dài'], ['bim', '🎀 Hai bím'], ['bui', '🥟 Búi tóc']] },
+    { key: 'hairColor', label: 'Màu tóc', colors: COLORS.hair },
+    { key: 'skin', label: 'Màu da', colors: COLORS.skin },
+    { key: 'face', label: 'Gương mặt', opts: [['cuoi', '🙂 Cười'], ['vui', '😄 Vui tươi'], ['nhay', '😉 Nháy mắt'], ['kinh', '🤓 Đeo kính']] },
+    { key: 'outfit', label: 'Trang phục', opts: [['ao', '👕 Áo thun + quần'], ['vay', '👗 Váy'], ['hocsinh', '🎒 Đồng phục học sinh'], ['aodai', '👘 Áo dài', true]] },
+    { key: 'outfitColor', label: 'Màu áo', colors: COLORS.cloth },
+    { key: 'pantsColor', label: 'Màu quần / váy', colors: COLORS.cloth },
+    { key: 'helmet', label: 'Mũ bảo hiểm', opts: [['tron', '⛑️ Mũ tròn'], ['meo', '🐱 Mũ tai mèo', true], ['no', '🎀 Mũ có nơ', true]] },
+    { key: 'helmetColor', label: 'Màu mũ', colors: COLORS.helmet },
+    { key: 'backpack', label: 'Ba lô', opts: [[false, 'Không'], [true, '🎒 Đeo ba lô', true]] }
+  ],
+  bike: [
+    { key: 'frame', label: 'Màu khung xe', colors: COLORS.frame },
+    { key: 'rim', label: 'Màu vành bánh', colors: COLORS.rim },
+    { key: 'basket', label: 'Giỏ xe', opts: [['tre', '🧺 Giỏ tre'], ['hoa', '💐 Giỏ hoa', true], ['khong', 'Không giỏ']] },
+    { key: 'flag', label: 'Cờ sau yên', opts: [[false, 'Không'], [true, '🚩 Có cờ', true]] },
+    { key: 'tua', label: 'Tua rua tay lái', opts: [[false, 'Không'], [true, '🎏 Có tua rua', true]] }
+  ]
+};
+let pv = null; // xem trước 3D
+function wardrobe(pid) {
+  const p = prof(pid); let tab = 'avatar'; let msg = '';
   const hex = (c) => '#' + c.toString(16).padStart(6, '0');
-  const render = (msg = '') => {
-    openModal(`<div class="head"><div class="avatar" style="background:#1b6fb3">🎨</div><div><div class="kicker">Tiệm sơn xe</div><h2>Xe của ${esc(p.name)}</h2><div class="muted">Mỗi màu mới giá ${PAINT_COST} xu · con có 🪙 ${p.coins}</div></div></div>
-      ${Object.entries(PAINT).map(([k, v]) => `<div><b>${v.label}</b><div class="notes" style="justify-content:flex-start;margin-top:6px">${v.colors.map((c, i) => { const owned = i === 0 || (p.unlocked[k] || []).includes(c) || p.bike[k] === c; const cur = p.bike[k] === c; return `<button class="note" type="button" data-part="${k}" data-color="${c}" style="background:${hex(c)};min-width:52px;height:44px;outline:${cur ? '4px solid var(--sky-deep)' : 'none'};outline-offset:2px;color:${c === 0xffffff || c === 0xfdd835 || c === 0xffca28 ? '#333' : '#fff'}">${cur ? '✓' : owned ? '' : '🔒'}</button>`; }).join('')}</div></div>`).join('')}
-      <div class="fb ${msg.startsWith('Không') ? 'no' : 'ok'}">${msg}</div>
+  const light = (c) => ((c >> 16) * .3 + ((c >> 8) & 255) * .59 + (c & 255) * .11) > 170;
+  const ownKey = (k, v) => `${k}:${v}`;
+  const render = () => {
+    const cfg = p[tab];
+    openModal(`<div class="head"><div class="avatar" style="background:#1b6fb3">👗</div><div><div class="kicker">Tủ thời trang</div><h2>${esc(p.name)}</h2><div class="muted">Món có 🔒 giá ${PREMIUM_COST} xu · con có 🪙 ${p.coins}</div></div></div>
+      <div class="wardrobe"><div class="pv"><canvas id="pv" width="300" height="300" aria-label="Xem trước"></canvas></div>
+      <div class="wopts"><div class="views"><button type="button" data-tab="avatar" aria-pressed="${tab === 'avatar'}">🧒 Bé</button><button type="button" data-tab="bike" aria-pressed="${tab === 'bike'}">🚲 Xe đạp</button></div>
+      ${WARDROBE[tab].map(row => `<div class="wrow"><b>${row.label}</b><div class="wchoices">${row.colors ? row.colors.map(c => `<button class="swatch" type="button" data-key="${row.key}" data-val="${c}" style="background:${hex(c)};color:${light(c) ? '#333' : '#fff'}" aria-pressed="${cfg[row.key] === c}" aria-label="Màu">${cfg[row.key] === c ? '✓' : ''}</button>`).join('')
+        : row.opts.map(([v, label, prem]) => { const owned = !prem || p.owned.includes(ownKey(row.key, v)); return `<button class="wopt" type="button" data-key="${row.key}" data-val="${v}" aria-pressed="${cfg[row.key] === v}">${label}${owned ? '' : ' 🔒'}</button>`; }).join('')}</div></div>`).join('')}
+      <div class="fb ${msg.startsWith('Không') ? 'no' : 'ok'}">${msg}</div></div></div>
       <div class="actions"><button class="btn primary" id="okBtn" type="button">Xong</button></div>`);
-    dialog.querySelectorAll('[data-part]').forEach(b => b.onclick = () => {
-      const k = b.dataset.part, c = +b.dataset.color;
-      const owned = PAINT[k].colors[0] === c || (p.unlocked[k] || []).includes(c) || p.bike[k] === c;
-      if (!owned) { if (p.coins < PAINT_COST) { render(`Không đủ xu, cần ${PAINT_COST} xu. Đi thêm một chuyến nhé!`); Audio.bad(); return; } p.coins -= PAINT_COST; (p.unlocked[k] = p.unlocked[k] || []).push(c); Audio.coin(); }
-      p.bike[k] = c; save(); render(owned ? '' : 'Mua màu mới rồi! 🎉');
+    dialog.querySelectorAll('[data-tab]').forEach(b => b.onclick = () => { tab = b.dataset.tab; msg = ''; render(); });
+    dialog.querySelectorAll('[data-key]').forEach(b => b.onclick = () => {
+      const k = b.dataset.key; let v = b.dataset.val; if (v === 'true') v = true; else if (v === 'false') v = false; else if (/^\d+$/.test(v)) v = +v;
+      const row = WARDROBE[tab].find(r => r.key === k); const opt = row.opts && row.opts.find(o => o[0] === v);
+      if (opt && opt[2] && !p.owned.includes(ownKey(k, v))) {
+        if (p.coins < PREMIUM_COST) { msg = `Không đủ xu, cần ${PREMIUM_COST} xu. Đi thêm một chuyến nhé!`; Audio.bad(); render(); return; }
+        p.coins -= PREMIUM_COST; p.owned.push(ownKey(k, v)); msg = 'Mua được món mới rồi! 🎉'; Audio.coin();
+      } else msg = '';
+      p[tab][k] = v; save(); render();
     });
-    $('okBtn').onclick = () => { closeModal(); renderHome(); };
+    $('okBtn').onclick = () => { stopPreview(); closeModal(); renderHome(); };
+    startPreview(p);
   };
   render();
 }
+function startPreview(p) {
+  const c = $('pv'); if (!c) return;
+  try {
+    if (pv && pv.r.domElement !== c) { cancelAnimationFrame(pv.raf); pv.r.dispose(); pv = null; }
+    if (!pv) {
+      const r = new THREE.WebGLRenderer({ canvas: c, antialias: true, alpha: true }); r.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); r.outputColorSpace = THREE.SRGBColorSpace;
+      const scene = new THREE.Scene(); scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7a5a, 1.2)); const sun = new THREE.DirectionalLight(0xfff2d6, 2.2); sun.position.set(3, 6, 4); scene.add(sun);
+      const cam = new THREE.PerspectiveCamera(32, 1, .1, 50);
+      pv = { r, scene, cam, model: null, raf: 0, t: 0 };
+    }
+    if (pv.model) pv.scene.remove(pv.model);
+    pv.model = makeBike({ bike: p.bike, avatar: p.avatar }); pv.scene.add(pv.model);
+    cancelAnimationFrame(pv.raf);
+    const loop = () => { pv.raf = requestAnimationFrame(loop); pv.t += .012; pv.model.rotation.y = Math.sin(pv.t) * .9 + .5; pv.model.userData.update(.016, .6, null); pv.cam.position.set(0, 1.9, 4.2); pv.cam.lookAt(0, .95, 0); pv.r.render(pv.scene, pv.cam); };
+    loop();
+  } catch (e) { /* không có WebGL thì bỏ xem trước */ }
+}
+function stopPreview() { if (pv) { cancelAnimationFrame(pv.raf); if (pv.model) { pv.scene.remove(pv.model); pv.model = null; } } }
 function renderParent() {
   return `<section class="panel stack" id="parentPanel">
     <h2>Góc phụ huynh</h2>
@@ -203,9 +264,10 @@ async function startTrip(routeId) {
   prepRoute(route);
   home.hidden = true; play.hidden = false; resize();
   const streets = world.buildRoute(route, 7);
-  const time = new URLSearchParams(location.search).get('time') || ['morning', 'morning', 'sunset', 'dusk'][Math.floor(Math.random() * 4)]; world.setTime(time);
   if (bike) world.actors.remove(bike);
-  bike = makeBike(p.bike); world.actors.add(bike);
+  bike = makeBike({ bike: p.bike, avatar: p.avatar }); world.actors.add(bike);
+  const time = new URLSearchParams(location.search).get('time') || ['morning', 'morning', 'morning', 'sunset', 'dusk'][Math.floor(Math.random() * 5)]; world.setTime(time);
+  bike.userData.setHeadlight(time === 'dusk');
   const mission = MISSIONS[p.grade];
   G = {
     p, route, streets, si: 0, s: 0, d: LANE_D[0], lane: 0, v: 0, signal: null, signalT: 0, signaled: null,
