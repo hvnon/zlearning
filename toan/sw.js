@@ -1,10 +1,10 @@
 /* Service worker: lưu toàn bộ app vào máy để chạy offline.
    Khi có mạng, app vẫn mở ngay từ bản đã lưu và tải bản mới ở nền; lần mở sau sẽ dùng bản mới.
    Thêm file mới vào app thì nhớ thêm vào ASSETS và tăng VERSION. Font dùng chung ở ../fonts/ (chung với zzzlearning và Đạp Xe Sài Gòn). */
-const VERSION = 'v6';
+const VERSION = 'v7';
 const CACHE = 'vo-on-toan-' + VERSION;
 const ASSETS = [
-  './', './index.html', './manifest.webmanifest', '../fonts/fonts.css',
+  './', './index.html', './manifest.webmanifest', '../zzz.js', '../fonts/fonts.css',
   './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png',
   '../fonts/Baloo2-500-latin-ext.woff2',
   '../fonts/Baloo2-500-latin.woff2',

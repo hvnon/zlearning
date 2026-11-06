@@ -28,6 +28,10 @@ for (const p of state.profiles) {
 }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { } }
 const prof = (id) => state.profiles.find(p => p.id === id);
+/* ví xu và tên bé dùng chung với zzzlearning (../zzz.js): p.coins đọc/ghi thẳng vào ví chung. Gọi lại sau khi thay state. */
+function syncZZZ() { if (!window.ZZZ) return; ZZZ.syncKids(state.profiles); ZZZ.bindCoins(state.profiles); }
+if (window.ZZZ) ZZZ.noteHub();
+syncZZZ();
 
 /* ================= âm thanh (tự tạo, không cần file) ================= */
 const Audio = {
@@ -55,7 +59,7 @@ const home = $('home'), play = $('play');
 
 function paintSound() { $('soundBtn').textContent = state.sound ? '🔊' : '🔇'; }
 $('soundBtn').onclick = () => { state.sound = !state.sound; save(); paintSound(); if (state.sound) Audio.bell(); };
-$('parentBtn').onclick = () => { showParent = !showParent; renderHome(); };
+$('parentBtn').onclick = () => { if (window.ZZZ && ZZZ.fromHub()) { location.href = '../phuhuynh/'; return; } showParent = !showParent; renderHome(); };
 $('brand').onclick = () => { showParent = false; renderHome(); };
 
 function renderHome() {
@@ -109,7 +113,7 @@ function renameKid(pid) {
   const p = prof(pid);
   openModal(`<h2>Đổi tên bé</h2><input class="name" id="nameInput" value="${esc(p.name)}" maxlength="20" aria-label="Tên bé"><div class="actions"><button class="btn ghost" id="cancelBtn" type="button">Thôi</button><button class="btn primary" id="okBtn" type="button">Lưu</button></div>`);
   $('cancelBtn').onclick = closeModal;
-  $('okBtn').onclick = () => { const v = $('nameInput').value.trim(); if (v) { p.name = v; save(); } closeModal(); renderHome(); };
+  $('okBtn').onclick = () => { const v = $('nameInput').value.trim(); if (v) { p.name = v; if (window.ZZZ) ZZZ.setKid(p.id, { name: v }); save(); } closeModal(); renderHome(); };
   $('nameInput').focus();
 }
 /* Tủ thời trang: bé tự chọn tóc, mặt, da, trang phục, mũ, màu xe, giỏ, cờ... có xem trước 3D.
@@ -203,8 +207,8 @@ function renderParent() {
 }
 function bindParent() {
   $('backupBtn').onclick = () => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(state, null, 1)], { type: 'application/json' })); a.download = `dap-xe-sai-gon-${todayStr()}.json`; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 2000); };
-  $('restoreInput').onchange = async (ev) => { const f = ev.target.files[0]; if (!f) return; try { const s = JSON.parse(await f.text()); if (s && s.profiles) { state = s; save(); renderHome(); } } catch (e) { alert('File không đúng định dạng.'); } };
-  $('resetBtn').onclick = () => { if (confirm('Xóa toàn bộ tiến độ, thẻ và nhật ký của cả hai bé?')) { state = freshState(); save(); renderHome(); } };
+  $('restoreInput').onchange = async (ev) => { const f = ev.target.files[0]; if (!f) return; try { const s = JSON.parse(await f.text()); if (s && s.profiles) { state = s; syncZZZ(); save(); renderHome(); } } catch (e) { alert('File không đúng định dạng.'); } };
+  $('resetBtn').onclick = () => { if (confirm('Xóa toàn bộ tiến độ, thẻ và nhật ký của cả hai bé? (Ví xu chung không bị xóa.)')) { state = freshState(); syncZZZ(); save(); renderHome(); } };
 }
 
 /* ================= hộp thoại ================= */

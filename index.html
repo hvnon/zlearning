@@ -15,10 +15,10 @@
 <meta name="apple-mobile-web-app-title" content="zzzlearning">
 <link rel="stylesheet" href="fonts/fonts.css">
 <style>
-/* Trang chủ zzzlearning: một màn hình, hai thẻ app con to để bé bấm. Màu tím của Vở Ôn Toán, xanh của Đạp Xe Sài Gòn. */
+/* Trang chủ zzzlearning: ví xu của từng bé, hai thẻ app con to để bé bấm. Màu tím của Vở Ôn Toán, xanh của Đạp Xe Sài Gòn. */
 :root{
   --paper:#fbfaf6; --card:#ffffff; --line:#e3e0ee; --text:#25213a; --muted:#6b6784;
-  --ink:#4a2f91; --ink-soft:#ece6fa; --sky:#1b6fb3; --sky-soft:#e1effa; --sun:#f6b73c;
+  --ink:#4a2f91; --ink-soft:#ece6fa; --sky:#1b6fb3; --sky-soft:#e1effa; --sun:#f6b73c; --amber-soft:#fdf0d6; --green:#1d8a55; --green-soft:#ddf3e7;
   --shadow:0 10px 30px rgba(40,30,90,.10);
   --f-display:"Baloo 2","Be Vietnam Pro",system-ui,sans-serif;
   --f-body:"Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -26,25 +26,34 @@
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --paper:#17152a; --card:#1f1c36; --line:#332f55; --text:#ece9f8; --muted:#a29dc0;
-  --ink:#b9a6ff; --ink-soft:#2b2550; --sky:#6fb4f0; --sky-soft:#1c2f44; --sun:#f1b54a;
+  --ink:#b9a6ff; --ink-soft:#2b2550; --sky:#6fb4f0; --sky-soft:#1c2f44; --sun:#f1b54a; --amber-soft:#3a2c12; --green:#5fd39a; --green-soft:#16362a;
   --shadow:0 10px 30px rgba(0,0,0,.35); color-scheme:dark}}
 :root[data-theme="dark"]{
   --paper:#17152a; --card:#1f1c36; --line:#332f55; --text:#ece9f8; --muted:#a29dc0;
-  --ink:#b9a6ff; --ink-soft:#2b2550; --sky:#6fb4f0; --sky-soft:#1c2f44; --sun:#f1b54a;
+  --ink:#b9a6ff; --ink-soft:#2b2550; --sky:#6fb4f0; --sky-soft:#1c2f44; --sun:#f1b54a; --amber-soft:#3a2c12; --green:#5fd39a; --green-soft:#16362a;
   --shadow:0 10px 30px rgba(0,0,0,.35); color-scheme:dark}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 html,body{min-height:100%}
 body{margin:0;background:var(--paper);color:var(--text);font-family:var(--f-body);font-size:16px;line-height:1.5;
   background-image:radial-gradient(circle at 12% 8%,var(--ink-soft) 0,transparent 32%),radial-gradient(circle at 88% 92%,var(--sky-soft) 0,transparent 36%);
   background-attachment:fixed}
 .wrap{max-width:900px;margin:0 auto;padding:28px 16px 40px}
-header{display:flex;align-items:center;gap:14px;margin-bottom:26px}
+header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:22px;flex-wrap:wrap}
+header .brand{display:flex;align-items:center;gap:14px}
 header img{width:64px;height:64px;border-radius:18px;box-shadow:var(--shadow)}
 h1{font-family:var(--f-display);font-weight:800;font-size:38px;line-height:1;margin:0;color:var(--ink);letter-spacing:.3px}
 h1 span{color:var(--sky)}
 .tag{margin:6px 0 0;color:var(--muted);font-size:14px;font-weight:500;letter-spacing:.5px;text-transform:uppercase}
+.pbtn{border:2px solid var(--line);background:var(--card);color:var(--text);border-radius:14px;padding:9px 14px;font-family:var(--f-display);font-weight:700;font-size:16px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;box-shadow:var(--shadow)}
+.wallet{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px}
+.wk{background:var(--card);border:2px solid var(--line);border-radius:20px;padding:12px 16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:var(--shadow)}
+.wk .nm{font-family:var(--f-display);font-weight:800;font-size:19px;color:var(--ink);flex:1 1 auto}
+.wk .coin{background:var(--amber-soft);border-radius:999px;padding:4px 12px;font-weight:700;white-space:nowrap}
+.wk .gift{border:2px solid var(--ink);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 14px;font-family:var(--f-display);font-weight:700;font-size:15px;cursor:pointer}
+.wk .wait{flex-basis:100%;font-size:13px;color:var(--muted)}
 .apps{display:grid;grid-template-columns:1fr 1fr;gap:18px}
-@media (max-width:640px){.apps{grid-template-columns:1fr}h1{font-size:32px}}
+@media (max-width:640px){.apps,.wallet{grid-template-columns:1fr}h1{font-size:32px}}
 .app{display:flex;flex-direction:column;gap:12px;background:var(--card);border:2px solid var(--line);border-radius:26px;padding:20px;text-decoration:none;color:inherit;box-shadow:var(--shadow);
   transition:transform .15s,border-color .15s;position:relative;overflow:hidden;min-height:230px;-webkit-tap-highlight-color:transparent}
 .app:active{transform:scale(.98)}
@@ -62,32 +71,50 @@ h1 span{color:var(--sky)}
 .kid b{font-weight:700}
 .chip{background:var(--accent-soft);color:var(--text);border-radius:999px;padding:2px 10px;font-size:13px;font-weight:600;white-space:nowrap}
 .go{align-self:flex-end;background:var(--accent);color:#fff;font-family:var(--f-display);font-weight:800;font-size:18px;border-radius:999px;padding:8px 20px;box-shadow:0 4px 14px rgba(0,0,0,.18)}
-.app.saigon .go,.app.toan .go{color:#fff}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .go{color:#17152a}}
 :root[data-theme="dark"] .go{color:#17152a}
 .note{margin:26px 0 0;padding:14px 16px;border:2px dashed var(--line);border-radius:18px;color:var(--muted);font-size:14px;background:var(--card)}
 .note b{color:var(--text)}
 footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
+/* hộp đổi thưởng */
+.modal{position:fixed;inset:0;background:rgba(10,20,30,.55);display:flex;align-items:center;justify-content:center;padding:16px;z-index:50}
+.dialog{background:var(--card);color:var(--text);border-radius:22px;padding:20px;width:min(480px,100%);max-height:100%;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.35);display:flex;flex-direction:column;gap:12px}
+.dialog h2{font-family:var(--f-display);font-weight:800;font-size:24px;margin:0;color:var(--ink)}
+.rw{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
+.rw .em{font-size:30px;line-height:1}
+.rw .t{flex:1;min-width:0}.rw .t b{display:block}.rw .t span{font-size:13px;color:var(--muted)}
+.rw button{border:2px solid var(--ink);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 14px;font-family:var(--f-display);font-weight:700;font-size:15px;cursor:pointer}
+.rw button.primary{background:var(--ink);color:#fff}
+.rw button:disabled{opacity:.45;cursor:default}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .rw button.primary{color:#17152a}}
+:root[data-theme="dark"] .rw button.primary{color:#17152a}
+.dialog .fb{min-height:1.4em;font-weight:700;color:var(--green)}
+.dialog .close{align-self:flex-end;border:2px solid var(--line);background:var(--card);color:var(--text);border-radius:12px;padding:8px 16px;font-family:var(--f-display);font-weight:700;font-size:16px;cursor:pointer}
 @media (prefers-reduced-motion:reduce){.app{transition:none}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <img src="icons/icon-192.png" alt="" width="64" height="64">
-    <div>
-      <h1>zzz<span>learning</span></h1>
-      <p class="tag">Góc học của hai bé · chạy offline</p>
+    <div class="brand">
+      <img src="icons/icon-192.png" alt="" width="64" height="64">
+      <div>
+        <h1>zzz<span>learning</span></h1>
+        <p class="tag">Góc học của hai bé · chạy offline</p>
+      </div>
     </div>
+    <a class="pbtn" href="phuhuynh/">👨‍👩‍👧 Phụ huynh</a>
   </header>
 
+  <section class="wallet" id="wallet" aria-label="Ví xu"></section>
+
   <nav class="apps" aria-label="Các app">
-    <a class="app toan" href="toan/">
+    <a class="app toan" href="toan/?hub=1">
       <div class="head"><img src="toan/icons/icon-192.png" alt="" width="64" height="64"><div><h2>Vở Ôn Toán</h2><p class="desc">Ôn toán lớp 2 và lớp 4, đúng lúc sắp quên</p></div></div>
       <div class="kids" id="kidsToan"></div>
       <span class="go">Vào học ▶</span>
     </a>
-    <a class="app saigon" href="saigon/">
+    <a class="app saigon" href="saigon/?hub=1">
       <div class="head"><img src="saigon/icons/icon-192.png" alt="" width="64" height="64"><div><h2>Đạp Xe Sài Gòn</h2><p class="desc">Đạp xe khám phá Sài Gòn: luật giao thông, mua bán, lịch sử tên đường</p></div></div>
       <div class="kids" id="kidsSaigon"></div>
       <span class="go">Đạp xe ▶</span>
@@ -95,24 +122,48 @@ footer{margin-top:22px;color:var(--muted);font-size:12px;text-align:center}
   </nav>
 
   <p class="note" id="installNote" hidden><b>Cài lên màn hình chính</b> để mở nhanh và chạy không cần mạng: iPad / iPhone mở bằng Safari → nút Chia sẻ → <b>Thêm vào MH chính</b>. Android mở bằng Chrome → menu ⋮ → <b>Cài đặt ứng dụng</b>. Có thể cài riêng từng app con bằng cách làm vậy ngay trong app đó.</p>
-  <footer>Dữ liệu của hai bé lưu ngay trên máy này. Sao lưu ở trang phụ huynh của từng app.</footer>
+  <footer>Dữ liệu của hai bé lưu ngay trên máy này. Sao lưu ở trang Phụ huynh.</footer>
 </div>
+<div class="modal" id="modal" hidden><div class="dialog" id="dialog" role="dialog" aria-modal="true"></div></div>
+<script src="zzz.js"></script>
 <script>
-/* Hiện nhanh tiến độ của từng bé lấy từ dữ liệu 2 app con (cùng localStorage). Thiếu hoặc lỗi thì chỉ ẩn phần đó. */
+/* Ví xu chung + tiến độ nhanh của từng bé lấy từ dữ liệu 2 app con (cùng localStorage). Thiếu hoặc lỗi thì chỉ ẩn phần đó. */
 (function () {
-  const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const $ = (id) => document.getElementById(id);
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const read = (key) => { try { const s = JSON.parse(localStorage.getItem(key)); return s && Array.isArray(s.profiles) ? s.profiles : null; } catch (e) { return null; } };
+  const kidName = (p) => { const k = ZZZ.kids().find(x => x.id === p.id); return (k && k.name) || p.name || p.id; };
   const row = (name, chips) => `<div class="kid"><b>${esc(name)}</b>${chips.map(c => `<span class="chip">${c}</span>`).join('')}</div>`;
-  const toan = read('vo-on-toan-v1');
-  if (toan) document.getElementById('kidsToan').innerHTML = toan.map(p => row(p.name || p.id, [
-    `🔥 ${+p.streak || 0} ngày`, `🪙 ${+p.coins || 0}`, `✨ ${+p.xp || 0} XP`
-  ])).join('');
-  const sg = read('dap-xe-sai-gon-v1');
-  if (sg) document.getElementById('kidsSaigon').innerHTML = sg.map(p => row(p.name || p.id, [
-    `🚲 ${(p.trips || []).length} chuyến`, `🪙 ${+p.coins || 0}`, `🃏 ${(p.cards || []).length} thẻ`
-  ])).join('');
+  function kids() {
+    const t = read(ZZZ.APP_KEYS.toan) || [], s = read(ZZZ.APP_KEYS.saigon) || [];
+    const ids = [...new Set([...t, ...s, ...ZZZ.kids()].map(p => p.id))];
+    return (ids.length ? ids : ['k2', 'k4']).map(id => ({ id, name: kidName({ id, name: ((t.find(p => p.id === id) || s.find(p => p.id === id) || {}).name) }) }));
+  }
+  function render() {
+    const toan = read(ZZZ.APP_KEYS.toan), sg = read(ZZZ.APP_KEYS.saigon);
+    $('wallet').innerHTML = kids().map(k => { const pend = ZZZ.pending(k.id); return `<div class="wk"><span class="nm">${esc(k.name)}</span><span class="coin">🪙 ${ZZZ.coins(k.id)} xu</span><button class="gift" type="button" data-redeem="${k.id}">🎁 Đổi thưởng</button>${pend.length ? `<span class="wait">🎟️ Đang chờ bố mẹ: ${pend.map(x => esc(x.title)).join(', ')}</span>` : ''}</div>`; }).join('');
+    $('kidsToan').innerHTML = toan ? toan.map(p => row(kidName(p), [`🔥 ${+p.streak || 0} ngày`, `✨ ${+p.xp || 0} XP`, `⭐ ${Object.values(p.path || {}).reduce((a, n) => a + (+n.stars || 0), 0)} sao`])).join('') : '';
+    $('kidsSaigon').innerHTML = sg ? sg.map(p => row(kidName(p), [`🚲 ${(p.trips || []).length} chuyến`, `⭐ ${Object.values(p.stars || {}).reduce((a, b) => a + b, 0)} sao`, `🃏 ${(p.cards || []).length} thẻ`])).join('') : '';
+    document.querySelectorAll('[data-redeem]').forEach(b => b.onclick = () => openShop(b.dataset.redeem));
+  }
+  /* Đổi thưởng ngay ở trang chủ: bấm "Đổi" hai lần để chắc, trừ xu từ ví chung, phiếu chờ bố mẹ xác nhận ở trang Phụ huynh. */
+  function openShop(pid) {
+    const k = kids().find(x => x.id === pid) || { id: pid, name: pid }; let confirm = null, fb = '';
+    const paint = () => {
+      const items = ZZZ.rewards().items, coins = ZZZ.coins(pid);
+      $('dialog').innerHTML = `<h2>🎁 Đổi thưởng · ${esc(k.name)}</h2><div><span class="coin" style="background:var(--amber-soft);border-radius:999px;padding:4px 12px;font-weight:700">🪙 ${coins} xu</span></div>
+        ${items.length ? items.map(r => `<div class="rw"><span class="em">${r.em || '🎁'}</span><div class="t"><b>${esc(r.title)}</b><span>🪙 ${r.cost} xu</span></div><button type="button" class="${coins >= r.cost ? 'primary' : ''}" data-buy="${r.id}" ${coins >= r.cost ? '' : 'disabled'}>${confirm === r.id ? 'Chắc chắn đổi!' : 'Đổi'}</button></div>`).join('') : '<p style="margin:0;color:var(--muted)">Bố mẹ chưa đặt phần thưởng nào. Vào trang Phụ huynh để thêm, ví dụ "30 phút hoạt hình = 300 xu".</p>'}
+        <div class="fb">${fb}</div><button class="close" type="button" id="closeBtn">Đóng</button>`;
+      $('dialog').querySelectorAll('[data-buy]').forEach(b => b.onclick = () => { const id = b.dataset.buy; if (confirm !== id) { confirm = id; fb = ''; paint(); return; } const t = ZZZ.redeem(pid, id); confirm = null; fb = t ? `Đã đổi "${t.title}"! Nhớ nhắc bố mẹ nha 🎉` : 'Chưa đủ xu.'; paint(); render(); });
+      $('closeBtn').onclick = () => { $('modal').hidden = true; };
+    };
+    paint(); $('modal').hidden = false;
+  }
+  $('modal').addEventListener('click', (e) => { if (e.target === $('modal')) $('modal').hidden = true; });
+  render();
   const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
-  if (!standalone) document.getElementById('installNote').hidden = false;
+  if (!standalone) $('installNote').hidden = false;
+  window.addEventListener('pageshow', render);
   if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 })();
 </script>

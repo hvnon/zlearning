@@ -269,6 +269,7 @@ textarea{min-height:90px;font-family:ui-monospace,Menlo,monospace;font-size:12px
   <p class="muted" style="text-align:center;margin:28px 0 0;font-size:14px"><a href="../" style="color:var(--ink);font-weight:600">🏠 zzzlearning</a> · <a href="../saigon/" style="color:var(--ink);font-weight:600">🚲 Đạp Xe Sài Gòn</a></p>
 </div>
 
+<script src="../zzz.js"></script>
 <script>
 /* ================= utilities ================= */
 const rnd=(a,b)=>a+Math.floor(Math.random()*(b-a+1));
@@ -395,6 +396,9 @@ function freshState(){return{profiles:[
 let state;
 try{state=JSON.parse(localStorage.getItem(KEY))||freshState()}catch(e){state=freshState()}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}DB.putKV('state',state)}
+/* ví xu, tên bé và phiếu thưởng dùng chung với zzzlearning (../zzz.js): p.coins đọc/ghi thẳng vào ví chung */
+function syncZZZ(){if(!window.ZZZ)return;ZZZ.syncKids(state.profiles);ZZZ.bindCoins(state.profiles)}
+if(window.ZZZ)ZZZ.noteHub();
 
 /* ================= lưu trữ bền & nhật ký thao tác (IndexedDB) =================
    - 'kv'.state: bản sao của state (phòng khi localStorage bị trình duyệt dọn)
@@ -417,7 +421,7 @@ const plain=h=>String(h).replace(/<span class="frac"><span>([^<]*)<\/span><span>
 function logEv(ev){DB.add({ts:Date.now(),day:today(),...ev})}
 (async()=>{ // nếu localStorage trống mà IndexedDB còn bản sao thì khôi phục
   let had=false;try{had=!!localStorage.getItem(KEY)}catch(e){}
-  if(!had){const s=await DB.getKV('state');if(s&&s.profiles){state=s;try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){};render()}}
+  if(!had){const s=await DB.getKV('state');if(s&&s.profiles){state=s;syncZZZ();try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){};render()}}
   else DB.putKV('state',state);
   try{navigator.storage?.persist?.()}catch(e){}
 })();
@@ -589,12 +593,12 @@ function makeSess(p,chosen,qs,mode,extra={}){
 const app=document.getElementById('app');
 let view={name:'home'};let sess=null;
 document.getElementById('brand').onclick=()=>{sess=null;go({name:'home'})};
-document.getElementById('parentBtn').onclick=()=>{sess=null;go({name:'parent',pid:view.pid||state.profiles[0].id})};
+document.getElementById('parentBtn').onclick=()=>{if(window.ZZZ&&ZZZ.fromHub()){location.href='../phuhuynh/';return}sess=null;go({name:'parent',pid:view.pid||state.profiles[0].id})};
 function go(v){view=v;render();window.scrollTo(0,0)}
 const soundBtn=document.getElementById('soundBtn');
 function paintSound(){soundBtn.textContent=state.sound===false?'🔇':'🔊'}
 soundBtn.onclick=()=>{state.sound=state.sound===false;save();paintSound();SFX.tap()};
-function render(){paintSound();state.rewards||=[];state.profiles.forEach(ensureGame);({home:renderHome,kid:renderKid,session:renderSession,done:renderDone,parent:renderParent})[view.name]()}
+function render(){paintSound();syncZZZ();state.rewards||=[];state.profiles.forEach(ensureGame);({home:renderHome,kid:renderKid,session:renderSession,done:renderDone,parent:renderParent})[view.name]()}
 
 function renderHome(){
   app.innerHTML=`<div class="stack">
@@ -633,7 +637,7 @@ function renderChoosePet(p){
 function renderKid(){
   const p=prof(view.pid);if(!p.pet){renderChoosePet(p);return}
   const d=dueCount(p);const pet=p.pet,pst=stageOf(pet.food),mood=petMood(p),line=pick(PET_LINES[mood]),nextFood=FOOD_STAGES[pst+1];
-  const pending=p.redeemed.filter(x=>!x.done);const lv=lvlOf(p.xp);const ns=nodeStates(p);const cur=ns.find(n=>n.st==='open');
+  const pending=window.ZZZ?ZZZ.pending(p.id):p.redeemed.filter(x=>!x.done);const lv=lvlOf(p.xp);const ns=nodeStates(p);const cur=ns.find(n=>n.st==='open');
   const learned=skillsOf(p).some(s=>p.skills[s.id]?.s);
   const K=[0,.75,1,.75,0,-.75,-1,-.75];let mapHTML='';let k=0;
   PATH[p.grade].forEach((w,wi)=>{const wn=ns.filter(n=>n.wi===wi);const got=wn.filter(n=>n.st==='done').length;const open=wn.some(n=>n.st!=='locked');
@@ -675,7 +679,7 @@ function renderKid(){
     ${(()=>{const rg=readyGhosts(p),hid=p.ghosts.length-rg.length,toChest=10-(p.ghostsCaught%10);return `<div class="panel ghostbox"><span class="gem ${rg.length?'':'hide'}">👻</span><div style="flex:1;min-width:0"><b>Ma số</b><div class="note">${rg.length?`${rg.length} con ma đã hiện ra! Bắt bằng cách làm đúng câu tương tự.`:hid?`${hid} con ma đang trốn, vài ngày nữa sẽ hiện ra.`:'Chưa có ma nào. Làm sai một câu là nó biến thành ma đó!'} Đã bắt ${p.ghostsCaught}, còn ${toChest} con nữa là được rương.</div></div>${rg.length?`<button class="btn primary small" id="ghostBtn" type="button">Săn ma (${rg.length})</button>`:''}</div>`})()}
     <div class="map" aria-label="Bản đồ đường học">${mapHTML}<div style="font-size:44px;margin-top:10px">🏆</div></div>
     <div class="panel stack shop"><div class="row" style="justify-content:space-between"><h2>Đổi thưởng</h2><span class="coin">🪙 ${p.coins} xu</span></div>
-      ${state.rewards.length?state.rewards.map(r=>`<div class="it"><span style="font-size:32px;line-height:1">${r.em||'🎁'}</span><div style="flex:1;min-width:0"><b>${esc(r.title)}</b><div class="note">🪙 ${r.cost} xu</div></div><button class="btn small ${p.coins>=r.cost?'primary':''}" type="button" data-redeem="${r.id}" ${p.coins>=r.cost?'':'disabled'}>${view.confirmRedeem===r.id?'Chắc chắn đổi!':'Đổi'}</button></div>`).join(''):'<p class="note" style="margin:0">Bố mẹ chưa đặt phần thưởng nào. Vào Trang phụ huynh để thêm, ví dụ "30 phút hoạt hình = 300 xu".</p>'}
+      ${(window.ZZZ?ZZZ.rewards().items:state.rewards).length?(window.ZZZ?ZZZ.rewards().items:state.rewards).map(r=>`<div class="it"><span style="font-size:32px;line-height:1">${r.em||'🎁'}</span><div style="flex:1;min-width:0"><b>${esc(r.title)}</b><div class="note">🪙 ${r.cost} xu</div></div><button class="btn small ${p.coins>=r.cost?'primary':''}" type="button" data-redeem="${r.id}" ${p.coins>=r.cost?'':'disabled'}>${view.confirmRedeem===r.id?'Chắc chắn đổi!':'Đổi'}</button></div>`).join(''):'<p class="note" style="margin:0">Bố mẹ chưa đặt phần thưởng nào. Vào Trang phụ huynh để thêm, ví dụ "30 phút hoạt hình = 300 xu".</p>'}
       ${pending.length?`<div class="chip amber" style="align-self:flex-start">🎟️ Đang chờ bố mẹ: ${pending.map(x=>esc(x.title)).join(', ')}</div>`:''}
     </div>
     <div class="panel stack"><h2>Bộ sưu tập sticker</h2><div class="stickers">${p.stickers.join('')||'<span class="note">Qua mỗi trạm là được một sticker.</span>'}</div></div>
@@ -683,9 +687,9 @@ function renderKid(){
   document.getElementById('wardrobeBtn').onclick=()=>{view.wardrobe=!view.wardrobe;renderKid()};
   const gb=document.getElementById('ghostBtn');if(gb)gb.onclick=()=>{SFX.tap();const s2=buildGhostSession(p);if(s2){sess=s2;go({name:'session',pid:p.id})}};
   app.querySelectorAll('[data-wear]').forEach(b=>b.onclick=()=>{const [slot,id]=b.dataset.wear.split(':');pet.wear=pet.wear||{};pet.wear[slot]=(id&&pet.wear[slot]!==id)?id:null;save();SFX.tap();renderKid()});
-  app.querySelectorAll('[data-redeem]').forEach(b=>b.onclick=()=>{const id=b.dataset.redeem;const r=state.rewards.find(x=>x.id===id);if(!r||p.coins<r.cost)return;
+  app.querySelectorAll('[data-redeem]').forEach(b=>b.onclick=()=>{const id=b.dataset.redeem;const r=(window.ZZZ?ZZZ.rewards().items:state.rewards).find(x=>x.id===id);if(!r||p.coins<r.cost)return;
     if(view.confirmRedeem!==id){view.confirmRedeem=id;SFX.tap();renderKid();return}
-    p.coins-=r.cost;p.redeemed.push({id:r.id,title:r.title,em:r.em,cost:r.cost,ts:Date.now(),done:false});view.confirmRedeem=null;save();logEv({t:'redeem',pid:p.id,reward:r.title,cost:r.cost});SFX.chest();confetti(70);renderKid()});
+    if(window.ZZZ){if(!ZZZ.redeem(p.id,r.id))return}else{p.coins-=r.cost;p.redeemed.push({id:r.id,title:r.title,em:r.em,cost:r.cost,ts:Date.now(),done:false})}view.confirmRedeem=null;save();logEv({t:'redeem',pid:p.id,reward:r.title,cost:r.cost});SFX.chest();confetti(70);renderKid()});
   const startNode=n=>{SFX.tap();sess=buildNodeSession(p,n);go({name:'session',pid:p.id})};
   const gn=document.getElementById('goNode');if(gn)gn.onclick=()=>startNode(cur);
   const rb=document.getElementById('reviewBtn');if(rb)rb.onclick=()=>{SFX.tap();const s2=buildSession(p);if(s2){sess=s2;go({name:'session',pid:p.id})}};
@@ -896,9 +900,9 @@ function renderParent(){
       <div class="row"><input type="text" id="rwTitle" placeholder="Ví dụ: 30 phút xem hoạt hình" style="flex:2 1 220px;width:auto"><input type="text" id="rwEm" placeholder="Icon" maxlength="2" style="flex:0 0 70px;width:auto"><input type="text" id="rwCost" inputmode="numeric" placeholder="Giá xu" style="flex:0 0 90px;width:auto"><button class="btn small" id="rwAdd" type="button">Thêm</button></div>
       <div class="chips">Gợi ý: ${[['📺','30 phút hoạt hình',300],['🍦','Đi ăn kem',800],['🍝','Chọn món bữa tối',500],['🎮','20 phút chơi game',400]].map(([em,t,c])=>`<button type="button" class="chip" data-rwsug="${em}|${t}|${c}" style="border:0;cursor:pointer">${em} ${t} · ${c}</button>`).join('')}</div>
       <span class="note" id="rwMsg" aria-live="polite"></span>
-      <div>${state.rewards.map(r=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${r.em||'🎁'} ${esc(r.title)} · <b>${r.cost} xu</b></span><button class="btn small ghost" type="button" data-rwdel="${r.id}">Xóa</button></div>`).join('')||'<p class="note" style="margin:0">Chưa có phần thưởng nào.</p>'}</div>
+      <div>${(window.ZZZ?ZZZ.rewards().items:state.rewards).map(r=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${r.em||'🎁'} ${esc(r.title)} · <b>${r.cost} xu</b></span><button class="btn small ghost" type="button" data-rwdel="${r.id}">Xóa</button></div>`).join('')||'<p class="note" style="margin:0">Chưa có phần thưởng nào.</p>'}</div>
       <h3 style="font-size:17px">Phiếu bé đã đổi</h3>
-      ${(()=>{const red=state.profiles.flatMap(x=>x.redeemed.map((r,i)=>({...r,pid:x.id,i,kid:x.name}))).sort((a,b)=>(a.done-b.done)||(b.ts-a.ts)).slice(0,20);return red.length?red.map(r=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${r.em||'🎁'} <b>${esc(r.kid)}</b> đổi ${esc(r.title)} <span class="note">· ${new Date(r.ts).toLocaleDateString('vi-VN')} · ${r.cost} xu</span></span>${r.done?'<span class="chip green">Đã thưởng</span>':`<button class="btn small primary" type="button" data-rwdone="${r.pid}:${r.i}">Đã thưởng</button>`}</div>`).join(''):'<p class="note" style="margin:0">Chưa có phiếu nào.</p>'})()}
+      ${(()=>{const red=(window.ZZZ?ZZZ.rewards().redeemed.map(r=>({...r,kid:(prof(r.pid)||{}).name||r.pid})):state.profiles.flatMap(x=>x.redeemed.map((r,i)=>({...r,pid:x.id,i,kid:x.name})))).sort((a,b)=>(a.done-b.done)||(b.ts-a.ts)).slice(0,20);return red.length?red.map(r=>`<div class="row" style="justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--line)"><span>${r.em||'🎁'} <b>${esc(r.kid)}</b> đổi ${esc(r.title)} <span class="note">· ${new Date(r.ts).toLocaleDateString('vi-VN')} · ${r.cost} xu</span></span>${r.done?'<span class="chip green">Đã thưởng</span>':`<button class="btn small primary" type="button" data-rwdone="${r.pid}:${window.ZZZ?r.ts:r.i}">Đã thưởng</button>`}</div>`).join(''):'<p class="note" style="margin:0">Chưa có phiếu nào.</p>'})()}
     </div>
     <div class="panel stack" id="logPanel">
       <h2>Nhật ký học</h2>
@@ -924,7 +928,7 @@ function renderParent(){
     </div>
   </div>`;
   app.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>go({name:'parent',pid:b.dataset.pid}));
-  document.getElementById('saveName').onclick=()=>{const v=document.getElementById('nameIn').value.trim();if(v){p.name=v;save();renderParent()}};
+  document.getElementById('saveName').onclick=()=>{const v=document.getElementById('nameIn').value.trim();if(v){p.name=v;if(window.ZZZ)ZZZ.setKid(p.id,{name:v});save();renderParent()}};
   app.querySelectorAll('[data-practice]').forEach(b=>b.onclick=()=>{sess=buildSession(p,b.dataset.practice);go({name:'session',pid:p.id})});
   const msg=document.getElementById('msg'),box=document.getElementById('dataBox');
   document.getElementById('copyBtn').onclick=()=>{const t=JSON.stringify(state);box.value=t;navigator.clipboard?.writeText(t).then(()=>msg.textContent='Đã sao chép.').catch(()=>{box.select();msg.textContent='Đã hiện dữ liệu ở ô bên dưới, bấm giữ để sao chép.'})||(box.select())};
@@ -934,15 +938,15 @@ function renderParent(){
     const q=v=>`"${String(v??'').replace(/"/g,'""')}"`;const head=['Thời gian','Bé','Kỹ năng','Câu hỏi','Bé trả lời','Đáp án','Đúng','Số giây','Xem gợi ý','Làm lại'];
     const rows=evs.map(e=>[new Date(e.ts).toLocaleString('vi-VN'),names[e.pid]||e.pid,sk[e.skill]||e.skill,e.q,e.input,e.ans,e.ok?'Đúng':'Sai',e.secs,e.hint?'Có':'',e.retry?'Có':''].map(q).join(','));
     await saveFile('vo-on-toan-nhat-ky.csv','\ufeff'+[head.map(q).join(','),...rows].join('\r\n'),'text/csv');msg.textContent=`Đã xuất ${rows.length} câu trả lời.`};
-  document.getElementById('fileIn').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const o=JSON.parse(await f.text());const st=o.state||o;if(!st.profiles)throw 0;state=st;save();if(Array.isArray(o.events))await DB.replaceAll(o.events);msg.textContent='Đã nhập dữ liệu từ file.';setTimeout(()=>renderParent(),600)}catch(err){msg.textContent='File không đúng định dạng sao lưu của Vở Ôn Toán.'}};
+  document.getElementById('fileIn').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const o=JSON.parse(await f.text());const st=o.state||o;if(!st.profiles)throw 0;state=st;syncZZZ();save();if(Array.isArray(o.events))await DB.replaceAll(o.events);msg.textContent='Đã nhập dữ liệu từ file.';setTimeout(()=>renderParent(),600)}catch(err){msg.textContent='File không đúng định dạng sao lưu của Vở Ôn Toán.'}};
   const rwMsg=document.getElementById('rwMsg');
-  document.getElementById('rwAdd').onclick=()=>{const t=document.getElementById('rwTitle').value.trim(),c=parseInt(document.getElementById('rwCost').value,10),em=document.getElementById('rwEm').value.trim();if(!t||!(c>0)){rwMsg.textContent='Cần tên phần thưởng và giá xu lớn hơn 0.';return}state.rewards.push({id:'r'+Date.now(),title:t,cost:c,em});save();renderParent()};
+  document.getElementById('rwAdd').onclick=()=>{const t=document.getElementById('rwTitle').value.trim(),c=parseInt(document.getElementById('rwCost').value,10),em=document.getElementById('rwEm').value.trim();if(!t||!(c>0)){rwMsg.textContent='Cần tên phần thưởng và giá xu lớn hơn 0.';return}if(window.ZZZ)ZZZ.addReward(t,c,em);else state.rewards.push({id:'r'+Date.now(),title:t,cost:c,em});save();renderParent()};
   app.querySelectorAll('[data-rwsug]').forEach(b=>b.onclick=()=>{const [em,t,c]=b.dataset.rwsug.split('|');document.getElementById('rwEm').value=em;document.getElementById('rwTitle').value=t;document.getElementById('rwCost').value=c});
-  app.querySelectorAll('[data-rwdel]').forEach(b=>b.onclick=()=>{state.rewards=state.rewards.filter(r=>r.id!==b.dataset.rwdel);save();renderParent()});
-  app.querySelectorAll('[data-rwdone]').forEach(b=>b.onclick=()=>{const [pid,i]=b.dataset.rwdone.split(':');const x=prof(pid).redeemed[+i];if(x){x.done=true;x.doneTs=Date.now();save();logEv({t:'reward_done',pid,reward:x.title});renderParent()}});
+  app.querySelectorAll('[data-rwdel]').forEach(b=>b.onclick=()=>{if(window.ZZZ)ZZZ.removeReward(b.dataset.rwdel);else state.rewards=state.rewards.filter(r=>r.id!==b.dataset.rwdel);save();renderParent()});
+  app.querySelectorAll('[data-rwdone]').forEach(b=>b.onclick=()=>{const [pid,i]=b.dataset.rwdone.split(':');const x=window.ZZZ?ZZZ.markDone(+i,pid):prof(pid).redeemed[+i];if(x){if(!window.ZZZ){x.done=true;x.doneTs=Date.now()}save();logEv({t:'reward_done',pid,reward:x.title});renderParent()}});
   fillLog(p);fillInstall();
-  document.getElementById('importBtn').onclick=()=>{try{const s=JSON.parse(box.value);if(!s.profiles)throw 0;state=s;save();msg.textContent='Đã nhập dữ liệu.';setTimeout(()=>renderParent(),600)}catch(e){msg.textContent='Dữ liệu không đúng định dạng. Hãy dán nguyên đoạn đã sao chép.'}};
-  document.getElementById('resetBtn').onclick=()=>{const rc=document.getElementById('resetConfirm');rc.innerHTML=`<button class="btn small" id="yesReset" type="button" style="border-color:var(--red);color:var(--red)">Chắc chắn xóa</button>`;document.getElementById('yesReset').onclick=()=>{Object.assign(p,{skills:{},streak:0,lastDay:null,stickers:[],sessions:0,path:{},xp:0,pet:null,coins:0,items:[],redeemed:[],ghosts:[],ghostsCaught:0,charms:0,quests:null});save();DB.delPid(p.id).then(renderParent)}};
+  document.getElementById('importBtn').onclick=()=>{try{const s=JSON.parse(box.value);if(!s.profiles)throw 0;state=s;syncZZZ();save();msg.textContent='Đã nhập dữ liệu.';setTimeout(()=>renderParent(),600)}catch(e){msg.textContent='Dữ liệu không đúng định dạng. Hãy dán nguyên đoạn đã sao chép.'}};
+  document.getElementById('resetBtn').onclick=()=>{const rc=document.getElementById('resetConfirm');rc.innerHTML=`<button class="btn small" id="yesReset" type="button" style="border-color:var(--red);color:var(--red)">Chắc chắn xóa</button>`;document.getElementById('yesReset').onclick=()=>{Object.assign(p,{skills:{},streak:0,lastDay:null,stickers:[],sessions:0,path:{},xp:0,pet:null,items:[],redeemed:[],ghosts:[],ghostsCaught:0,charms:0,quests:null});save();DB.delPid(p.id).then(renderParent)}};
 }
 
 async function fillLog(p){
